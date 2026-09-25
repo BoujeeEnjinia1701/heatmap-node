@@ -1,0 +1,17 @@
+# Card metadata consumed by https://designmolecule.com
+name: HeatMap Node
+slug: heatmap-node
+area: Smart Cities
+status: concept          # concept | design | prototype | tested | released
+shortlisted: false
+pitch: >-
+  A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.
+problem: >-
+  Heat waves kill more people than most other weather hazards, and cities lack fine-grained data on where heat is worst.
+budget_usd: 120
+difficulty: 2  # 1 easiest, 5 hardest
+hero_image: media/hero.png
+licenses:
+  hardware: CERN-OHL-S-2.0
+  software: MIT
+tags: [smart-cities, open-hardware, cern-ohl-s]
