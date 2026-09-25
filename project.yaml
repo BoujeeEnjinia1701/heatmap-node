@@ -2,7 +2,12 @@
 name: HeatMap Node
 slug: heatmap-node
 area: Smart Cities
-status: concept          # concept | design | prototype | tested | released
+trl: 2                   # Technology Readiness Level, see .kit/STANDARDS.md section 9
+trl_target: 3
+trl_evidence:
+  - docs/01-problem.md
+  - docs/02-concept.md
+  - docs/03-requirements.md
 shortlisted: false
 pitch: >-
   A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.
