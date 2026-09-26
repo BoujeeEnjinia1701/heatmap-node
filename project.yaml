@@ -22,7 +22,7 @@ pitch: >-
   A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.
 problem: >-
   Heat waves kill more people than most other weather hazards, and cities lack fine-grained data on where heat is worst.
-budget_usd: 120
+budget_usd: 130
 difficulty: 2  # 1 easiest, 5 hardest
 hero_image: media/hero.png
 licenses:

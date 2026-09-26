@@ -3,9 +3,9 @@ doc_id: HMN-PRB-001
 title: HeatMap Node problem statement
 project: HeatMap Node
 doc_type: Problem statement
-version: "0.4"
+version: "0.5"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -25,6 +25,10 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002)
+- version: "0.5"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: "Budget top-up approved by Amish: sensor head limit $130"
 ---
 
 # HeatMap Node problem statement
@@ -62,7 +66,7 @@ Three gaps keep cities from acting on this at block scale:
 
 ## Constraints
 
-- Garage-buildable prototype, $120 USD or less for the HeatMap-specific sensor head. The FieldNode core, its sun shield and the pole adapter that seats it on street poles are counted against FieldNode, a shared lab component costed and budgeted in its own repo (HMN-DDR-001 D1 and HMN-DDR-002, decided by Amish on 2026-09-25). HMN-CAL-001 v0.2 prices the head at $127 with the aspiration fan, over this limit.
+- Garage-buildable prototype, $130 USD or less for the HeatMap-specific sensor head (raised from $120 by a budget top-up Amish approved on 2026-09-26). The FieldNode core, its sun shield and the pole adapter that seats it on street poles are counted against FieldNode, a shared lab component costed and budgeted in its own repo (HMN-DDR-001 D1 and HMN-DDR-002, decided by Amish on 2026-09-25). HMN-CAL-001 v0.3 prices the head at $127 with the aspiration fan, within this limit.
 - Built on the FieldNode core (enclosure, solar, battery, LoRaWAN radio) so that no power or radio design is repeated.
 - Privacy: environmental measurements only. No camera, microphone or device tracking.
 - No drilling of poles; fit with stainless band clamps.

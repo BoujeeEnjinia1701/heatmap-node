@@ -171,7 +171,7 @@ Files changed: `bom/bom.csv` (lines 1, 8, 12 respecified, line 13 added) and `bo
 
 1. **O1, first partner and city.** No preference stated, no recommendation.
 2. **O2, data publisher and host.** No recommendation.
-3. **N7, sensor head budget after the fan.** $127.00 against $120. Options: (a) raise `budget_usd` to $130; (b) keep $120 and cut $7 more (for example a cheaper anemometer class, at the cost of R4); (c) count the fan against a separate accuracy option. Recommendation: (a). Not applied.
+3. **N7, sensor head budget after the fan.** $127.00 against $120. Options: (a) raise `budget_usd` to $130; (b) keep $120 and cut $7 more (for example a cheaper anemometer class, at the cost of R4); (c) count the fan against a separate accuracy option. Recommendation: (a). **Decided by Amish, 2026-09-26: budget top-up to $130 (option a), applied in the session below.**
 4. **N8, FieldNode panel shading.** With the core below the arm and both facing the equator, the shield, cowl, globe and arm shade 44, 34, 27 and 16 % of the panel with the sun along the arm at 30, 45, 60 and 75° elevation (HMN-CAL-001 [E3]). Options: (a) mount the core above the arm; (b) keep it below and accept the loss pending FieldNode's bypass diode layout; (c) move the core to the pole's east or west face. Recommendation: (a). Not applied.
 
 ### Cross-repo actions (other repos not edited)
@@ -196,3 +196,22 @@ TRL 4 remains on hold by Amish's instruction. `trl` and `trl_target` stay at 3. 
 
 - The fan figures (0.9 W, 6.6 L/s free air, 60 % delivered, 2 s sensor time constant) are class values and assumptions, not a chosen part. The earlier estimate of about 30 mW for 0.1 °C assumed 3 m/s across the whole 60 cm² stack section, which a 0.3 W fan cannot deliver; the revised figures give 35 mW for 0.43 °C.
 - "What sparked the idea" now cites the 1950s US Marine Corps heat flags and the 1957 origin of WBGT (HPRC; Budd, 2008). The Budd abstract was read through the publisher's page; the Parris Island location given in secondary sources was left out because no primary source for it could be opened.
+
+## Session 2026-09-26: sources strengthened
+
+### Sources
+
+Every link in "Concept rationale", "Burning platform", "Where it could be used" and "What sparked the idea" was fetched again and checked against the sentence it supports: WHO heat and health fact sheet (489,000 deaths a year, 45 % in Asia, 36 % in Europe, informal settlements), Ballester et al. 2023 (61,672 deaths in 35 countries), US EPA heat islands (1 to 7 °F by day), Hoffman et al. 2020 (2.6 °C, up to 7 °C), Hsu et al. 2021 (all but 6 of 175 urbanized areas), WMO Africa report release (+0.3 °C per decade 1991 to 2022, observation gaps, most rapid warming in North Africa), ISO 7243:2017, the DoD Human Performance Resource Center heat flag page, Liljegren et al. 2008 and Budd 2008 (bibliographic records confirmed through Crossref). All are primary sources, peer-reviewed papers or official agency pages, and every country or region row carries a citation that supports it.
+
+- Replaced: none. No Wikipedia, blog or trade-press link was found in scope, and no row needed replacing.
+- "What sparked the idea" is unchanged (HPRC, US Department of Defense; Budd, 2008). Its INSPIRATIONS.md line is unchanged.
+- Not re-read this session: the Budd (2008) abstract text (publisher page and Europe PMC unavailable; PubMed returned a CAPTCHA). The claim that WBGT cut heat casualties and lost training time rests on the reading of the publisher page recorded in the session above. The heat-death figures left out in the first session (Maricopa County, Ahmedabad, Singapore NEA, NOAA campaigns) remain out.
+
+### Budget
+
+- N7 decided by Amish, 2026-09-26 ("I am ok with the budget top ups"): `budget_usd` $120 to $130 in `project.yaml`.
+- `docs/04-calcs/sizing.py` reads `budget_usd` and was re-run: [L2] now reads "sensor head within by $3.00". R13 not met to met on paper.
+- Requirement status: 1 not met (R9), 3 at risk (R5, R10, R14), 9 met on paper, 2 met by design.
+- Documents revised: HMN-REQ-001 v0.5, HMN-CAL-001 v0.3, HMN-DDR-002 v0.2, HMN-PRC-001 v0.5, HMN-PRB-001 v0.5 (budget constraint only); `README.md` budget line and Concept paragraph; `bom/bom-notes.md`.
+- Concept media: the blueprint key figure in `cad/src/concept_media.py` now reads "budget $130"; all of `media/` was regenerated and the temporary `_views` folders deleted.
+- Still awaiting Amish: O1, O2 and N8.

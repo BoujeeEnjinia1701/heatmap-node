@@ -3,9 +3,9 @@ doc_id: HMN-CAL-001
 title: HeatMap Node sizing calculations
 project: HeatMap Node
 doc_type: Calculation
-version: "0.2"
+version: "0.3"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -17,17 +17,21 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002)
+- version: "0.3"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: "Budget top-up approved by Amish: R13 target $130, script re-run"
 ---
 
 # HeatMap Node sizing calculations
 
-On paper, HeatMap Node now meets or is on track for thirteen of its fifteen requirements; two are not met. Version 0.2 applies the decisions Amish accepted on 2026-09-25 (HMN-DDR-002): a small fan aspirates the radiation shield before each air reading, R4, R8, R13 and R15 are restated, the saddle is formed from sheet, the arm points toward the equator with the FieldNode core below it, and the FieldNode core carries FieldNode's hot-climate sun shield. The heat stress method is unchanged: in the worked example (35 °C air, 40 %RH, 50 °C globe, 1 m/s wind) mean radiant temperature is 74.8 °C and WBGT is 31.7 °C, and with the fan the input errors add up to ±0.30 °C of WBGT (root sum square), against ±0.59 °C with the passive shield. The two misses are R9, because the sensors sit at about 2.7 m, where the air is 0.2 to 0.8 °C cooler than at pedestrian height on a sunny afternoon, and R13, because the sensor head costs $127 against the $120 budget: the $7 fan and cowl outweigh the $3 saved on the saddle once the pole adapter is counted against FieldNode. The new orientation raises one new problem: the shield, globe and arm shade 16 to 44 % of the FieldNode panel near noon (section E). Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [A1], is the line of that script's output that carries it.
+On paper, HeatMap Node now meets or is on track for fourteen of its fifteen requirements; one is not met. Version 0.2 applies the decisions Amish accepted on 2026-09-25 (HMN-DDR-002): a small fan aspirates the radiation shield before each air reading, R4, R8, R13 and R15 are restated, the saddle is formed from sheet, the arm points toward the equator with the FieldNode core below it, and the FieldNode core carries FieldNode's hot-climate sun shield. The heat stress method is unchanged: in the worked example (35 °C air, 40 %RH, 50 °C globe, 1 m/s wind) mean radiant temperature is 74.8 °C and WBGT is 31.7 °C, and with the fan the input errors add up to ±0.30 °C of WBGT (root sum square), against ±0.59 °C with the passive shield. The one miss is R9, because the sensors sit at about 2.7 m, where the air is 0.2 to 0.8 °C cooler than at pedestrian height on a sunny afternoon. Version 0.3 applies the budget top-up Amish approved on 2026-09-26 (HMN-DDR-002 v0.2): `budget_usd` is now $130, so the $127 sensor head meets R13 with $3 to spare. The new orientation raises one new problem: the shield, globe and arm shade 16 to 44 % of the FieldNode panel near noon (section E). Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [A1], is the line of that script's output that carries it.
 
 > **Safety:** These are first-principles estimates for a paper proof of concept. They do not show that a place is safe or unsafe for people, and HeatMap Node data must not be used to decide whether a particular person may work or exercise. Pole mounting, the pole's added wind load and the FieldNode cell are safety matters; see HMN-PRC-001, Safety.
 
 ## Scope and method
 
-The note checks every requirement in HMN-REQ-001 v0.4 against the design in HMN-PRC-001 v0.4 and the parametric model `cad/src/model.py`. The script imports the model's `PARAMS`, derived dimensions and part solids, so the heights, lengths, areas and volumes used here are those in the STEP files and in drawing HMN-DWG-001. It also reads `bom/bom.csv` and `budget_usd` in `project.yaml`. FieldNode figures (mass, cost, wind load, interior temperature, airtime, sensor allowance) are quoted from FND-CAL-001 v0.2 for the hot-climate node with its sun shield, and the calibration reference uncertainty from CLR-CAL-001 v0.1; no sibling repo was edited. Run the script from the repo root with `python docs/04-calcs/sizing.py`.
+The note checks every requirement in HMN-REQ-001 v0.5 against the design in HMN-PRC-001 v0.4 and the parametric model `cad/src/model.py`. The script imports the model's `PARAMS`, derived dimensions and part solids, so the heights, lengths, areas and volumes used here are those in the STEP files and in drawing HMN-DWG-001. It also reads `bom/bom.csv` and `budget_usd` in `project.yaml`. FieldNode figures (mass, cost, wind load, interior temperature, airtime, sensor allowance) are quoted from FND-CAL-001 v0.2 for the hot-climate node with its sun shield, and the calibration reference uncertainty from CLR-CAL-001 v0.1; no sibling repo was edited. Run the script from the repo root with `python docs/04-calcs/sizing.py`.
 
 The design case is a node on a 114.3 mm (4.5 in) street pole with the arm axis 2.8 m above the pavement, air temperature up to 50 °C, full sun and 15 min reporting.
 
@@ -120,7 +124,7 @@ The temperature and humidity sensor takes about 11 µJ per reading, now 480 time
 
 ## L. Cost (R13)
 
-The BOM has 13 lines. Under HMN-DDR-002 the pole adapter (line 12, $7) counts against the FieldNode core, as it fixes a FieldNode fit limit, and the saddle is formed from sheet ($3 saved). The sensor head (lines 2 to 11 and 13) costs $127.00; the FieldNode core with its sun shield and the adapter (lines 1 and 12) cost $141.00, and the full node $268.00 [L1]. Against the $120 `budget_usd`, which covers the sensor head only, the head is over by $7.00 [L2]: without the fan the two decisions would have brought it to exactly $120.00, and the fan and cowl (line 13) add $7. **R13 is not met.** The options are in `docs/REVIEW.md`, awaiting Amish.
+The BOM has 13 lines. Under HMN-DDR-002 the pole adapter (line 12, $7) counts against the FieldNode core, as it fixes a FieldNode fit limit, and the saddle is formed from sheet ($3 saved). The sensor head (lines 2 to 11 and 13) costs $127.00; the FieldNode core with its sun shield and the adapter (lines 1 and 12) cost $141.00, and the full node $268.00 [L1]. Without the fan the two decisions would have brought the head to exactly $120.00, and the fan and cowl (line 13) add $7. Amish approved a budget top-up on 2026-09-26 (HMN-DDR-002 v0.2), so `budget_usd`, which covers the sensor head only, is now $130, and the head is within it by $3.00 [L2]. **R13 is met on paper.**
 
 ## M. Results against every requirement
 
@@ -129,7 +133,6 @@ The BOM has 13 lines. Under HMN-DDR-002 the pole adapter (line 12, $7) counts ag
 | ID | Requirement | Value | Target | Status |
 | --- | --- | --- | --- | --- |
 | R9 | Measurement height | Sensors at 2.67 to 2.69 m; pedestrian air 0.2 to 0.8 °C warmer [E1] | 1.1 to 2.0 m | **Not met** |
-| R13 | Cost | Sensor head $127.00 [L1] | $120 or less (sensor head, excluding the FieldNode core and its pole adapter) | **Not met** ($7 over) |
 | R5 | Derived heat stress | Input budget ±0.30 °C RSS, ±0.55 °C worst [B4]; calm intervals flagged [G4]; model error unknown | WBGT within ±1.0 °C of a reference meter | **At risk** |
 | R10 | Fit to existing poles | Fits 60 to 200 mm [J1]; 37 min [J2] | Band clamps, no drilling, 30 min | **At risk** |
 | R14 | Traceable data | Probe calibrated before fitting fits a CalRig bay; the assembled globe does not (150 mm against a 90 x 70 x 50 mm bay); payload format defined [G1] | CalRig record per node; open documented format | **At risk** |
@@ -140,11 +143,12 @@ The BOM has 13 lines. Under HMN-DDR-002 the pole adapter (line 12, $7) counts ag
 | R7 | Power autonomy | 35.4 mW with the fan, 35 % of the allowance [F2] | 5 days without sun on FieldNode | Met on paper (panel shading not included) |
 | R8 | Outdoor survival | FieldNode interior 57.2 °C at 50 °C air with its sun shield [I2]; sensor head parts within ratings | Operate at -20 to +50 °C at the node | Met on paper (shield factor assumed) |
 | R11 | Wind survival | Factor 13.4 on the arm; clamp twist factor 2.5; 0.29 mm at 20 m/s [H2] to [H5] | No failure at 35 m/s; under 10 mm at 20 m/s | Met on paper (preload assumed) |
+| R13 | Cost | Sensor head $127.00 [L1], [L2] | $130 or less (sensor head, excluding the FieldNode core and its pole adapter) | Met on paper ($3 margin) |
 | R15 | Mass and loading | Sensor head 1.91 kg [K2]; largest part 290 mm [K3] | 4 kg or less (sensor head); 300 mm | Met on paper |
 | R2 | Relative humidity | SHT45 ±1.0 %RH typical | ±3 %RH | Met by design |
 | R12 | Privacy | No camera, microphone or radio scanning parts; payload has environmental fields only [G1] | Environmental data only | Met by design |
 
-Counts: 2 not met, 3 at risk, 8 met on paper, 2 met by design. In v0.1 the counts were 6 not met, 3 at risk, 4 met on paper and 2 met by design. None is left wholly unverifiable at TRL 3, although R1, R5, R8 and R10 each rest on assumptions that only a test can settle.
+Counts: 1 not met, 3 at risk, 9 met on paper, 2 met by design (v0.2: 2 not met and 8 met on paper, before the budget top-up). In v0.1 the counts were 6 not met, 3 at risk, 4 met on paper and 2 met by design. None is left wholly unverifiable at TRL 3, although R1, R5, R8 and R10 each rest on assumptions that only a test can settle.
 
 ## Checks against the TRL 2 figures
 

@@ -2,7 +2,7 @@
 
 ![TRL 3](https://img.shields.io/badge/TRL-3%20of%209-0F766E) ![Hardware: CERN-OHL-S-2.0](https://img.shields.io/badge/hardware-CERN--OHL--S--2.0-111827) ![Software: MIT](https://img.shields.io/badge/software-MIT-111827)
 
-**Area:** Smart Cities · **TRL:** 3 of 9 (proof of concept on paper) · **Prototype budget:** $120 USD for the sensor head (FieldNode core and its pole adapter budgeted separately) · **Difficulty:** 2 of 5
+**Area:** Smart Cities · **TRL:** 3 of 9 (proof of concept on paper) · **Prototype budget:** $130 USD for the sensor head (FieldNode core and its pole adapter budgeted separately) · **Difficulty:** 2 of 5
 
 A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.
 
@@ -57,7 +57,7 @@ Heat waves kill more people than most other weather hazards, and cities lack fin
 
 A sensor arm clamps to an existing street pole with its axis at 2.8 m, points toward the equator and plugs into a FieldNode core (solar panel, LiFePO4 cell, LoRaWAN radio, and a sun shield for hot sites) mounted below it. It carries a fan-aspirated radiation shield with a temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. Every 3 min the fan runs for 6 s before the air is read. Nodes send 15 min means; a server computes mean radiant temperature and WBGT, flags calm intervals below the anemometer's start-up, and maps the results block by block. Only environmental values leave the node: no camera, microphone or personal data.
 
-TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C. With the fan the shield reads 0.43 °C high in full sun at any wind speed (1.04 °C at 1 m/s without it), and the sensor input errors add up to ±0.30 °C of WBGT. The sensors and fan draw 35 mW against FieldNode's 100 mW allowance, the sensor head weighs 1.91 kg, and the arm has a factor of 13.4 on yield in a 35 m/s gust. Not met on paper: pedestrian measurement height (sensors at about 2.7 m) and the sensor head cost ($127 against $120; the full node with the FieldNode core, sun shield and pole adapter is $268). WBGT accuracy against a reference meter, installation time and calibration of the assembled globe are at risk. With the arm toward the equator, the sensor head shades part of the FieldNode panel near noon; a fix is awaiting review.
+TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C. With the fan the shield reads 0.43 °C high in full sun at any wind speed (1.04 °C at 1 m/s without it), and the sensor input errors add up to ±0.30 °C of WBGT. The sensors and fan draw 35 mW against FieldNode's 100 mW allowance, the sensor head weighs 1.91 kg, and the arm has a factor of 13.4 on yield in a 35 m/s gust. Not met on paper: pedestrian measurement height (sensors at about 2.7 m). The sensor head costs $127 against its $130 budget; the full node with the FieldNode core, sun shield and pole adapter is $268. WBGT accuracy against a reference meter, installation time and calibration of the assembled globe are at risk. With the arm toward the equator, the sensor head shades part of the FieldNode panel near noon; a fix is awaiting review.
 
 Full design precis: [docs/02-concept.md](docs/02-concept.md). Requirements: [docs/03-requirements.md](docs/03-requirements.md).
 
@@ -104,6 +104,12 @@ The working bill of materials is in [bom/bom.csv](bom/bom.csv).
 ## Documentation
 
 Controlled documents follow the portfolio [documentation standard](.kit/STANDARDS.md). Each carries a document ID (HMN-PRC-001 for the precis), a version and a revision history. Branded PDFs are built with `python .kit/render.py` and attached to GitHub Releases when a document is tagged, for example `HMN-PRC-001/v1.0`.
+
+## Credits
+
+Designed by Amish Chadha. See [CONTRIBUTORS.md](CONTRIBUTORS.md) for roles. To cite this design, use [CITATION.cff](CITATION.cff) (GitHub shows it as "Cite this repository").
+
+AI assistance (Claude) was used to accelerate concept renders, prototype documentation and first-pass sizing calculations. Design direction and all decisions are Amish Chadha's, recorded in this repository's decision records (`docs/decisions/`).
 
 ## Licenses
 

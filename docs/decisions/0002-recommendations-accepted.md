@@ -3,9 +3,9 @@ doc_id: HMN-DDR-002
 title: HeatMap Node recommendations accepted
 project: HeatMap Node
 doc_type: Design decision record
-version: "0.1"
+version: "0.2"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -13,12 +13,16 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002)
+- version: "0.2"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: Budget top-up to $130 decided by Amish (N7)
 ---
 
 # 0002: Recommendations accepted
 
 - **Date:** 2026-09-25
-- **Status:** accepted. Every item listed in Tables 1 and 2 is decided by Amish, 2026-09-25: go with recommendation. The items in Table 4 remain "Proposed, awaiting Amish".
+- **Status:** accepted. Every item listed in Tables 1 and 2 is decided by Amish, 2026-09-25: go with recommendation. Item N7 in Table 4 is decided by Amish, 2026-09-26 (budget top-up); the other items in Table 4 remain "Proposed, awaiting Amish".
 
 ## Context
 
@@ -68,7 +72,8 @@ The options for each item are those listed in `docs/REVIEW.md` (sessions 2026-09
 - `project.yaml`: `budget_usd` stays $120 (N1 redefines what it covers; no new figure was recommended); pitch and problem unchanged, as no rewording was recommended; the evidence list adds this record. `trl` and `trl_target` stay 3.
 - Requirement status (HMN-CAL-001 v0.2): 2 not met (R9, R13), 3 at risk (R5, R10, R14), 8 met on paper, 2 met by design; before, 6 not met, 3 at risk, 4 met on paper, 2 met by design.
 - Documents revised: HMN-PRB-001 v0.4, HMN-PRC-001 v0.4, HMN-REQ-001 v0.4, HMN-CAL-001 v0.2, HMN-DDR-001 v0.2; HMN-DWG-001 Rev P2; `bom/bom.csv`, `bom/bom-notes.md`, `cad/src/model.py`, STEP and STL, `cad/src/sheets.py`, `cad/src/concept_media.py` and `media/`; `README.md`.
-- Two effects of the decisions taken together need Amish (Table 4): the fan puts the head $7 over budget, and the new orientation shades the FieldNode panel.
+- Two effects of the decisions taken together needed Amish (Table 4): the fan put the head $7 over budget, which Amish settled on 2026-09-26 with a budget top-up to $130 (N7), and the new orientation shades the FieldNode panel (N8, still open).
+- Budget top-up to $130: decided by Amish, 2026-09-26. After it, requirement status is 1 not met (R9), 3 at risk, 9 met on paper and 2 met by design (HMN-CAL-001 v0.3).
 
 *Table 4. Items still open.*
 
@@ -76,7 +81,7 @@ The options for each item are those listed in `docs/REVIEW.md` (sessions 2026-09
 | --- | --- | --- |
 | O1 | First partner and city for co-design and a pilot. No preference stated, no recommendation | Proposed, awaiting Amish |
 | O2 | Data publisher and host. No recommendation | Proposed, awaiting Amish |
-| N7 | Sensor head $127.00 against $120 after the fan. Options: (a) raise `budget_usd` to $130; (b) keep $120 and cut $7 more (for example a cheaper anemometer class, at the cost of R4); (c) count the fan against a separate accuracy option. Recommendation: (a), since the fan is a deliberate accuracy fix | Proposed, awaiting Amish |
+| N7 | Sensor head $127.00 against $120 after the fan. Options: (a) raise `budget_usd` to $130; (b) keep $120 and cut $7 more (for example a cheaper anemometer class, at the cost of R4); (c) count the fan against a separate accuracy option. Recommendation: (a), since the fan is a deliberate accuracy fix | Budget top-up to $130: decided by Amish, 2026-09-26 (option a). `budget_usd` $120 to $130; HMN-REQ-001 v0.5 and HMN-CAL-001 v0.3: R13 not met to met on paper ($3 margin) |
 | N8 | FieldNode panel shaded 16 to 44 % near noon by the sensor head. Options: (a) mount the core above the arm, so that its shadow falls on the pole side; (b) keep it below and accept the loss, pending FieldNode's bypass diode layout; (c) move the core to the pole's east or west face. Recommendation: (a) | Proposed, awaiting Amish |
 
 > **Safety:** The added fan starts on its own every 3 min. Unplug the sensor lead before working on the shield. The FieldNode sun shield is part of keeping the LiFePO4 cell within its charge limits at hot sites and must not be left off HeatMap nodes.

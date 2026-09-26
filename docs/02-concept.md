@@ -3,9 +3,9 @@ doc_id: HMN-PRC-001
 title: HeatMap Node design precis
 project: HeatMap Node
 doc_type: Design precis
-version: "0.4"
+version: "0.5"
 status: Draft
-date: '2026-09-25'
+date: '2026-09-26'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -25,6 +25,10 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: Recommendations accepted by Amish (DDR-002)
+- version: "0.5"
+  date: '2026-09-26'
+  author: Amish Chadha
+  change: "Budget top-up approved by Amish: sensor head within the $130 budget"
 ---
 
 # HeatMap Node design precis
@@ -33,7 +37,7 @@ revisions:
 
 HeatMap Node is a sensor head that clamps to an existing street pole and plugs into the lab's FieldNode core. A horizontal arm, pointing toward the equator, holds a fan-aspirated radiation shield with an air temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. From these four readings a server computes mean radiant temperature and an estimated wet bulb globe temperature (WBGT), the heat stress index defined in [ISO 7243:2017](https://www.iso.org/standard/67188.html), using the method of [Liljegren et al. (2008)](https://doi.org/10.1080/15459620802310770). Tens of nodes across a neighborhood give block-by-block heat stress maps, day and night, all season.
 
-The TRL 3 calculations (HMN-CAL-001 v0.2) confirm the heat stress method and the power, data and wind cases. With the decisions Amish accepted on 2026-09-25 (HMN-DDR-001 and HMN-DDR-002) applied, two requirements are not met on paper: the sensors sit at about 2.7 m rather than pedestrian height (R9), and the sensor head costs $127 against its $120 budget (R13), because the aspiration fan adds $7. The fan cuts the shield's radiation error from about 1.0 °C at 1 m/s to 0.43 °C at any wind speed, and the sensors and fan draw 35 mW. All design choices below are decided by Amish. The parametric model is `cad/src/model.py` and the general arrangement is drawing HMN-DWG-001 Rev P2.
+The TRL 3 calculations (HMN-CAL-001 v0.3) confirm the heat stress method and the power, data and wind cases. With the decisions Amish accepted on 2026-09-25 (HMN-DDR-001 and HMN-DDR-002) applied, one requirement is not met on paper: the sensors sit at about 2.7 m rather than pedestrian height (R9). The aspiration fan adds $7 and brings the sensor head to $127, within the $130 budget that Amish approved on 2026-09-26 (R13 met on paper). The fan cuts the shield's radiation error from about 1.0 °C at 1 m/s to 0.43 °C at any wind speed, and the sensors and fan draw 35 mW. All design choices below are decided by Amish. The parametric model is `cad/src/model.py` and the general arrangement is drawing HMN-DWG-001 Rev P2.
 
 ![Hero render](../media/hero.png)
 
@@ -112,7 +116,7 @@ The sensor head weighs 1.91 kg (clamp 0.40 kg, globe 0.28 kg, anemometer 0.30 kg
 
 ### Cost
 
-The sensor head (BOM lines 2 to 11 and 13) costs $127.00. The FieldNode core with its sun shield ($134.00) and the pole adapter ($7.00) are counted against FieldNode, and the full node costs $268.00. Against the $120 budget the head is $7 over, the cost of the fan and cowl (R13 not met). See the review note for the options.
+The sensor head (BOM lines 2 to 11 and 13) costs $127.00. The FieldNode core with its sun shield ($134.00) and the pole adapter ($7.00) are counted against FieldNode, and the full node costs $268.00. The fan and cowl took the head $7 over the earlier $120 budget; Amish approved a top-up to $130 on 2026-09-26 (HMN-DDR-002 v0.2), and the head is now $3 within it (R13 met on paper).
 
 ## Key design choices
 
@@ -141,7 +145,7 @@ Decided by Amish, 2026-09-25 (HMN-DDR-001 and HMN-DDR-002).
 
 ## Open questions
 
-- [ ] Budget: the sensor head is $7 over its $120 budget with the fan (see the review note).
+- [x] Budget: the sensor head ($127 with the fan) is within the $130 budget approved by Amish on 2026-09-26.
 - [ ] Panel shading: the sensor head shades 16 to 44 % of the FieldNode panel near noon with the arm toward the equator; where should the core go (see the review note)?
 - [ ] Mounting height: what do pole owners allow? The calculated difference (0.2 to 0.8 °C) needs a field comparison.
 - [ ] Fan: does a chosen 60 mm fan deliver the 3.4 L/s through the stack that ±0.5 °C needs, and how long does it last outdoors?
