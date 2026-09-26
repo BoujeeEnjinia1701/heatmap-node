@@ -60,3 +60,77 @@ Requirements not met: **R4** (anemometer start-up about 0.8 m/s, above the 0.5 m
 ### Recommended next step
 
 Review this note and the media, then decide items 1 and 2. If approved, run `/advance-trl3` to write the calculation note (globe equation and source, shield error, wind sensitivity, wind load), produce the parametric model and drawing sheet, and define the CalRig procedure for the globe and humidity sensors.
+
+## Session 2026-09-25: TRL 3
+
+On 2026-09-25 Amish asked for this batch of repos to go through the usual process with the instruction "you know the drill, nothing gets past TRL 3". He has not reviewed this repo's TRL 2 items one by one, so every item that carried a recommendation is adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for his review. This session ran `/advance-trl3` on that basis and stopped at TRL 3.
+
+### What was done
+
+- `docs/decisions/0001-trl2-review-decisions.md` (HMN-DDR-001 v0.1, status proposed): eight items adopted as recommended for TRL 3, open for Amish's review (D1 to D8), and two left open (O1, O2).
+- `docs/04-calcs/01-sizing.md` (HMN-CAL-001 v0.1) and `docs/04-calcs/sizing.py`: mean radiant temperature, natural wet bulb and WBGT with an error budget, shield radiation error, globe and probe response and calibration, height correction and pole shading, sensor power, payload and storage, wind on the arm and clamp, outdoor temperatures, fit and installation time, mass and cost, with a status for every requirement. The script imports the model, reads the BOM and `project.yaml`, and prints every number the note quotes.
+- `cad/src/model.py`: parametric build123d model (V-saddle and bands, arm with hangers, eight-plate shield, sensor, globe with probe, anemometer, lanyards, harness, FieldNode core envelope from FND-DWG-001 and a wider pole adapter). Exports `cad/step/` and `cad/stl/` for `heatmap-node-assembly`, `sensor-head` and `fieldnode-core-envelope`.
+- `cad/src/sheets.py` and `cad/drawings/HMN-DWG-001.svg`, `.pdf`, `.png`: general arrangement at Rev P1, 1:10, marked "CONCEPT, NOT FOR FABRICATION" and "PRELIMINARY, NOT FOR FABRICATION". HMN-DWG-001 was free because the concept blueprint is HMN-DWG-010.
+- `bom/bom.csv` (12 lines, all priced with a supplier or supplier type) and `bom/bom-notes.md`. Added line 11 (secondary retention lanyards, $3, the TRL 2 safety note asked for them) and line 12 (FieldNode pole adapter, $7).
+- `cad/src/concept_media.py` now builds from the model; all of `media/` re-rendered and every image checked; temporary `_views` folders deleted. The FieldNode core now faces -Y (the FieldNode convention), so the cutaway leaves out the core, adapter, harness, lanyards and clamp; the cut then passes through the shield and globe. The scene is still shifted down by the arm height for the kit's cutter.
+- HMN-PRB-001, HMN-PRC-001 and HMN-REQ-001 revised to v0.3; `README.md` (TRL line, links, key figures, components, safety) and `project.yaml` (`trl: 3`, `trl_target: 3`, evidence list) updated. PDFs rebuilt in `docs/pdf/`.
+
+### Requirement status (HMN-CAL-001, Table 2)
+
+6 not met, 3 at risk, 4 met on paper, 2 met by design.
+
+| ID | Status | Key number |
+| --- | --- | --- |
+| R1 Air temperature | **Not met** | Passive shield about 1.04 °C high in full sun at 1 m/s, 2.09 °C at 0.5 m/s (targets ±0.5 and ±1.0 °C); assumption-sensitive |
+| R4 Wind | **Not met** | Start-up about 0.8 m/s against 0.5 m/s; reading zero at a true 0.5 m/s puts MRT 8.2 °C low |
+| R8 Outdoor survival | **Not met** | FieldNode interior 78.3 °C at 50 °C air, 88.3 °C at 60 °C, against a 70 °C rating (from FND-CAL-001) |
+| R9 Height | **Not met** | Sensors at 2.67 to 2.71 m; pedestrian-height air 0.2 to 0.8 °C warmer in strong sun |
+| R13 Cost | **Not met** | Sensor head $130.00 against $120 |
+| R15 Mass | **Not met** | 4.68 kg against 4.0 kg (FieldNode 2.41 kg, not the 1.7 kg assumed at TRL 2) |
+| R5 WBGT | At risk | Input errors ±0.59 °C RSS, ±0.88 °C worst; +0.9 °C in calm air; Liljegren model error not known |
+| R10 Fit and time | At risk | Fits 60 to 200 mm; 37 min against 30 min |
+| R14 Traceability | At risk | Assembled 150 mm globe does not fit a CalRig bay; the probe fits if calibrated before assembly |
+| R3, R6, R7, R11 | Met on paper | Probe ±0.18 °C, 90 % response about 12 min; 20 B payload, 21.5 kB for 7 days; 0.116 mW; arm factor 13.8, clamp twist factor 2.6 |
+| R2, R12 | Met by design | |
+
+Key numbers: worked example MRT 74.8 °C and WBGT 31.7 °C; sensor head 44.1 N at 35 m/s; about 314 N·m added at the pole base; full node $256.00.
+
+### Decisions recorded (HMN-DDR-001)
+
+Adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for his review: D1 budget covers the sensor head only (R13 redefined; `budget_usd` unchanged at $120); D2 arm at about 2.8 m with a height correction and a later 2.0 versus 2.8 m pilot (R9 target unchanged); D3 150 mm globe; D4 cup anemometer; D5 naturally ventilated shield; D6 WBGT derived by the Liljegren method; D7 FieldNode core with TwinKit or a public LoRaWAN network; D8 open data, environmental channels only. No reworded pitch or problem line was recommended, so `project.yaml` and `README.md` keep the existing wording.
+
+### Still awaiting Amish
+
+1. **O1, first partner and city** for co-design and a pilot. No preference stated.
+2. **O2, data publisher and host.** No recommendation was made.
+3. **New, sensor head budget (R13).** Options: (a) raise `budget_usd` to $130; (b) keep $120 and find $10 of savings (for example a formed sheet saddle or a cheaper harness); (c) count the pole adapter against FieldNode, since it fixes a FieldNode fit limit. Recommendation: (c), with a note to the FieldNode project that its kit needs a large-pole variant; this brings the head to $123, so (b) is still needed for a small saving. Not applied.
+4. **New, shield (R1, R5).** Options: (a) keep the passive shield and relax R1 to ±1.0 °C at 1 m/s or more; (b) add a small fan run before each reading (about 30 mW, error about 0.1 °C, WBGT budget ±0.20 °C); (c) keep passive and flag readings when the wind is under 2 m/s in sun. Recommendation: (b), since it fixes R1 and most of R5 within the FieldNode allowance. Not applied; D5 stands until Amish decides.
+5. **New, mass (R15).** Options: (a) relax R15 to 5 kg; (b) keep 4 kg for the sensor head only (2.03 kg). Recommendation: (b), matching the budget split of D1. Not applied.
+6. **New, R8 range.** R8 asks for +60 °C at the node while HMN-PRB-001 states +50 °C. Recommendation: set R8 to +50 °C and adopt FieldNode's proposed sun shield on HeatMap nodes; even at +50 °C the core exceeds its rating without the shield. Not applied.
+7. **New, arm orientation.** The pole shades the globe for about 0.9 h a day when the arm points east or west. Recommendation: point the arm toward the equator where the street allows, with the FieldNode core below it; check panel shading at the first site. Not applied (the model keeps the arm along +X).
+8. **New, anemometer (R4).** Options: (a) relax R4 to "0.8 to 20 m/s" and use the calm-share byte to flag biased intervals; (b) a lower-threshold anemometer at higher cost. Recommendation: (a) for a first pilot. Not applied.
+
+### Cross-repo consistency
+
+- FieldNode (FND REVIEW, FND-CAL-001): mass 2.41 kg, cost $126.00, 100 mW design allowance, 32 B records, 23.7 s/day at SF9 and 81 N at 35 m/s are used as published. Conflict noted, FieldNode not edited: FieldNode's 50 mm V-blocks seat only on poles up to about 71 mm, while HeatMap Node mounts on 60 to 200 mm street poles; this repo adds its own adapter (line 12). FieldNode's interior temperature (its R3, not met) makes HeatMap R8 not met.
+- CalRig (CLR REVIEW): the reference uncertainty (0.14 °C typical, 0.24 °C at maximum tolerance) is used for R3. CalRig already notes that the 150 mm globe exceeds its 90 x 70 x 50 mm bay; HeatMap Node proposes calibrating the probe before it is fitted, so only the probe needs a bay. No CalRig edit.
+- TwinKit: the 1.02 % worst-case uplink loss is used for R6 latency; no conflict.
+
+### Safety concerns
+
+- Work at height next to traffic and overhead lines; the node adds about 314 N·m at the pole base at 35 m/s, which the pole owner must check.
+- Clamp preload carries the smallest margin (twist factor 2.6 at an assumed 1,000 N per band); installers need a torque figure.
+- Falling parts: stainless lanyards now back the globe and shield fixings.
+- FieldNode LiFePO4 cell (about 19 Wh) overheats at the top of the ambient range without FieldNode's proposed shield; the 45 °C charge lockout must never be defeated.
+- Hot surfaces: the globe reaches about 67 °C at 50 °C air.
+- Misuse of the data as a warning or as a fitness-to-work decision for an individual.
+
+### Gaps and notes
+
+- Citations: the SHT45 accuracy was checked on the Sensirion product page. The globe equation's ISO 7726:1998 attribution and the 0.15 m and 0.95 defaults were checked in the pythermalcomfort documentation; the coefficients 6.3 and 1.4 were not read from the standard itself (the standard and a Wiley paper returned 403 or did not show them). Still not found by WebFetch: NOAA heat mapping campaign figures (heat.gov pages have no counts) and Maricopa County heat death counts (the page links PDFs only). Singapore NEA and Ahmedabad were not retried. The anemometer start-up speed has no source. Nothing was added to the README from these.
+- The shield error, height correction and globe response rest on assumptions that only tests can settle. The wet-bulb model is a simplified stand-in for the Liljegren code.
+- Existing material beyond TRL 3: `build-log/README.md` (scaffold) is present, untouched and not extended. No test, build or firmware material exists.
+
+### Recommended next step
+
+TRL 4 is on hold by Amish's instruction; this repo stops at TRL 3. Amish's review is needed on D1 to D8 and on items 1 to 8 above. For the record only, TRL 4 would need: a bench build of the sensor head on a FieldNode core; a lab test report (TST, `environment: lab`) covering the shield error against an aspirated reference in simulated sun with and without a fan, globe step response, probe calibration in CalRig, anemometer start-up, and clamp preload and slip on 60 and 200 mm poles; and build log entries. None of this has been started.

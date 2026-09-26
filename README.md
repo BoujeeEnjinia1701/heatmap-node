@@ -1,14 +1,14 @@
 # HeatMap Node
 
-![TRL 2](https://img.shields.io/badge/TRL-2%20of%209-0F766E) ![Hardware: CERN-OHL-S-2.0](https://img.shields.io/badge/hardware-CERN--OHL--S--2.0-111827) ![Software: MIT](https://img.shields.io/badge/software-MIT-111827)
+![TRL 3](https://img.shields.io/badge/TRL-3%20of%209-0F766E) ![Hardware: CERN-OHL-S-2.0](https://img.shields.io/badge/hardware-CERN--OHL--S--2.0-111827) ![Software: MIT](https://img.shields.io/badge/software-MIT-111827)
 
-**Area:** Smart Cities · **TRL:** 2 of 9 (concept formulated) · **Prototype budget:** about $120 USD · **Difficulty:** 2 of 5
+**Area:** Smart Cities · **TRL:** 3 of 9 (proof of concept on paper) · **Prototype budget:** $120 USD for the sensor head (FieldNode core budgeted separately) · **Difficulty:** 2 of 5
 
 A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.
 
 ![HeatMap Node concept](media/hero.png)
 
-[Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [Review note](docs/REVIEW.md)
+[Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [General arrangement (PDF)](cad/drawings/HMN-DWG-001.pdf) · [Calculations](docs/04-calcs/01-sizing.md) · [Review note](docs/REVIEW.md)
 
 ## Concept rationale
 
@@ -55,9 +55,9 @@ Heat waves kill more people than most other weather hazards, and cities lack fin
 
 ## Concept
 
-A sensor arm clamps to an existing street pole at about 2.8 m and plugs into a FieldNode core (solar panel, LiFePO4 cell, LoRaWAN radio). It carries a naturally ventilated radiation shield with a temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. Nodes send 15 min means; a server computes mean radiant temperature and WBGT and maps them block by block. Only environmental values leave the node: no camera, microphone or personal data.
+A sensor arm clamps to an existing street pole with its axis at 2.8 m and plugs into a FieldNode core (solar panel, LiFePO4 cell, LoRaWAN radio). It carries a naturally ventilated radiation shield with a temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. Nodes send 15 min means; a server computes mean radiant temperature and WBGT and maps them block by block. Only environmental values leave the node: no camera, microphone or personal data.
 
-First-order estimates (to be checked at TRL 3): sensor draw under 1 mW against the FieldNode allowance of about 115 mW; about 3.3 kg; sensor head about $120 and full node about $246 against the $120 budget. In a worked example, 35 °C air with a 50 °C globe at 1 m/s gives a mean radiant temperature of about 75 °C and WBGT of about 31 °C. Not met: pedestrian measurement height (the arm is at about 2.8 m), wind below about 0.8 m/s, and the budget for the full node. Air temperature and WBGT accuracy in calm, sunny air are at risk.
+TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C, and the sensor input errors add up to ±0.59 °C of WBGT. The sensors draw 0.12 mW against FieldNode's 100 mW allowance, and the arm has a factor of 13.8 on yield in a 35 m/s gust. Not met on paper: air temperature accuracy with the passive shield (about 1 °C high in full sun at 1 m/s), wind below about 0.8 m/s, the FieldNode core's temperature at the top of the ambient range, pedestrian measurement height (sensors at about 2.7 m), the sensor head cost ($130 against $120; the full node with the $126 FieldNode core is $256) and mass (4.68 kg against 4 kg). WBGT accuracy in calm air, installation time and calibration of the assembled globe are at risk.
 
 Full design precis: [docs/02-concept.md](docs/02-concept.md). Requirements: [docs/03-requirements.md](docs/03-requirements.md).
 
@@ -65,13 +65,16 @@ Full design precis: [docs/02-concept.md](docs/02-concept.md). Requirements: [doc
 
 1. FieldNode core (enclosure, 6 W panel, LiFePO4 cell, LoRaWAN radio)
 2. Multi-plate radiation shield, naturally ventilated
-3. Air temperature and humidity sensor (SHT45 class)
+3. Air temperature and humidity sensor (SHT45)
 4. Black globe, 150 mm copper sphere, matte black
 5. Globe temperature probe (NTC at the center)
 6. Cup anemometer
 7. Sensor arm, 25 mm aluminium tube
-8. Arm clamp with stainless bands for 60 to 200 mm poles
+8. Arm clamp: 120° V-saddle with stainless strap bands for 60 to 200 mm poles
 9. Sensor harness with M12 plugs
+10. Hardware and consumables
+11. Secondary retention lanyards for the globe and shield
+12. Pole adapter that seats the FieldNode core on street poles
 
 The working bill of materials is in [bom/bom.csv](bom/bom.csv).
 
@@ -79,7 +82,7 @@ The working bill of materials is in [bom/bom.csv](bom/bom.csv).
 
 > Street furniture and pole mounts must be installed only with the asset owner's permission, by trained crews, with fall protection and traffic management as local rules require. Keep clear of overhead power lines and live parts of lighting poles.
 >
-> The FieldNode core contains a LiFePO4 cell: fuse it, charge only within the maker's temperature limits and never install a damaged or wet cell. The black globe and arm get hot in the sun (over 60 °C, estimate), and the anemometer cups spin.
+> The FieldNode core contains a LiFePO4 cell: fuse it, charge only within the maker's temperature limits and never install a damaged or wet cell. The black globe and arm get hot in the sun (about 67 °C at 50 °C air, HMN-CAL-001), and the anemometer cups spin. The globe and shield are backed by stainless lanyards so that a failed fixing does not drop them onto the street.
 >
 > HeatMap Node data is for planning and research, not an official heat warning.
 
