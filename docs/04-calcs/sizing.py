@@ -1,10 +1,10 @@
-"""HeatMap Node sizing calculations, HMN-CAL-001 v0.1 (TRL 3).
+"""HeatMap Node sizing calculations, HMN-CAL-001 v0.2 (TRL 3, decisions of HMN-DDR-002 applied).
 
 Run from the repo root:  python docs/04-calcs/sizing.py
 Prints every number quoted in docs/04-calcs/01-sizing.md. Each line carries a tag such as
 [A3] that the note cites. Geometry comes from cad/src/model.py (PARAMS, derived and the part
 solids), the parts cost from bom/bom.csv and the budget from project.yaml. FieldNode figures
-are quoted from FND-CAL-001 v0.1 in the FieldNode repo. First-principles estimates for a
+are quoted from FND-CAL-001 v0.2 in the FieldNode repo (hot-climate node with its sun shield). First-principles estimates for a
 paper proof of concept; not a substitute for tests.
 """
 import csv
@@ -36,9 +36,11 @@ WICK_D = 0.007          # m, notional natural wet-bulb wick used by the model (a
 EPS_W = 0.95
 V_START = 0.8           # m/s anemometer start-up (typical low-cost class; unverified)
 FN_ALLOW_W = 0.100      # W FieldNode design sensor allowance (FND-CAL-001 [A5]); 0.115 W published
-FN_MASS = 2.41          # kg FieldNode core (FND-CAL-001 [F1])
-FN_COST = 126.00        # USD FieldNode core (FND-CAL-001 [F2])
-FN_WIND_N = 81.0        # N FieldNode wind load at 35 m/s (FND-CAL-001, section D)
+FN_MASS = 2.55          # kg FieldNode hot-climate node with the sun shield (FND-CAL-001 v0.2, R14)
+FN_COST = 134.00        # USD FieldNode base $126.00 plus the $8.00 sun shield, BOM line 14 (FND-CAL-001 v0.2, R16)
+FN_WIND_N = 52.2 + 36.3  # N panel plus shielded enclosure at 35 m/s (FND-CAL-001 v0.2 [D1], [D3b])
+FN_RISE_SHIELD = 52.2 - 45.0   # K interior over ambient, dusty, worst sun position, with the shield (FND-CAL-001 v0.2, R2)
+FN_RISE_BARE = 73.3 - 45.0     # K the same without the shield (FND-CAL-001 v0.1)
 FN_REC_B = 32           # bytes per stored reading on FieldNode (FND-CAL-001 assumptions)
 FN_AIRTIME_SF9 = 23.7   # s/day for a 20 B uplink every 15 min at SF9 (FND-CAL-001 [B1])
 LOSS = 0.0102           # TwinKit uplink loss at SF9, 50 nodes at 5 min (TWK-CAL-001, worst case)
@@ -107,7 +109,7 @@ def wbgt(ta, rh, tg, v):
     return 0.7 * tw + 0.2 * tg + 0.1 * ta, tw, tm
 
 
-print("HeatMap Node sizing, HMN-CAL-001 v0.1")
+print("HeatMap Node sizing, HMN-CAL-001 v0.2")
 print(f"Geometry from cad/src/model.py: arm at {P['arm_z']:.0f} mm, globe {P['globe_d']:.0f} mm, "
       f"shield {P['n_plates']} x {P['shield_d']:.0f} mm plates, pole {P['pole_od']} mm")
 
@@ -153,7 +155,7 @@ def budget(shield_bias):
 # shield bias from section C is needed; computed below and the budget printed there
 
 # ------------------------------------------------------------------ C. Shield radiation error (R1)
-print("\nC. Radiation error of the naturally ventilated shield")
+print("\nC. Radiation error of the shield, passive and fan-aspirated")
 ALPHA_P = 0.25          # solar absorptance of aged white ASA plates (assumed)
 G = 1000.0              # W/m2 global irradiance on a horizontal surface, clear midday
 ELEV = 60.0             # deg sun elevation
@@ -177,19 +179,37 @@ def shield_err(v, k=K_VENT):
 
 
 errs = {v: shield_err(v) for v in (0.5, 1.0, 2.0, 3.0)}
-tag("C2", "air temperature error in full sun: " + ", ".join(f"{e:.2f} C at {v:.1f} m/s" for v, e in errs.items()))
+tag("C2", "passive (fan off) air temperature error in full sun: " + ", ".join(f"{e:.2f} C at {v:.1f} m/s" for v, e in errs.items()))
 v_05 = ETA * q_abs / (RHO * a_flow * K_VENT * CP * 0.5)
 tag("C3", f"error falls to 0.5 C at {v_05:.1f} m/s; with half the assumed ventilation (k = {K_VENT / 2}) the error at 1 m/s is {shield_err(1.0, K_VENT / 2):.2f} C")
-FAN_V, FAN_W, FAN_DUTY = 3.0, 0.30, 0.10
-e_fan = ETA * q_abs / (RHO * a_flow * FAN_V * CP)
-tag("C4", f"option: fan-aspirated at {FAN_V:.0f} m/s inside the stack: {e_fan:.2f} C; fan {FAN_W:.2f} W at {FAN_DUTY * 100:.0f} % duty = {FAN_W * FAN_DUTY * 1000:.0f} mW")
+# Aspiration fan (HMN-DDR-002): 60 x 60 x 15 mm 5 V class fan drawing air up the center of the stack
+FAN_W = 0.90            # W at 5 V (180 mA, typical of the class; assumed)
+FAN_FREE = 6.6e-3       # m3/s free-air flow (about 14 CFM, typical of the class; assumed)
+FAN_SHARE = 0.60        # share of the free-air flow delivered through the plate stack (assumed)
+RAIL_EFF = 0.85         # FieldNode 5 V switched rail efficiency from the cell (assumed)
+FAN_ON, T_CYCLE = 6.0, 180.0   # s the fan runs before each air reading; s between readings (firmware rule)
+TAU_TH = 2.0            # s time constant of the T and RH sensor with its membrane cap (assumed, to be checked)
+q_fan = FAN_FREE * FAN_SHARE
+v_col = q_fan / (math.pi * (P["top_hole"] / 2000) ** 2)
+e_fan_ss = ETA * q_abs / (RHO * q_fan * CP)
+e_fan = e_fan_ss + (errs[1.0] - e_fan_ss) * math.exp(-FAN_ON / TAU_TH)
+p_fan = FAN_W / RAIL_EFF * FAN_ON / T_CYCLE
+tag("C4", f"fan {FAN_W:.2f} W, {q_fan * 1000:.1f} L/s through the stack ({FAN_SHARE * 100:.0f} % of {FAN_FREE * 1000:.1f} L/s free air), "
+          f"{v_col:.1f} m/s up the {P['top_hole']:.0f} mm column: steady error {e_fan_ss:.2f} C; after {FAN_ON:.0f} s from the passive "
+          f"1 m/s state (sensor time constant {TAU_TH:.0f} s) {e_fan:.2f} C, independent of wind")
+tag("C5", f"fan energy: {FAN_ON:.0f} s every {T_CYCLE:.0f} s ({FAN_ON / T_CYCLE * 100:.1f} % duty), {FAN_W / RAIL_EFF:.2f} W from the cell "
+          f"at {RAIL_EFF * 100:.0f} % rail efficiency: {p_fan * 1000:.1f} mW average; {86400 / T_CYCLE:.0f} aspirated air readings a day, "
+          f"{900 / T_CYCLE:.0f} per 15 min mean")
+FAN_ERR_TARGET = 0.5
+q_need = ETA * q_abs / (RHO * CP * (FAN_ERR_TARGET - (errs[1.0] - e_fan_ss) * math.exp(-FAN_ON / TAU_TH)))
+tag("C6", f"the {FAN_ERR_TARGET} C target of R1 needs at least {q_need * 1000:.1f} L/s through the stack "
+          f"({q_need / FAN_FREE * 100:.0f} % of the assumed free-air flow)")
 
-terms, rss, worst = budget(errs[1.0])
-tag("B4", "WBGT error budget at the example with the shield error at 1 m/s: " + ", ".join(f"{k_} {t:.2f}" for k_, t in terms.items())
+terms, rss, worst = budget(e_fan)
+tag("B4", "WBGT error budget at the example with the fan-aspirated shield: " + ", ".join(f"{k_} {t:.2f}" for k_, t in terms.items())
     + f"; RSS {rss:.2f} C, worst case {worst:.2f} C (model error of the Liljegren method not included)")
-terms_f, rss_f, worst_f = budget(e_fan)
-tag("B5", f"same with a fan-aspirated shield: RSS {rss_f:.2f} C, worst case {worst_f:.2f} C; with wind known to 0.2 m/s and a fan: "
-          f"RSS {math.sqrt(sum(t * t for k_, t in terms_f.items() if k_ != 'v') + (abs(sens['v']) * 0.2) ** 2):.2f} C")
+terms_p, rss_p, worst_p = budget(errs[1.0])
+tag("B5", f"for comparison, passive shield at 1 m/s: RSS {rss_p:.2f} C, worst case {worst_p:.2f} C")
 w_zero = wbgt(TA, RH, TG, 0.0)[0]
 w_half = wbgt(TA, RH, TG, 0.5)[0]
 tag("B6", f"calm air: true wind 0.5 m/s read as 0: WBGT {w_zero:.1f} C instead of {w_half:.1f} C ({w_zero - w_half:+.1f} C)")
@@ -267,8 +287,54 @@ for u_ref in (1.0, 3.0):
     tag("E1", f"wind {u_ref:.0f} m/s at the sensor: u* {us:.2f} m/s, L {L:.1f} m; air at pedestrian height minus air at {z_s:.2f} m: " + ", ".join(out))
 dx = P["globe_x"] / 1000
 width = 2 * math.degrees(math.atan(D["r"] / 1000 / dx))
-tag("E2", f"pole seen from the globe: {width:.1f} deg wide; with the arm pointing east or west the sun passes behind it for about "
-          f"{width / 15:.1f} h a day (15 deg/h mean azimuth rate, assumed)")
+tag("E2", f"pole seen from the globe: {width:.1f} deg wide; with the arm pointing east or west the sun would pass behind it for about "
+          f"{width / 15:.1f} h a day (15 deg/h mean azimuth rate, assumed); with the arm pointing toward the equator (HMN-DDR-002) "
+          f"the pole is on the poleward side, which the sun reaches outside the polar regions only in the tropics, near noon and high in the sky")
+
+
+def panel_shade(elev, azim, n=24):
+    """Share of the FieldNode panel (world axes, facing +X) in the shadow of the shield with its cowl,
+    the globe and the arm, for a sun at elevation elev and azimuth azim from +X (deg)."""
+    e, a = math.radians(elev), math.radians(azim)
+    d = (math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e))
+    t = math.radians(P["fn_tilt"])
+    w, sl = P["fn_panel"][0], P["fn_panel"][1]
+    gc = (P["globe_x"], 0.0, D["globe_zc"]); gr = P["globe_d"] / 2
+    sxc, srr, sz0, sz1 = P["shield_x"], P["shield_d"] / 2, D["shield_bot"], D["cowl_top"]
+    box_lo = (D["arm_x0"], -P["arm_w"] / 2, D["arm_bot"]); box_hi = (D["arm_x1"], P["arm_w"] / 2, D["arm_top"])
+    hit = 0
+    for i in range(n):
+        for j in range(n):
+            s_ = (j + 0.5) / n * sl - sl / 2
+            pt = (D["panel_cx_w"] + s_ * math.cos(t), (i + 0.5) / n * w - w / 2, D["panel_cz"] - s_ * math.sin(t))
+            oc = [pt[k] - gc[k] for k in range(3)]
+            bq = sum(oc[k] * d[k] for k in range(3)); cq = sum(o * o for o in oc) - gr * gr
+            if bq * bq - cq > 0 and -bq + math.sqrt(bq * bq - cq) > 0:
+                hit += 1; continue
+            ox, oy = pt[0] - sxc, pt[1]
+            A = d[0] ** 2 + d[1] ** 2; B = 2 * (ox * d[0] + oy * d[1]); C = ox * ox + oy * oy - srr * srr
+            disc = B * B - 4 * A * C
+            if A > 0 and disc > 0:
+                t1, t2 = (-B - math.sqrt(disc)) / (2 * A), (-B + math.sqrt(disc)) / (2 * A)
+                z1, z2 = pt[2] + t1 * d[2], pt[2] + t2 * d[2]
+                if t2 > 0 and max(min(z1, z2), sz0) <= min(max(z1, z2), sz1):
+                    hit += 1; continue
+            tmin, tmax = 0.0, 1e9
+            for k in range(3):
+                if abs(d[k]) < 1e-12:
+                    if not box_lo[k] <= pt[k] <= box_hi[k]:
+                        tmin, tmax = 1, 0
+                else:
+                    ta, tb = (box_lo[k] - pt[k]) / d[k], (box_hi[k] - pt[k]) / d[k]
+                    tmin, tmax = max(tmin, min(ta, tb)), min(tmax, max(ta, tb))
+            if tmin <= tmax:
+                hit += 1
+    return hit / n / n
+
+
+shade = {(el, az_): panel_shade(el, az_) for el in (30, 45, 60, 75) for az_ in (0, 30, 60)}
+tag("E3", "share of the FieldNode panel shaded by the shield, cowl, globe and arm, core below the arm, both facing the equator: "
+    + "; ".join(f"sun {el} deg high, {az_} deg off the arm azimuth {shade[(el, az_)] * 100:.0f} %" for el, az_ in shade))
 
 # ------------------------------------------------------------------ F. Power (R7)
 print("\nF. Sensor power")
@@ -276,10 +342,12 @@ e_sht = 3.3 * 0.4e-3 * 8.3e-3          # J per high-repeatability reading (assum
 e_ntc = VREF * i_ntc * 0.010
 p_reed = 3.3 / 100e3 * 3.3             # W if the reed rests closed (worst case)
 p_idle = 3.3 * 2e-6                    # W sleep of the T and RH sensor and pull-ups (assumed)
-p_avg = (e_sht + e_ntc) * 1440 / 86400 + p_reed + p_idle
-tag("F1", f"per reading: T/RH {e_sht * 1e6:.1f} uJ, NTC {e_ntc * 1e6:.1f} uJ; 1,440 readings a day; reed pull-up worst case {p_reed * 1000:.3f} mW")
-tag("F2", f"average sensor load {p_avg * 1000:.3f} mW, {p_avg / FN_ALLOW_W * 100:.2f} % of the {FN_ALLOW_W * 1000:.0f} mW FieldNode design allowance; "
-          f"with the fan option {(p_avg + FAN_W * FAN_DUTY) * 1000:.0f} mW")
+n_th = 86400 / T_CYCLE
+p_avg = e_sht * n_th / 86400 + e_ntc * 1440 / 86400 + p_reed + p_idle
+tag("F1", f"per reading: T/RH {e_sht * 1e6:.1f} uJ ({n_th:.0f} aspirated readings a day), NTC {e_ntc * 1e6:.1f} uJ (1,440 a day); "
+          f"reed pull-up worst case {p_reed * 1000:.3f} mW")
+tag("F2", f"sensor load without the fan {p_avg * 1000:.3f} mW; with the fan {(p_avg + p_fan) * 1000:.1f} mW, "
+          f"{(p_avg + p_fan) / FN_ALLOW_W * 100:.0f} % of the {FN_ALLOW_W * 1000:.0f} mW FieldNode design allowance")
 
 # ------------------------------------------------------------------ G. Data (R6)
 print("\nG. Payload, airtime and storage")
@@ -290,6 +358,9 @@ nbytes = sum(b_ for _, b_ in FIELDS)
 tag("G1", f"payload {nbytes} B: " + ", ".join(f"{n} {b_}" for n, b_ in FIELDS))
 store = 96 * 7 * FN_REC_B
 tag("G2", f"96 uplinks a day, {FN_AIRTIME_SF9} s/day at SF9 (FND-CAL-001); 7 days stored at {FN_REC_B} B per record = {store / 1000:.1f} kB")
+CALM_FLAG = 0.20
+tag("G4", f"calm flag rule (HMN-DDR-002): the server marks MRT and WBGT as biased high in calm air for any interval whose calm share "
+          f"(time below the {V_START} m/s start-up) is {CALM_FLAG * 100:.0f} % or more, that is {CALM_FLAG * 15:.0f} min of 15")
 tag("G3", f"latency: sent at the end of each 15 min mean, at the gateway within about 16 min; share needing the next uplink (loss {LOSS * 100:.2f} %) "
           f"arrives at about 31 min")
 
@@ -303,6 +374,8 @@ elems = [  # name, CdA (m2), x from the pole axis (m), z offset from the arm axi
     ("shield", 1.2 * P["shield_d"] / 1000 * stack, P["shield_x"] / 1000, (D["shield_zc"] - P["arm_z"]) / 1000),
     ("anemometer", 1.4 * 2 * math.pi * cup_r ** 2 + 1.2 * P["mast_d"] / 1000 * P["mast_h"] / 1000 + 1.2 * 0.044 * 0.040,
      D["anemo_x"] / 1000, (D["hub_z"] - P["arm_z"]) / 1000),
+    ("fan cowl", 1.2 * P["cowl"][0] / 1000 * P["cowl"][1] / 1000, P["shield_x"] / 1000,
+     (D["shield_top"] + P["cowl"][1] / 2 - P["arm_z"]) / 1000),
 ]
 arm_cda = 2.0 * P["arm_w"] / 1000 * P["arm_len"] / 1000
 F35 = {n: q35 * c for n, c, _, _ in elems}
@@ -349,12 +422,13 @@ m_globe = m_shell + m_boss + 0.010                          # paint and gland
 m_probe, m_th, m_anemo = 0.010, 0.020, 0.30
 m_harness = 2 * 1.5 * 0.08 + 0.03
 m_lanyard, m_hw = 0.02, 0.05
+m_fan = 0.035 + (P["cowl"][0] ** 2 * 3.0 + 4 * 8 * 8 * (P["cowl"][1] - 3)) * 1e-9 * 1070   # fan (assumed 35 g) plus ASA cowl
 m_adapter = vol("adapter") * 1070 * 0.9 + 2 * 0.013 * 0.0007 * (math.pi * P["pole_range"][1] / 1000 + 0.15) * 7900
-head = {"arm": m_arm, "clamp": m_clamp, "shield": m_shield, "T/RH sensor": m_th, "globe": m_globe, "probe": m_probe,
+head = {"arm": m_arm, "clamp": m_clamp, "shield": m_shield, "fan and cowl": m_fan, "T/RH sensor": m_th, "globe": m_globe, "probe": m_probe,
         "anemometer": m_anemo, "harness": m_harness, "lanyards": m_lanyard, "hardware": m_hw}
 m_head = sum(head.values())
-arm_side = m_arm + m_shield + m_th + m_globe + m_probe + m_anemo + m_lanyard
-x_cg = (m_arm * (x0 + P["arm_len"] / 2) + m_shield * P["shield_x"] + m_th * P["shield_x"] + (m_globe + m_probe) * P["globe_x"]
+arm_side = m_arm + m_shield + m_fan + m_th + m_globe + m_probe + m_anemo + m_lanyard
+x_cg = (m_arm * (x0 + P["arm_len"] / 2) + (m_shield + m_fan) * P["shield_x"] + m_th * P["shield_x"] + (m_globe + m_probe) * P["globe_x"]
         + m_anemo * D["anemo_x"] + m_lanyard * P["globe_x"]) / arm_side / 1000
 PRELOAD, MU = 1000.0, 0.4          # N per band, friction coefficient (FND-CAL-001 assumptions)
 fric = MU * PRELOAD * 2
@@ -367,15 +441,15 @@ tag("H5", f"clamp: wind twists the arm about the pole with {t_wind:.1f} N m agai
           f"slip down {arm_side * 9.81:.0f} N against {fric:.0f} N")
 f_head = sum(F35.values())
 m_pole = f_head * P["arm_z"] / 1000 + FN_WIND_N * (P["fn_z0"] + 200) / 1000
-tag("H6", f"added load on the pole at 35 m/s: head {f_head:.0f} N plus FieldNode {FN_WIND_N:.0f} N; about {m_pole:.0f} N m at the pole base (for the pole owner)")
+tag("H6", f"added load on the pole at 35 m/s: head {f_head:.0f} N plus FieldNode with its shield {FN_WIND_N:.0f} N; about {m_pole:.0f} N m at the pole base (for the pole owner)")
 
 # ------------------------------------------------------------------ I. Outdoor temperatures (R8)
 print("\nI. Outdoor temperatures")
 tg_hot = tg_from_mrt(80.0, 50.0, 0.3)
 tag("I1", f"globe at 50 C air, MRT 80 C, 0.3 m/s: {tg_hot:.1f} C; NTC epoxy bead and SHT45 are rated well above this (125 C class, assumed for the NTC)")
-fn_rise = 73.3 - 45.0
-tag("I2", f"FieldNode interior rise, dusty and worst sun position, no shield: {fn_rise:.1f} K (FND-CAL-001); at 50 C air {50 + fn_rise:.1f} C, "
-          f"at 60 C air {60 + fn_rise:.1f} C against a 70 C electronics rating")
+tag("I2", f"FieldNode interior rise, dusty and worst sun position: {FN_RISE_SHIELD:.1f} K with the sun shield (FND-CAL-001 v0.2), "
+          f"{FN_RISE_BARE:.1f} K without; at 50 C air {50 + FN_RISE_SHIELD:.1f} C with the shield ({50 + FN_RISE_BARE:.1f} C without) "
+          f"against a 70 C electronics rating")
 
 # ------------------------------------------------------------------ J. Fit to poles and installation (R10)
 print("\nJ. Fit and installation")
@@ -383,26 +457,28 @@ half = math.radians(P["v_angle"] / 2)
 for d in (P["pole_range"][0], P["pole_od"], P["pole_range"][1]):
     tag("J1", f"pole {d:.0f} mm: V-saddle contacts at +/- {d / 2 * math.cos(half):.0f} mm (saddle half-width {P['saddle'][0] / 2:.0f} mm); "
               f"band length {math.pi * d + 150:.0f} mm")
-TASKS = [("FieldNode core with the pole adapter", 15), ("arm clamp", 6), ("arm with shield, globe and anemometer, pre-assembled", 4),
+TASKS = [("FieldNode core with the pole adapter", 15), ("arm clamp", 6), ("arm with shield, fan, globe and anemometer, pre-assembled", 4),
          ("harness and cable ties", 5), ("lanyards", 2), ("commissioning and photo record", 5)]
 tag("J2", "tasks (min): " + ", ".join(f"{n} {t}" for n, t in TASKS) + f"; total {sum(t for _, t in TASKS)} min for two people working in turn from one lift")
 
 # ------------------------------------------------------------------ K. Mass (R15)
 print("\nK. Mass")
 tag("K1", "sensor head: " + ", ".join(f"{n} {m * 1000:.0f} g" for n, m in head.items()) + f"; head {m_head:.2f} kg")
-tag("K2", f"FieldNode core {FN_MASS:.2f} kg (FND-CAL-001) plus pole adapter {m_adapter:.2f} kg: complete node {m_head + FN_MASS + m_adapter:.2f} kg (target 4.0 kg)")
+tag("K2", f"sensor head {m_head:.2f} kg against the 4.0 kg of R15 (sensor head only, HMN-DDR-002); for information, FieldNode core with "
+          f"its sun shield {FN_MASS:.2f} kg (FND-CAL-001 v0.2) plus pole adapter {m_adapter:.2f} kg: complete node {m_head + FN_MASS + m_adapter:.2f} kg")
 tag("K3", f"largest part other than the arm: FieldNode panel {P['fn_panel'][0]:.0f} mm; anemometer across the cups {2 * P['cup_arm'] + P['cup_d']:.0f} mm (limit 300 mm)")
 
 # ------------------------------------------------------------------ L. Cost (R13)
 print("\nL. Cost")
 rows = list(csv.DictReader((ROOT / "bom" / "bom.csv").open()))
 tot = sum(float(r["qty"]) * float(r["unit_cost_usd"]) for r in rows)
-core = sum(float(r["qty"]) * float(r["unit_cost_usd"]) for r in rows if r["item"].startswith("1 "))
+core = sum(float(r["qty"]) * float(r["unit_cost_usd"]) for r in rows if r["item"].split()[0] in ("1", "12"))
 budget_usd = None
 for line in (ROOT / "project.yaml").read_text().splitlines():
     if line.startswith("budget_usd:"):
         budget_usd = float(line.split(":")[1].split("#")[0])
 head_cost = tot - core
-tag("L1", f"BOM {len(rows)} lines; sensor head (lines 2 to {len(rows)}) ${head_cost:.2f}; FieldNode core ${core:.2f}; full node ${tot:.2f}")
+tag("L1", f"BOM {len(rows)} lines; sensor head (lines 2 to 11 and 13) ${head_cost:.2f}; FieldNode core with its sun shield and the "
+          f"pole adapter (lines 1 and 12, counted against FieldNode) ${core:.2f}; full node ${tot:.2f}")
 tag("L2", f"budget_usd ${budget_usd:.0f}: sensor head {'within' if head_cost <= budget_usd else 'over'} by ${abs(budget_usd - head_cost):.2f}; "
           f"full node over by ${tot - budget_usd:.2f}")

@@ -3,7 +3,7 @@ doc_id: HMN-PRC-001
 title: HeatMap Node design precis
 project: HeatMap Node
 doc_type: Design precis
-version: "0.3"
+version: "0.4"
 status: Draft
 date: '2026-09-25'
 author: Amish Chadha
@@ -21,25 +21,29 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: "TRL 3 update: design choices adopted per HMN-DDR-001; numbers checked against HMN-CAL-001; lanyards and FieldNode pole adapter added; parametric model and HMN-DWG-001"
+- version: "0.4"
+  date: '2026-09-25'
+  author: Amish Chadha
+  change: Recommendations accepted by Amish (DDR-002)
 ---
 
 # HeatMap Node design precis
 
 ## Summary
 
-HeatMap Node is a sensor head that clamps to an existing street pole and plugs into the lab's FieldNode core. A horizontal arm holds a naturally ventilated radiation shield with an air temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. From these four readings a server computes mean radiant temperature and an estimated wet bulb globe temperature (WBGT), the heat stress index defined in [ISO 7243:2017](https://www.iso.org/standard/67188.html), using the method of [Liljegren et al. (2008)](https://doi.org/10.1080/15459620802310770). Tens of nodes across a neighborhood give block-by-block heat stress maps, day and night, all season.
+HeatMap Node is a sensor head that clamps to an existing street pole and plugs into the lab's FieldNode core. A horizontal arm, pointing toward the equator, holds a fan-aspirated radiation shield with an air temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. From these four readings a server computes mean radiant temperature and an estimated wet bulb globe temperature (WBGT), the heat stress index defined in [ISO 7243:2017](https://www.iso.org/standard/67188.html), using the method of [Liljegren et al. (2008)](https://doi.org/10.1080/15459620802310770). Tens of nodes across a neighborhood give block-by-block heat stress maps, day and night, all season.
 
-The TRL 3 calculations (HMN-CAL-001) confirm the heat stress method and the power, data and wind cases, but six requirements are not met on paper: the passive shield reads about 1 °C high in full sun at 1 m/s (R1), the anemometer does not start below about 0.8 m/s (R4), the FieldNode core overheats at the top of the ambient range (R8), the sensors sit at about 2.7 m rather than pedestrian height (R9), the sensor head costs $130 against its $120 budget (R13), and the complete node weighs 4.68 kg against 4 kg (R15). The sensors draw 0.12 mW. The design choices below are adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for his review (HMN-DDR-001). The parametric model is `cad/src/model.py` and the general arrangement is drawing HMN-DWG-001.
+The TRL 3 calculations (HMN-CAL-001 v0.2) confirm the heat stress method and the power, data and wind cases. With the decisions Amish accepted on 2026-09-25 (HMN-DDR-001 and HMN-DDR-002) applied, two requirements are not met on paper: the sensors sit at about 2.7 m rather than pedestrian height (R9), and the sensor head costs $127 against its $120 budget (R13), because the aspiration fan adds $7. The fan cuts the shield's radiation error from about 1.0 °C at 1 m/s to 0.43 °C at any wind speed, and the sensors and fan draw 35 mW. All design choices below are decided by Amish. The parametric model is `cad/src/model.py` and the general arrangement is drawing HMN-DWG-001 Rev P2.
 
 ![Hero render](../media/hero.png)
 
-*Figure 1. HeatMap Node on a 114 mm street pole, arm axis at 2.8 m, FieldNode core below it facing the equator, with a 1.75 m person for scale. The pole is not supplied. CONCEPT, NOT FOR FABRICATION.*
+*Figure 1. HeatMap Node on a 114 mm street pole, arm axis at 2.8 m pointing toward the equator, FieldNode core with its sun shield below the arm and facing the same way, with a 1.75 m person for scale. The pole is not supplied. CONCEPT, NOT FOR FABRICATION.*
 
 ## How it works
 
-1. **Air temperature and humidity.** A digital sensor sits inside a stack of eight white plates that block direct and reflected sun while letting wind through. No fan is fitted, to save power and moving parts.
+1. **Air temperature and humidity.** A digital sensor sits inside a stack of eight white plates that block direct and reflected sun while letting wind through. Every 3 min a small fan on the top plate runs for 6 s and draws air up past the sensor, which is read at the end of the run, so the reading does not depend on the wind (HMN-DDR-002).
 2. **Radiant heat.** A thin copper sphere painted matte black reaches a balance between absorbed sun and long-wave radiation from hot walls and pavement and convective loss to the air. A thermistor at its center reads this globe temperature.
-3. **Wind.** A cup anemometer gives the wind speed needed to separate radiant from convective heat at the globe.
+3. **Wind.** A cup anemometer gives the wind speed needed to separate radiant from convective heat at the globe. Below its start-up speed of about 0.8 m/s it reads zero; the node reports the share of each interval spent below start-up, and the server flags MRT and WBGT for any interval where that share is 20 % or more.
 4. **Logging and radio.** The FieldNode core samples every 60 s, averages over 15 min, stores the means in flash and sends about 20 bytes by LoRaWAN to a gateway such as TwinKit. Missing packets are resent from flash.
 5. **Heat stress and mapping.** A server script computes mean radiant temperature and WBGT and places each node on a block-level map, published as open data. Only environmental values leave the node.
 
@@ -57,17 +61,18 @@ Numbers match the exploded view (Figure 4) and `bom/bom.csv`. Line 10 (hardware)
 
 | # | Component | Choice (TRL 3) | Notes |
 | --- | --- | --- | --- |
-| 1 | FieldNode core | 150 x 90 x 200 mm IP65 enclosure, 6 W panel as sun hood at 40°, 3.2 V 6 Ah LiFePO4 cell, MPPT board, STM32WL-class LoRaWAN module, two M12 ports (FND-DWG-001) | Shared lab component, 2.41 kg, $126.00 (FND-CAL-001); faces the equator |
-| 2 | Radiation shield | Eight 110 mm white plates at 15 mm pitch, printed UV-stable ASA | Naturally ventilated |
+| 1 | FieldNode core | 150 x 90 x 200 mm IP65 enclosure with FieldNode's hot-climate sun shield, 6 W 9 V class panel as sun hood at 40°, 3.2 V 6 Ah LiFePO4 cell, MPPT board, STM32WL-class LoRaWAN module, two M12 ports (FND-DWG-001) | Shared lab component, 2.55 kg, $134.00 with the shield (FND-CAL-001 v0.2); below the arm, facing the equator |
+| 2 | Radiation shield | Eight 110 mm white plates at 15 mm pitch, printed UV-stable ASA; 56 mm hole in the top plate under the fan | Aspirated by line 13 |
 | 3 | Temperature and humidity sensor | SHT45 digital sensor (typical ±0.1 °C, ±1.0 %RH) with PTFE membrane cap | I2C over the M12 port |
 | 4 | Black globe | 150 mm copper sphere, about 0.4 mm wall, matte black | Standard globe size, so published globe equations apply |
 | 5 | Globe probe | 10 k NTC bead at the globe center | Calibrated in CalRig |
 | 6 | Cup anemometer | Three-cup, pulse output, on a short mast at the arm tip | Counted by the FieldNode low-power timer |
 | 7 | Sensor arm | 25 mm square aluminium tube, about 520 mm | Keeps globe and shield about 250 to 450 mm clear of the pole |
-| 8 | Arm clamp | 120° V-saddle 110 x 180 x 30 mm and two 13 mm stainless strap bands for 60 to 200 mm poles | No drilling |
+| 8 | Arm clamp | 120° V-saddle 110 x 180 x 30 mm formed from 3 mm aluminium sheet, and two 13 mm stainless strap bands for 60 to 200 mm poles | No drilling; formed sheet saves about $3 and 0.17 kg |
 | 9 | Sensor harness | Two M12 5-pin leads along the pole and arm | Plug-in at both ends |
 | 11 | Secondary retention | Two 1.5 mm stainless lanyards, globe boss and shield top to the arm | Added at TRL 3 |
-| 12 | FieldNode pole adapter | Two 120° V-blocks and strap bands in place of FieldNode's 50 mm V-blocks | Added at TRL 3; FieldNode's kit seats only on poles up to about 71 mm |
+| 12 | FieldNode pole adapter | Two 120° V-blocks and strap bands in place of FieldNode's 50 mm V-blocks | Added at TRL 3; FieldNode's kit seats only on poles up to about 71 mm; counted against FieldNode |
+| 13 | Aspiration fan and cowl | 60 x 60 x 15 mm 5 V fan (about 0.9 W) in a printed ASA cowl 76 x 76 x 30 mm on the top plate, exhausting sideways under a solid lid | Added under HMN-DDR-002; 6 s every 3 min from FieldNode's switched 5 V rail |
 
 ![Exploded view](../media/exploded.png)
 
@@ -89,11 +94,11 @@ This is the forced-convection form of the ISO 7726:1998 method, as implemented i
 
 **Worked example (assumptions: 35 °C air, 40 %RH, 50 °C globe, 1 m/s wind, *D* = 0.15 m, *ε* = 0.95).** MRT is 74.8 °C. The psychrometric wet bulb is 24.2 °C; a wick energy balance puts the natural wet bulb in sun at 26.0 °C, so WBGT is 0.7 × 26.0 + 0.2 × 50 + 0.1 × 35 = 31.7 °C (HMN-CAL-001, section B). Air temperature alone (35 °C) says nothing about the sun load that the globe captures.
 
-**Sensitivity.** In the same example, a wind reading of 0.5 m/s instead of 1 m/s lowers MRT to 66.9 °C, and 1.5 m/s raises it to 80.7 °C. A 1 °C air temperature error moves MRT by 1.5 °C. Below the anemometer's start-up speed (about 0.8 m/s) the node reads zero wind, which at a true 0.5 m/s puts MRT 8.2 °C low and WBGT 0.9 °C high. The input errors add up to ±0.59 °C of WBGT, dominated by the shield's radiation error on air temperature (about 1.0 °C at 1 m/s, R1 not met). A fan-aspirated shield would cut the budget to ±0.20 °C for about 30 mW; it is proposed in the review note.
+**Sensitivity.** In the same example, a wind reading of 0.5 m/s instead of 1 m/s lowers MRT to 66.9 °C, and 1.5 m/s raises it to 80.7 °C. A 1 °C air temperature error moves MRT by 1.5 °C. Below the anemometer's start-up speed (about 0.8 m/s) the node reads zero wind, which at a true 0.5 m/s puts MRT 8.2 °C low and WBGT 0.9 °C high. With the fan-aspirated shield the input errors add up to ±0.30 °C of WBGT (±0.59 °C with the passive shield at 1 m/s); air temperature is still the largest term, at 0.43 °C of shield error (HMN-CAL-001, sections B and C).
 
 ### Power
 
-The temperature and humidity sensor, sampled once a minute, takes about 11 µJ per reading and the switched thermistor divider about 8 µJ. The anemometer pulses are counted by a low-power timer; with a 100 kΩ pull-up the worst case (reed contact resting closed) is 0.109 mW. The total sensor load is 0.116 mW, 0.12 % of the 100 mW design allowance in FND-CAL-001. HeatMap Node does not need a larger panel or cell.
+The temperature and humidity sensor, read every 3 min at the end of a fan run, takes about 11 µJ per reading and the switched thermistor divider, read every minute, about 8 µJ. The anemometer pulses are counted by a low-power timer; with a 100 kΩ pull-up the worst case (reed contact resting closed) is 0.109 mW. The sensors draw 0.116 mW. The fan (0.9 W for 6 s every 180 s, through an 85 % efficient 5 V rail) adds 35.3 mW, for a total of 35.4 mW, 35 % of the 100 mW design allowance in FND-CAL-001. With the core below the arm and both facing the equator, the shield, globe and arm shade 16 to 44 % of the FieldNode panel near noon (HMN-CAL-001, section E), which this budget does not include; see the review note.
 
 ### Radio
 
@@ -101,25 +106,26 @@ At the 15 min default, each node sends 96 uplinks of 20 bytes a day (eleven fiel
 
 ### Wind load and mass
 
-At a 35 m/s gust (750 Pa) the sensor head carries 44.1 N (globe 6.6 N, shield 10.7 N, anemometer 7.2 N, arm 19.5 N) and the FieldNode core 81 N (FND-CAL-001). The arm root sees 13.7 N·m and 10.5 MPa, a factor of 13.8 on yield; the tip deflects 0.29 mm at 20 m/s. The clamp's band friction resists the twist with a factor of 2.6 at the assumed 1,000 N preload. The node adds about 314 N·m at the pole base, which the pole owner should check.
+At a 35 m/s gust (750 Pa) the sensor head carries 46.1 N (globe 6.6 N, shield 10.7 N, fan cowl 2.1 N, anemometer 7.2 N, arm 19.5 N) and the FieldNode core with its sun shield 88 N (FND-CAL-001 v0.2). The arm root sees 14.1 N·m and 10.8 MPa, a factor of 13.4 on yield; the tip deflects 0.29 mm at 20 m/s. The clamp's band friction resists the twist with a factor of 2.5 at the assumed 1,000 N preload. The node adds about 337 N·m at the pole base, which the pole owner should check.
 
-Mass is 4.68 kg, over the 4 kg of R15: sensor head 2.03 kg (clamp 0.57 kg, arm 0.28 kg, globe 0.28 kg, anemometer 0.30 kg, harness 0.27 kg, shield 0.24 kg and small parts), FieldNode core 2.41 kg (FND-CAL-001; 1.7 kg was assumed at TRL 2) and pole adapter 0.24 kg.
+The sensor head weighs 1.91 kg (clamp 0.40 kg, globe 0.28 kg, anemometer 0.30 kg, arm 0.27 kg, harness 0.27 kg, shield 0.23 kg, fan and cowl 0.06 kg and small parts), within the 4 kg of R15, which now applies to the sensor head. With the FieldNode core and shield (2.55 kg) and the pole adapter (0.24 kg) the complete node weighs 4.70 kg.
 
 ### Cost
 
-The sensor head (BOM lines 2 to 12) costs $130.00 and the full node, with the $126.00 FieldNode core, $256.00. Under HMN-DDR-001 D1 the $120 budget covers the sensor head only, which is $10 over because of the lanyards and pole adapter added at TRL 3 (R13 not met). See the review note for the options.
+The sensor head (BOM lines 2 to 11 and 13) costs $127.00. The FieldNode core with its sun shield ($134.00) and the pole adapter ($7.00) are counted against FieldNode, and the full node costs $268.00. Against the $120 budget the head is $7 over, the cost of the fan and cowl (R13 not met). See the review note for the options.
 
 ## Key design choices
 
-Adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for his review (HMN-DDR-001).
+Decided by Amish, 2026-09-25 (HMN-DDR-001 and HMN-DDR-002).
 
-1. **Build on FieldNode** rather than a separate power and radio design, with a TwinKit gateway or a public LoRaWAN network (D7). Reuses a shared core, costed in its own repo at $126.00 (D1).
+1. **Build on FieldNode** rather than a separate power and radio design, with a TwinKit gateway or a public LoRaWAN network (D7). Reuses a shared core, costed in its own repo (D1), fitted with FieldNode's hot-climate sun shield so that it stays within its rating at +50 °C.
 2. **Standard 150 mm globe** rather than a 38 to 40 mm table tennis ball globe. The standard size matches published globe equations and the Liljegren model; the small globe is cheaper and faster to respond but more sensitive to wind and less comparable.
 3. **Derived WBGT** rather than a wetted natural wet-bulb sensor, which needs a water reservoir and wick care at every node.
-4. **Fit an anemometer** rather than use wind from the nearest official station, because street wind differs strongly from airport wind and MRT is sensitive to it.
-5. **Naturally ventilated shield** rather than a fan-aspirated shield. A fan would cut radiation error but adds power, noise and a wear part.
-6. **Arm at about 2.8 m** to deter tampering (D2), with a correction to pedestrian height (HMN-CAL-001 estimates 0.2 to 0.8 °C in strong sun) and a later pilot comparing 2.0 and 2.8 m, rather than at 1.5 to 2 m where the data is most representative (R9 not met).
-7. **Open data, environmental channels only** (R12, D8). Who publishes and hosts the data remains open.
+4. **Fit a cup anemometer** rather than use wind from the nearest official station, because street wind differs strongly from airport wind and MRT is sensitive to it. Its range starts at about 0.8 m/s, and calm intervals are flagged rather than corrected.
+5. **Fan-aspirated shield**, run 6 s before each reading every 3 min, rather than a naturally ventilated shield, which reads about 1 °C high in full sun at 1 m/s. The fan adds 35 mW, a wear part and $7.
+6. **Arm at about 2.8 m** to deter tampering (D2), with a correction to pedestrian height (HMN-CAL-001 estimates 0.2 to 0.8 °C in strong sun) and a later pilot comparing 2.0 and 2.8 m (TRL 4, on hold), rather than at 1.5 to 2 m where the data is most representative (R9 not met).
+7. **Arm toward the equator**, with the FieldNode core below it, so the pole does not shade the globe near midday. HMN-CAL-001 finds that the sensor head then shades part of the FieldNode panel; a response is awaiting Amish.
+8. **Open data, environmental channels only** (R12, D8). Who publishes and hosts the data remains open.
 
 ## Safety
 
@@ -129,16 +135,16 @@ Adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for 
 >
 > **Safety:** The globe and the shield hang from the arm on fixings backed by stainless lanyards, so a failed fixing does not drop a part onto the street. Check the fixings and lanyards at every visit.
 >
-> **Safety:** The black globe can reach about 67 °C at 50 °C air in full sun (HMN-CAL-001), and the arm runs hot too. Let them cool or wear gloves before handling. Cut edges on the aluminium arm and copper sphere must be deburred, and anemometer cups spin; stop them before working near them.
+> **Safety:** The black globe can reach about 67 °C at 50 °C air in full sun (HMN-CAL-001), and the arm runs hot too. Let them cool or wear gloves before handling. Cut edges on the aluminium arm, formed saddle and copper sphere must be deburred. The anemometer cups spin and the shield fan starts on its own every 3 min; stop the cups and unplug the sensor lead before working near them.
 >
 > **Safety:** HeatMap Node data is for planning and research. It is not an official heat warning, and it must not be used to decide whether a particular person is safe to work or exercise without the responsible agency's guidance.
 
 ## Open questions
 
-- [ ] Budget: the sensor head is $10 over its $120 budget after the TRL 3 additions (see the review note).
+- [ ] Budget: the sensor head is $7 over its $120 budget with the fan (see the review note).
+- [ ] Panel shading: the sensor head shades 16 to 44 % of the FieldNode panel near noon with the arm toward the equator; where should the core go (see the review note)?
 - [ ] Mounting height: what do pole owners allow? The calculated difference (0.2 to 0.8 °C) needs a field comparison.
-- [ ] Shield: HMN-CAL-001 puts the passive shield's error at about 1 °C at 1 m/s; is the 30 mW fan option worth it?
-- [ ] Which anemometer meets R4 at the low end at this price?
+- [ ] Fan: does a chosen 60 mm fan deliver the 3.4 L/s through the stack that ±0.5 °C needs, and how long does it last outdoors?
 - [ ] Globe response: HMN-CAL-001 estimates about 12 min to 90 %, faster than the TRL 2 estimate; a step test is needed.
 - [ ] How often must nodes be recalibrated in CalRig, and how are dust and fading of the black paint handled?
 - [ ] Data model and hosting: TwinKit, CityTwin or a public platform, and who publishes it?

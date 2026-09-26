@@ -1,4 +1,4 @@
-"""HeatMap Node general arrangement sheet HMN-DWG-001, Rev P1 (TRL 3).
+"""HeatMap Node general arrangement sheet HMN-DWG-001, Rev P2 (TRL 3, HMN-DDR-002 applied).
 
 Run from the repo root:  python cad/src/sheets.py
 Writes cad/drawings/HMN-DWG-001.svg, .pdf and .png from the parametric model in
@@ -97,11 +97,12 @@ def main():
     work = ROOT / "cad" / "drawings" / "_views"
     views = safe_project_views(asm, work)
     bb = asm.bounding_box()
-    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P1",
+    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P2",
               author="Amish Chadha", date=DATE, scale=0.1, theme="technical",
-              material="Aluminium arm and saddle; ASA shield; copper globe; bought-in parts per bom/bom.csv. "
+              material="Al arm and formed sheet saddle; ASA shield and cowl; copper globe; bought-in parts per bom/bom.csv. "
                        "PRELIMINARY, NOT FOR FABRICATION",
-              revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC")])
+              revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
+                         ("P2", "HMN-DDR-002: fan, formed saddle, arm to equator, FieldNode shield", DATE, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)
@@ -127,7 +128,7 @@ def main():
                     (D["cup_z"], f"{D['cup_z']:.0f} cup center"),
                     (P["fn_z0"], f"{P['fn_z0']:.0f} FieldNode underside")):
         x_from = X(D["anemo_x"]) if zz == D["cup_z"] else (X(P["globe_x"]) if zz == D["globe_zc"] else
-                  (X(P["shield_x"]) if zz == D["shield_zc"] else (X(0) if zz == az else X(-P["fn_enc"][0] / 2))))
+                  (X(P["shield_x"]) if zz == D["shield_zc"] else (X(0) if zz == az else X(-D["enc_yc"] + P["fn_enc"][1] / 2))))
         L.append(ext(x_from, Z(zz), xl + 1, Z(zz)))
         L.append(_t(xl, Z(zz) + 0.8, f"EL {lab.upper()}", 2.1, 400, INK, "end"))
     L += dim_h(X(P["globe_x"] - P["globe_d"] / 2), X(P["globe_x"] + P["globe_d"] / 2), Z(D["globe_bot"]) + 5, f"D{P['globe_d']:.0f}")
@@ -138,16 +139,13 @@ def main():
     x, y, w, h = c["top"]
     Xt = lambda mx: x + (mx - bb.min.X) * k
     Yt = lambda my: y + h - (my - bb.min.Y) * k
-    L += leader(Xt(0), Yt(D["panel_front_y"]), Xt(-200) , Yt(D["panel_front_y"]) + 6, "PANEL FACES -Y (EQUATOR)", "end")
+    L += leader(Xt(D["panel_front_x_w"]), Yt(0), Xt(-120), Yt(bb.min.Y) + 4, "ARM AND PANEL FACE +X (EQUATOR)", "end")
     L += dim_h(Xt(D["anemo_x"] - P["cup_arm"] - P["cup_d"] / 2), Xt(D["reach"]), Yt(bb.max.Y) - 3, f"{D['reach']:.0f} reach")
 
     # right view (from +X): Y to the right... +Y appears to the right
-    x, y, w, h = c["right"]
-    Yr = lambda my: x + (my - bb.min.Y) * k
-    Zr = lambda mz: y + h - (mz - bb.min.Z) * k
-    import math
-    z_low = D["panel_cz"] - P["fn_panel"][1] / 2 * math.sin(math.radians(P["fn_tilt"]))
-    L.append(_t(Yr(D["panel_front_y"]), Zr(z_low) + 5, f"PANEL TILT {P['fn_tilt']:.0f} DEG", 2.0, 400, INK, "middle"))
+    x, y, w, h = c["front"]
+    L += leader(X(D["panel_front_x_w"]), Z(D["panel_low_z"]), X(D["panel_front_x_w"]) + 10, Z(D["panel_low_z"]) + 7,
+                f"FIELDNODE PANEL, TILT {P['fn_tilt']:.0f} DEG")
 
     s._layers += L
     s.add_svg(views["iso"], 276, 32, 140, 100, label="Isometric view", sublabel="Not to scale")
@@ -157,11 +155,12 @@ def main():
         f"Arm {P['arm_w']:.0f} x {P['arm_w']:.0f} x {P['arm_t']:.0f} Al, {P['arm_len']:.0f} long, axis at {az:.0f}",
         f"Saddle {P['v_angle']:.0f} deg V, {sw:.0f} x {sh:.0f} x {sd:.0f}; two 13 mm strap bands",
         f"Shield {P['n_plates']} plates D{P['shield_d']:.0f} at {P['plate_pitch']:.0f} pitch; sensor at stack center",
+        f"Fan {P['fan'][0]:.0f} x {P['fan'][1]:.0f} x {P['fan'][2]:.0f} 5 V in {P['cowl'][0]:.0f} sq cowl on the top plate",
         f"Globe D{P['globe_d']:.0f} copper, matte black; NTC bead at center",
         f"Anemometer mast {P['mast_h']:.0f} above the arm; cup circle D{2 * P['cup_arm'] + P['cup_d']:.0f}",
-        f"FieldNode core per FND-DWG-001 on 120 deg V adapter",
+        "FieldNode core with sun shield per FND-DWG-001, below the arm, on 120 deg V adapter",
         "Lanyards: globe and shield to arm (secondary retention)",
-        "Third-angle; front view from -Y; pole on the Z axis",
+        "Third-angle; front view from -Y; pole on the Z axis; +X to the equator",
     ], x=276, y=150, width=146)
     out = s.save(ROOT / "cad" / "drawings" / "HMN-DWG-001")
     shutil.rmtree(work, ignore_errors=True)

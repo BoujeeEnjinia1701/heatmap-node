@@ -3,7 +3,7 @@ doc_id: HMN-PRB-001
 title: HeatMap Node problem statement
 project: HeatMap Node
 doc_type: Problem statement
-version: "0.3"
+version: "0.4"
 status: Draft
 date: '2026-09-25'
 author: Amish Chadha
@@ -21,6 +21,10 @@ revisions:
   date: '2026-09-25'
   author: Amish Chadha
   change: "TRL 3 update: budget scope and mounting height per HMN-DDR-001; operating environment aligned with HMN-CAL-001"
+- version: "0.4"
+  date: '2026-09-25'
+  author: Amish Chadha
+  change: Recommendations accepted by Amish (DDR-002)
 ---
 
 # HeatMap Node problem statement
@@ -51,14 +55,14 @@ Three gaps keep cities from acting on this at block scale:
 
 ### Operating environment
 
-- **Mounting:** existing street light, sign or utility poles (60 to 200 mm in diameter), with the asset owner's permission, with the sensor arm at about 2.8 m above the pavement (HMN-DDR-001 D2). HMN-CAL-001 estimates that on a sunny afternoon the air at pedestrian height is 0.2 to 0.8 °C warmer than at the sensors.
-- **Climate:** air temperature from about -20 to +50 °C at the node, full sun, rain, dust and salt air near coasts; black globe temperatures can exceed 60 °C in full sun (estimate).
+- **Mounting:** existing street light, sign or utility poles (60 to 200 mm in diameter), with the asset owner's permission, with the sensor arm at about 2.8 m above the pavement (HMN-DDR-001 D2), pointing toward the equator where the street allows (HMN-DDR-002). HMN-CAL-001 estimates that on a sunny afternoon the air at pedestrian height is 0.2 to 0.8 °C warmer than at the sensors.
+- **Climate:** air temperature from about -20 to +50 °C at the node (R8, restated to match under HMN-DDR-002), full sun, rain, dust and salt air near coasts; black globe temperatures can exceed 60 °C in full sun (estimate).
 - **Connectivity:** LoRaWAN coverage from a community gateway (for example the lab's TwinKit gateway) or a public network; no mains power at the node.
 - **Density:** tens of nodes per neighborhood, so each must be cheap, quick to fit and self-powered.
 
 ## Constraints
 
-- Garage-buildable prototype, $120 USD or less for the HeatMap-specific sensor head. The FieldNode core is a shared lab component costed and budgeted in its own repo (HMN-DDR-001 D1, adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for his review). HMN-CAL-001 prices the head at $130, over this limit.
+- Garage-buildable prototype, $120 USD or less for the HeatMap-specific sensor head. The FieldNode core, its sun shield and the pole adapter that seats it on street poles are counted against FieldNode, a shared lab component costed and budgeted in its own repo (HMN-DDR-001 D1 and HMN-DDR-002, decided by Amish on 2026-09-25). HMN-CAL-001 v0.2 prices the head at $127 with the aspiration fan, over this limit.
 - Built on the FieldNode core (enclosure, solar, battery, LoRaWAN radio) so that no power or radio design is repeated.
 - Privacy: environmental measurements only. No camera, microphone or device tracking.
 - No drilling of poles; fit with stainless band clamps.

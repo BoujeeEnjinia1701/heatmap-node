@@ -32,15 +32,15 @@ Requirements not met: **R4** (anemometer start-up about 0.8 m/s, above the 0.5 m
 
 ### Proposed, awaiting Amish
 
-1. **Budget (R13).** Options: (a) count the FieldNode core as a shared component budgeted in its own repo, and hold HeatMap Node's $120 to the sensor head (about $120 now); (b) raise `budget_usd` to about $250 for a full node; (c) cut the head to about $70 by dropping the anemometer and using a table tennis ball globe, at a large accuracy cost. Recommendation: (a), with R13 reworded to "sensor head $120 or less". `project.yaml` is unchanged.
-2. **Measurement height (R9).** Options: (a) arm at about 2.8 m with a height correction studied at TRL 3; (b) arm at 2.0 m with tamper-resistant fixings; (c) 1.5 to 2.0 m only on private or school poles. Recommendation: (a) for city poles, with a short pilot comparing 2.0 and 2.8 m.
-3. **Globe size.** 150 mm standard globe (recommended) or a 38 to 40 mm painted table tennis ball globe (cheaper, faster, less comparable).
-4. **Wind.** Fit a cup anemometer (recommended), use a sonic anemometer (better calm-air response, several times the cost) or borrow wind from the nearest official station (cheapest, least accurate).
-5. **Shield.** Naturally ventilated (recommended at TRL 2) or a small fan-aspirated shield powered by FieldNode.
-6. **Derived WBGT** by the Liljegren method rather than a wetted natural wet-bulb sensor.
-7. **Platform.** Build on FieldNode and send data through TwinKit or a public LoRaWAN network.
-8. **Data policy.** Open data under an open license, environmental channels only; publisher and host to be agreed with the first partner.
-9. **First partner and city** for co-design and a pilot network.
+1. **Budget (R13).** Options: (a) count the FieldNode core as a shared component budgeted in its own repo, and hold HeatMap Node's $120 to the sensor head (about $120 now); (b) raise `budget_usd` to about $250 for a full node; (c) cut the head to about $70 by dropping the anemometer and using a table tennis ball globe, at a large accuracy cost. Recommendation: (a), with R13 reworded to "sensor head $120 or less". `project.yaml` is unchanged. **Decided by Amish, 2026-09-25: go with recommendation.**
+2. **Measurement height (R9).** Options: (a) arm at about 2.8 m with a height correction studied at TRL 3; (b) arm at 2.0 m with tamper-resistant fixings; (c) 1.5 to 2.0 m only on private or school poles. Recommendation: (a) for city poles, with a short pilot comparing 2.0 and 2.8 m. **Decided by Amish, 2026-09-25: go with recommendation.**
+3. **Globe size.** 150 mm standard globe (recommended) or a 38 to 40 mm painted table tennis ball globe (cheaper, faster, less comparable). **Decided by Amish, 2026-09-25: go with recommendation.**
+4. **Wind.** Fit a cup anemometer (recommended), use a sonic anemometer (better calm-air response, several times the cost) or borrow wind from the nearest official station (cheapest, least accurate). **Decided by Amish, 2026-09-25: go with recommendation.**
+5. **Shield.** Naturally ventilated (recommended at TRL 2) or a small fan-aspirated shield powered by FieldNode. **Decided by Amish, 2026-09-25: go with recommendation.** Superseded by the fan decision (item 4 of the TRL 3 session); see HMN-DDR-002.
+6. **Derived WBGT** by the Liljegren method rather than a wetted natural wet-bulb sensor. **Decided by Amish, 2026-09-25: go with recommendation.**
+7. **Platform.** Build on FieldNode and send data through TwinKit or a public LoRaWAN network. **Decided by Amish, 2026-09-25: go with recommendation.**
+8. **Data policy.** Open data under an open license, environmental channels only; publisher and host to be agreed with the first partner. **Decided by Amish, 2026-09-25: go with recommendation.**
+9. **First partner and city** for co-design and a pilot network. No recommendation: still Proposed, awaiting Amish.
 
 ### Safety concerns
 
@@ -97,18 +97,18 @@ Key numbers: worked example MRT 74.8 °C and WBGT 31.7 °C; sensor head 44.1 N a
 
 ### Decisions recorded (HMN-DDR-001)
 
-Adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for his review: D1 budget covers the sensor head only (R13 redefined; `budget_usd` unchanged at $120); D2 arm at about 2.8 m with a height correction and a later 2.0 versus 2.8 m pilot (R9 target unchanged); D3 150 mm globe; D4 cup anemometer; D5 naturally ventilated shield; D6 WBGT derived by the Liljegren method; D7 FieldNode core with TwinKit or a public LoRaWAN network; D8 open data, environmental channels only. No reworded pitch or problem line was recommended, so `project.yaml` and `README.md` keep the existing wording.
+Adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for his review (now decided by Amish, 2026-09-25: go with recommendation; see HMN-DDR-002): D1 budget covers the sensor head only (R13 redefined; `budget_usd` unchanged at $120); D2 arm at about 2.8 m with a height correction and a later 2.0 versus 2.8 m pilot (R9 target unchanged); D3 150 mm globe; D4 cup anemometer; D5 naturally ventilated shield; D6 WBGT derived by the Liljegren method; D7 FieldNode core with TwinKit or a public LoRaWAN network; D8 open data, environmental channels only. No reworded pitch or problem line was recommended, so `project.yaml` and `README.md` keep the existing wording.
 
 ### Still awaiting Amish
 
 1. **O1, first partner and city** for co-design and a pilot. No preference stated.
 2. **O2, data publisher and host.** No recommendation was made.
-3. **New, sensor head budget (R13).** Options: (a) raise `budget_usd` to $130; (b) keep $120 and find $10 of savings (for example a formed sheet saddle or a cheaper harness); (c) count the pole adapter against FieldNode, since it fixes a FieldNode fit limit. Recommendation: (c), with a note to the FieldNode project that its kit needs a large-pole variant; this brings the head to $123, so (b) is still needed for a small saving. Not applied.
-4. **New, shield (R1, R5).** Options: (a) keep the passive shield and relax R1 to ±1.0 °C at 1 m/s or more; (b) add a small fan run before each reading (about 30 mW, error about 0.1 °C, WBGT budget ±0.20 °C); (c) keep passive and flag readings when the wind is under 2 m/s in sun. Recommendation: (b), since it fixes R1 and most of R5 within the FieldNode allowance. Not applied; D5 stands until Amish decides.
-5. **New, mass (R15).** Options: (a) relax R15 to 5 kg; (b) keep 4 kg for the sensor head only (2.03 kg). Recommendation: (b), matching the budget split of D1. Not applied.
-6. **New, R8 range.** R8 asks for +60 °C at the node while HMN-PRB-001 states +50 °C. Recommendation: set R8 to +50 °C and adopt FieldNode's proposed sun shield on HeatMap nodes; even at +50 °C the core exceeds its rating without the shield. Not applied.
-7. **New, arm orientation.** The pole shades the globe for about 0.9 h a day when the arm points east or west. Recommendation: point the arm toward the equator where the street allows, with the FieldNode core below it; check panel shading at the first site. Not applied (the model keeps the arm along +X).
-8. **New, anemometer (R4).** Options: (a) relax R4 to "0.8 to 20 m/s" and use the calm-share byte to flag biased intervals; (b) a lower-threshold anemometer at higher cost. Recommendation: (a) for a first pilot. Not applied.
+3. **New, sensor head budget (R13).** Options: (a) raise `budget_usd` to $130; (b) keep $120 and find $10 of savings (for example a formed sheet saddle or a cheaper harness); (c) count the pole adapter against FieldNode, since it fixes a FieldNode fit limit. Recommendation: (c), with a note to the FieldNode project that its kit needs a large-pole variant; this brings the head to $123, so (b) is still needed for a small saving. Not applied. **Decided by Amish, 2026-09-25: go with recommendation.** Applied in the 2026-09-25 recommendations-accepted session below.
+4. **New, shield (R1, R5).** Options: (a) keep the passive shield and relax R1 to ±1.0 °C at 1 m/s or more; (b) add a small fan run before each reading (about 30 mW, error about 0.1 °C, WBGT budget ±0.20 °C); (c) keep passive and flag readings when the wind is under 2 m/s in sun. Recommendation: (b), since it fixes R1 and most of R5 within the FieldNode allowance. Not applied; D5 stands until Amish decides. **Decided by Amish, 2026-09-25: go with recommendation.** Applied in the 2026-09-25 recommendations-accepted session below.
+5. **New, mass (R15).** Options: (a) relax R15 to 5 kg; (b) keep 4 kg for the sensor head only (2.03 kg). Recommendation: (b), matching the budget split of D1. Not applied. **Decided by Amish, 2026-09-25: go with recommendation.** Applied in the 2026-09-25 recommendations-accepted session below.
+6. **New, R8 range.** R8 asks for +60 °C at the node while HMN-PRB-001 states +50 °C. Recommendation: set R8 to +50 °C and adopt FieldNode's proposed sun shield on HeatMap nodes; even at +50 °C the core exceeds its rating without the shield. Not applied. **Decided by Amish, 2026-09-25: go with recommendation.** Applied in the 2026-09-25 recommendations-accepted session below.
+7. **New, arm orientation.** The pole shades the globe for about 0.9 h a day when the arm points east or west. Recommendation: point the arm toward the equator where the street allows, with the FieldNode core below it; check panel shading at the first site. Not applied (the model keeps the arm along +X). **Decided by Amish, 2026-09-25: go with recommendation.** Applied in the 2026-09-25 recommendations-accepted session below.
+8. **New, anemometer (R4).** Options: (a) relax R4 to "0.8 to 20 m/s" and use the calm-share byte to flag biased intervals; (b) a lower-threshold anemometer at higher cost. Recommendation: (a) for a first pilot. Not applied. **Decided by Amish, 2026-09-25: go with recommendation.** Applied in the 2026-09-25 recommendations-accepted session below.
 
 ### Cross-repo consistency
 
@@ -134,3 +134,65 @@ Adopted as recommended for TRL 3 under Amish's 2026-09-25 instruction, open for 
 ### Recommended next step
 
 TRL 4 is on hold by Amish's instruction; this repo stops at TRL 3. Amish's review is needed on D1 to D8 and on items 1 to 8 above. For the record only, TRL 4 would need: a bench build of the sensor head on a FieldNode core; a lab test report (TST, `environment: lab`) covering the shield error against an aspirated reference in simulated sun with and without a fan, globe step response, probe calibration in CalRig, anemometer start-up, and clamp preload and slip on 60 and 200 mm poles; and build log entries. None of this has been started.
+
+## Session 2026-09-25: recommendations accepted
+
+On 2026-09-25 Amish wrote: "i accept all your recommendations, go with them across all repos." Every item in this note and in HMN-DDR-001 that carried a recommendation is now decided by Amish, 2026-09-25: go with recommendation. The decisions and their effects are recorded in `docs/decisions/0002-recommendations-accepted.md` (HMN-DDR-002 v0.1). Fourteen items were decided: D1 to D8 of HMN-DDR-001 and six TRL 3 items (N1 to N6).
+
+### Decisions applied and what changed
+
+| Decision | Before | After |
+| --- | --- | --- |
+| D1 to D8 (HMN-DDR-001) | Adopted for TRL 3, open for review | Decided; D5 (passive shield) superseded by N2; D2 pilot on hold (TRL 4) |
+| N1 Budget: adapter counted against FieldNode, plus savings | Head $130.00 (adapter $7 inside); saddle 5 mm wall, $8.00, 0.57 kg | Adapter on the FieldNode side; formed 3 mm sheet saddle $5.00, 0.40 kg; head $120.00 before the fan. `budget_usd` stays $120 |
+| N2 Fan-aspirated shield | Passive: 1.04 °C at 1 m/s, 2.09 °C at 0.5 m/s; WBGT input budget ±0.59 °C; sensors 0.116 mW | 60 mm 5 V fan and cowl (line 13, $7.00), 6 s every 3 min: 0.43 °C at any wind; ±0.30 °C; 35.4 mW (35 % of allowance). Sensors 25 mm lower (2.67 to 2.69 m) |
+| N3 R15 sensor head only | Complete node 4.68 kg against 4 kg, not met | Head 1.91 kg against 4 kg, met on paper (complete node 4.70 kg for information) |
+| N4 R8 +50 °C and FieldNode sun shield | R8 at +60 °C; core 78.3 °C at 50 °C air; FieldNode $126.00, 2.41 kg | R8 at +50 °C; core 57.2 °C at 50 °C air; FieldNode $134.00, 2.55 kg; shield in the model |
+| N5 Arm toward the equator, core below | Arm along +X, core on the -Y face; pole shades the globe about 0.9 h a day | Arm and core both face +X (the equator); pole shading of the globe near midday removed; new panel shading found (N8) |
+| N6 R4 0.8 to 20 m/s, calm flag | R4 0.5 to 20 m/s, not met | R4 restated; server flags an interval when 20 % or more is below start-up; met on paper |
+
+Files changed: `bom/bom.csv` (lines 1, 8, 12 respecified, line 13 added) and `bom/bom-notes.md`; `cad/src/model.py` (formed saddle, fan and cowl, top plate hole, lower shield, FieldNode turned under the arm with its sun shield, harness reroute) and re-exported STEP and STL; `cad/src/sheets.py` and HMN-DWG-001 at Rev P2; `cad/src/concept_media.py` key figures, flow label and exploded offsets, all of `media/` re-rendered (hero, blueprint, exploded, cutaway and flow checked; `_views` folders deleted); `docs/04-calcs/sizing.py` and HMN-CAL-001 v0.2; HMN-REQ-001 v0.4, HMN-PRC-001 v0.4, HMN-PRB-001 v0.4, HMN-DDR-001 v0.2, new HMN-DDR-002 v0.1; `README.md` (budget line, Concept, components, safety, and a rewritten "What sparked the idea"); `project.yaml` evidence list. All PDFs rebuilt, and every generated file now shows designmolecule.com.
+
+### Requirement status (HMN-CAL-001 v0.2, Table 2)
+
+2 not met, 3 at risk, 8 met on paper, 2 met by design (before: 6, 3, 4, 2).
+
+| ID | Status | Key number |
+| --- | --- | --- |
+| R9 Height | **Not met** | Sensors at 2.67 to 2.69 m; pedestrian-height air 0.2 to 0.8 °C warmer in strong sun |
+| R13 Cost | **Not met** | Sensor head $127.00 against $120 (fan and cowl $7) |
+| R5 WBGT | At risk | ±0.30 °C RSS input budget; Liljegren model error unknown |
+| R10 Fit and time | At risk | 37 min against 30 min |
+| R14 Traceability | At risk | Assembled globe does not fit a CalRig bay |
+| R1, R3, R4, R6, R7, R8, R11, R15 | Met on paper | R1 0.43 °C (fan flow assumed); R7 35.4 mW (panel shading not included); R8 57.2 °C; R11 factors 13.4 and 2.5; R15 1.91 kg |
+| R2, R12 | Met by design | |
+
+### Still awaiting Amish
+
+1. **O1, first partner and city.** No preference stated, no recommendation.
+2. **O2, data publisher and host.** No recommendation.
+3. **N7, sensor head budget after the fan.** $127.00 against $120. Options: (a) raise `budget_usd` to $130; (b) keep $120 and cut $7 more (for example a cheaper anemometer class, at the cost of R4); (c) count the fan against a separate accuracy option. Recommendation: (a). Not applied.
+4. **N8, FieldNode panel shading.** With the core below the arm and both facing the equator, the shield, cowl, globe and arm shade 44, 34, 27 and 16 % of the panel with the sun along the arm at 30, 45, 60 and 75° elevation (HMN-CAL-001 [E3]). Options: (a) mount the core above the arm; (b) keep it below and accept the loss pending FieldNode's bypass diode layout; (c) move the core to the pole's east or west face. Recommendation: (a). Not applied.
+
+### Cross-repo actions (other repos not edited)
+
+- **FieldNode:** add a large-pole kit variant (V-blocks for 60 to 200 mm poles) so that HeatMap's line 12 adapter, now counted against FieldNode, becomes a FieldNode part (N1).
+- **FieldNode:** HeatMap nodes use the hot-climate build with the sun shield ($134.00, 2.55 kg), as FieldNode's own cross-repo note expected (N4).
+- **FieldNode:** the port assignment assumed here (5 V switched rail on the temperature and humidity port powering the fan and sensor) should be considered when FieldNode's pinout (its O2) is set; and FieldNode's energy budget should allow for partial panel shading if N8 option (b) is chosen.
+- **CalRig:** unchanged; the probe is still calibrated before it is fitted to the globe.
+
+### Safety
+
+- The shield fan starts on its own every 3 min; unplug the sensor lead before working on the shield.
+- The FieldNode sun shield keeps the cell within its charge limits at hot sites and must not be left off.
+- The node now adds about 337 N·m at the pole base at 35 m/s; the pole owner must check it. The clamp twist factor is 2.5, the smallest margin; installers need a torque figure, and the formed sheet saddle's stiffness is to be checked at detail design.
+- Work at height, hot surfaces and data misuse notes are unchanged.
+
+### TRL 4
+
+TRL 4 remains on hold by Amish's instruction. `trl` and `trl_target` stay at 3. The 2.0 versus 2.8 m pilot, the site check of panel shading, choice and testing of the fan, a side-by-side shield test, firmware for the fan timing and calm flag, and any purchasing are decided where applicable but not started.
+
+### Notes
+
+- The fan figures (0.9 W, 6.6 L/s free air, 60 % delivered, 2 s sensor time constant) are class values and assumptions, not a chosen part. The earlier estimate of about 30 mW for 0.1 °C assumed 3 m/s across the whole 60 cm² stack section, which a 0.3 W fan cannot deliver; the revised figures give 35 mW for 0.43 °C.
+- "What sparked the idea" now cites the 1950s US Marine Corps heat flags and the 1957 origin of WBGT (HPRC; Budd, 2008). The Budd abstract was read through the publisher's page; the Parris Island location given in secondary sources was left out because no primary source for it could be opened.

@@ -1,16 +1,20 @@
 """HeatMap Node parametric model (build123d), TRL 3, massing-plus level of detail.
+Revised under HMN-DDR-002 (2026-09-25): aspiration fan and cowl on the shield, formed sheet
+saddle, arm pointing toward the equator with the FieldNode core below it, and FieldNode's
+hot-climate sun shield on the core.
 
 Run from the repo root:  python cad/src/model.py
 Exports STEP and STL into cad/step and cad/stl:
     heatmap-node-assembly.step / .stl   sensor head and FieldNode core as fitted to the pole
     sensor-head.step / .stl             arm, clamp, shield, sensors, globe, anemometer, harness
-    fieldnode-core-envelope.step / .stl FieldNode envelope with the HeatMap pole adapter
+    fieldnode-core-envelope.step / .stl FieldNode envelope, sun shield and the HeatMap pole adapter
 
 Axes: the existing street pole is the Z axis (x = y = 0), Z is up with the pavement at
-z = 0. The sensor arm reaches out along +X. The FieldNode core hangs on the pole's -Y face,
-which is meant to face the equator, so its panel tilts toward -Y (the FieldNode convention).
-The FieldNode core is an envelope taken from FND-DWG-001 Rev P1 (enclosure, back plate,
-panel, bracket, whip); its internals are in the FieldNode repo. Main dimensions and
+z = 0. The sensor arm reaches out along +X, which points toward the equator (HMN-DDR-002).
+The FieldNode core is built in its own convention (panel facing -Y) and turned by fn_azimuth
+about the pole, so it hangs on the pole's +X face below the arm with its panel facing +X.
+The FieldNode core is an envelope taken from FND-DWG-001 (enclosure, back plate, panel,
+bracket, whip, hot-climate sun shield); its internals are in the FieldNode repo. Main dimensions and
 interfaces only; not fabrication detail and not for fabrication. The same PARAMS feed
 docs/04-calcs/sizing.py (HMN-CAL-001), the drawing HMN-DWG-001 (cad/src/sheets.py) and the
 concept media (cad/src/concept_media.py).
@@ -23,12 +27,16 @@ PARAMS = {
     # site interface: existing round pole (design case 114.3 mm OD, 4 in nominal); fit range
     "pole_od": 114.3, "pole_range": (60.0, 200.0), "pole_h": 3400.0,   # shown height only
     # 8 arm clamp: 120 deg V saddle, width (Y) x height (Z) x depth (X); two strap bands
-    "saddle": (110.0, 180.0, 30.0), "saddle_wall": 5.0, "v_angle": 120.0, "band_w": 13.0, "band_dz": 70.0,
+    # formed 3 mm sheet saddle (HMN-DDR-002), was a 5 mm wall
+    "saddle": (110.0, 180.0, 30.0), "saddle_wall": 3.0, "v_angle": 120.0, "band_w": 13.0, "band_dz": 70.0,
     # 7 sensor arm: 25 x 25 x 2 mm aluminium square tube; length from the saddle face; height
     "arm_z": 2800.0, "arm_w": 25.0, "arm_t": 2.0, "arm_len": 520.0,
     # 2 radiation shield: plate diameter, count, pitch, thickness, center hole, x position, gap below arm
     "shield_d": 110.0, "n_plates": 8, "plate_pitch": 15.0, "plate_t": 3.0, "plate_hole": 56.0,
-    "shield_x": 300.0, "shield_gap": 20.0, "rod_d": 5.0, "rod_pcd": 84.0,
+    "shield_x": 300.0, "shield_gap": 45.0, "rod_d": 5.0, "rod_pcd": 84.0,   # gap 20 mm before the fan cowl
+    # 13 aspiration fan and cowl (HMN-DDR-002): 60 x 60 x 15 mm 5 V fan over a hole in the top
+    #   plate, in a printed cowl (square side x height) that exhausts sideways under a solid lid
+    "fan": (60.0, 60.0, 15.0), "cowl": (76.0, 30.0), "top_hole": 56.0,
     # 3 air temperature and humidity sensor (capsule diameter x length)
     "th_sensor": (18.0, 45.0),
     # 4 black globe: diameter, copper wall used for mass (drawn thicker), x position, gap below arm
@@ -47,6 +55,10 @@ PARAMS = {
     "fn_whip": (10.0, 190.0), "fn_ports_x": (-52.0, -22.0),
     # 12 HeatMap pole adapter for the FieldNode core: two 120 deg V-blocks (W x H x depth) and strap bands
     "adapter_vblock": (110.0, 30.0, 18.0), "adapter_dz": (-20.0, 230.0),
+    # FieldNode core turned about the pole so that its panel faces +X, the arm's direction (deg)
+    "fn_azimuth": 90.0,
+    # FieldNode hot-climate sun shield (FND BOM line 14, FND-DDR-002): sheet (drawn), gap, low edge, top slot
+    "fns_t": 1.0, "fns_gap": 15.0, "fns_low": 10.0, "fns_slot": 30.0,
 }
 
 
@@ -59,6 +71,7 @@ def derived(p=PARAMS):
     arm_bot = p["arm_z"] - p["arm_w"] / 2
     arm_top = p["arm_z"] + p["arm_w"] / 2
     shield_top = arm_bot - p["shield_gap"]
+    cowl_top = shield_top + p["cowl"][1]
     stack_h = (p["n_plates"] - 1) * p["plate_pitch"] + p["plate_t"]
     shield_bot = shield_top - stack_h
     globe_r = p["globe_d"] / 2
@@ -74,7 +87,7 @@ def derived(p=PARAMS):
     half = p["fn_panel"][1] / 2
     return {
         "r": r, "arm_x0": arm_x0, "arm_x1": arm_x1, "arm_bot": arm_bot, "arm_top": arm_top,
-        "shield_top": shield_top, "shield_bot": shield_bot, "shield_zc": (shield_top + shield_bot) / 2,
+        "shield_top": shield_top, "cowl_top": cowl_top, "shield_bot": shield_bot, "shield_zc": (shield_top + shield_bot) / 2,
         "stack_h": stack_h, "globe_zc": globe_zc, "globe_bot": globe_zc - globe_r,
         "anemo_x": anemo_x, "hub_z": hub_z, "cup_z": hub_z + 10,
         "reach": anemo_x + p["cup_arm"] + p["cup_d"] / 2,       # farthest point from the pole axis
@@ -82,6 +95,9 @@ def derived(p=PARAMS):
         "fn_top": pcz + half * math.sin(t) + p["fn_panel"][2] / 2,
         "panel_cy": pcy, "panel_cz": pcz,
         "panel_front_y": pcy - half * math.cos(t),
+        # FieldNode panel in world axes after the fn_azimuth turn (90 deg: old -y becomes +x)
+        "panel_cx_w": -pcy, "panel_front_x_w": -(pcy - half * math.cos(t)),
+        "panel_low_z": pcz - half * math.sin(t), "panel_high_z": pcz + half * math.sin(t),
         "overall_top": hub_z + p["cup_d"] / 2 + 10,
         # the V-saddle touches a pole of radius r at +/- r cos(half angle) either side of center
         "v_contact_max": p["pole_range"][1] / 2 * math.cos(math.radians(p["v_angle"] / 2)) * 2,
@@ -145,7 +161,7 @@ def build_parts(p=PARAMS):
     # 7 Sensor arm (square tube) with the shield and globe hangers
     x0, x1, w = D["arm_x0"], D["arm_x1"], p["arm_w"]
     arm = box((x0 + x1) / 2, 0, az, x1 - x0, w, w) - box((x0 + x1) / 2 + 1, 0, az, x1 - x0 + 4, w - 2 * p["arm_t"], w - 2 * p["arm_t"])
-    arm = arm + rod((p["shield_x"], 0, D["arm_bot"]), (p["shield_x"], 0, D["shield_top"]), 6)
+    arm = arm + rod((p["shield_x"], 0, D["arm_bot"]), (p["shield_x"], 0, D["cowl_top"]), 6)
     arm = arm + rod((p["globe_x"], 0, D["arm_bot"]), (p["globe_x"], 0, D["globe_zc"] + p["globe_d"] / 2 + 12), 6)
     parts["arm"] = arm
 
@@ -155,14 +171,24 @@ def build_parts(p=PARAMS):
     for i in range(p["n_plates"]):
         z = D["shield_top"] - p["plate_t"] / 2 - i * p["plate_pitch"]
         pl = zcyl(sx, 0, z, sr, p["plate_t"])
-        if i:
-            pl = pl - zcyl(sx, 0, z, p["plate_hole"] / 2, p["plate_t"] + 2)
+        pl = pl - zcyl(sx, 0, z, (p["plate_hole"] if i else p["top_hole"]) / 2, p["plate_t"] + 2)
         plates.append(pl)
     for a in (90, 210, 330):
         rx = sx + p["rod_pcd"] / 2 * math.cos(math.radians(a))
         ry = p["rod_pcd"] / 2 * math.sin(math.radians(a))
         plates.append(rod((rx, ry, D["shield_top"]), (rx, ry, D["shield_bot"]), p["rod_d"] / 2))
     parts["shield"] = fuse(plates)
+
+    # 13 Aspiration fan in a cowl on the top plate: four posts, a solid lid, open sides for the exhaust
+    cw, ch = p["cowl"]
+    fw, _, fh = p["fan"]
+    zt = D["shield_top"]
+    lid = box(sx, 0, zt + ch - 1.5, cw, cw, 3.0)
+    posts = fuse(box(sx + ex * (cw / 2 - 4), ey * (cw / 2 - 4), zt + (ch - 3) / 2, 8, 8, ch - 3)
+                 for ex in (-1, 1) for ey in (-1, 1))
+    fan = box(sx, 0, zt + fh / 2 + 1, fw, fw, fh) - zcyl(sx, 0, zt + fh / 2 + 1, fw / 2 - 3, fh + 2)
+    fan = fan + zcyl(sx, 0, zt + fh / 2 + 1, 12, fh)          # hub and motor
+    parts["fan"] = lid + posts + fan
 
     # 3 Air temperature and humidity sensor capsule at the middle of the stack
     cd, cl = p["th_sensor"]
@@ -191,7 +217,7 @@ def build_parts(p=PARAMS):
     # 11 Secondary retention: stainless lanyards from the globe boss and the shield top to the arm
     ld = p["lanyard_d"] / 2
     parts["lanyard"] = (path([(gx + 8, 8, gz + gr + 10), (gx + 30, 14, D["arm_bot"] - 4), (gx + 40, 14, D["arm_bot"])], ld)
-                        + path([(sx + 20, 14, D["shield_top"]), (sx + 40, 14, D["arm_bot"])], ld))
+                        + path([(sx + 20, 44, D["shield_top"]), (sx + 44, 44, D["arm_bot"] - 4), (sx + 50, 14, D["arm_bot"])], ld))
 
     # 9 Sensor harness: two M12 leads from the FieldNode ports, up the pole, along the arm
     ew, ed, eh = p["fn_enc"]
@@ -199,10 +225,11 @@ def build_parts(p=PARAMS):
     px1 = p["fn_ports_x"][0]
     yb = D["enc_yc"]
     hy = -r - 6
-    harness = path([(px1, yb, z0), (px1, yb, z0 - 50), (px1 + 20, hy, z0 - 50),
-                    (px1 + 20, hy, az - 60), (r * 0.7, -r * 0.75, az - 60),
+    # ports after the fn_azimuth turn of 90 deg: (x, y) -> (-y, x)
+    harness = path([(-yb, px1, z0), (-yb, px1, z0 - 50), (20, hy, z0 - 50),
+                    (20, hy, az - 60), (r * 0.7, -r * 0.75, az - 60),
                     (x0 + 10, -18, az - 20), (D["anemo_x"] - 30, -18, az - 20)], 3.5)
-    harness = harness + path([(sx + 30, -18, az - 20), (sx + 5, -8, D["shield_top"] - 10)], 2.5)
+    harness = harness + path([(sx + 30, -18, az - 20), (sx + 5, -20, D["cowl_top"] + 2), (sx + 5, -20, D["shield_top"] - 10)], 2.5)
     harness = harness + path([(gx - 25, -18, az - 20), (gx - 6, -6, gz + p["globe_d"] / 2 + 14)], 2.5)
     harness = harness + path([(D["anemo_x"] - 30, -18, az - 20), (D["anemo_x"] - 8, -8, D["arm_bot"])], 2.5)
     parts["harness"] = harness
@@ -221,7 +248,19 @@ def build_parts(p=PARAMS):
     wd, wl = p["fn_whip"]
     whip = zcyl(58, D["enc_yc"], z0 - wl / 2, wd / 2, wl)
     ports = fuse(zcyl(x, D["enc_yc"], z0 - 8, 11, 16) for x in p["fn_ports_x"])
-    parts["fieldnode"] = plate + enc + panel + bars + whip + ports
+    # FieldNode hot-climate sun shield (FND-DWG-001 Rev P2 option): front, sides and top, stood off the enclosure
+    st, sg = p["fns_t"], p["fns_gap"]
+    yb_s = y0 - pt
+    yf_s = D["enc_front"] - sg
+    xo = ew / 2 + sg
+    zlo, zhi = z0 + p["fns_low"], z0 + eh + sg
+    hs = zhi - zlo
+    fshield = box(0, yf_s - st / 2, zlo + hs / 2, 2 * (xo + st), st, hs)
+    for sxn in (-1, 1):
+        fshield = fshield + box(sxn * (xo + st / 2), (yb_s + yf_s - st) / 2, zlo + hs / 2, st, yb_s - (yf_s - st), hs)
+    fshield = fshield + box(0, (yf_s - st + yb_s - p["fns_slot"]) / 2, zhi + st / 2, 2 * (xo + st), yb_s - p["fns_slot"] - (yf_s - st), st)
+    turn = b.Rot(0, 0, p["fn_azimuth"])
+    parts["fieldnode"] = turn * (plate + enc + panel + bars + whip + ports + fshield)
 
     # 12 HeatMap pole adapter for the FieldNode core: two wide V-blocks and strap bands
     vw, vh, vd = p["adapter_vblock"]
@@ -230,12 +269,12 @@ def build_parts(p=PARAMS):
         z = z0 + dz
         blk = box(0, -r - vd / 2, z, vw, vd, vh) - zcyl(0, 0, z, r + 0.5, vh + 2)
         blocks.append(blk + band(z, r, p["band_w"]))
-    parts["adapter"] = fuse(blocks)
+    parts["adapter"] = turn * fuse(blocks)
     return parts
 
 
 BOM = {  # model key: (BOM line, name)
-    "fieldnode": (1, "FieldNode core (FND-DWG-001 envelope)"),
+    "fieldnode": (1, "FieldNode core with sun shield (FND-DWG-001 envelope)"),
     "shield": (2, "Multi-plate radiation shield"),
     "th_sensor": (3, "Air temperature and humidity sensor"),
     "globe": (4, "Black globe, 150 mm"),
@@ -246,8 +285,9 @@ BOM = {  # model key: (BOM line, name)
     "harness": (9, "Sensor harness, M12"),
     "lanyard": (11, "Secondary retention lanyards"),
     "adapter": (12, "FieldNode pole adapter"),
+    "fan": (13, "Aspiration fan and cowl"),
 }
-HEAD = ["shield", "th_sensor", "globe", "probe", "anemometer", "arm", "clamp", "harness", "lanyard"]
+HEAD = ["shield", "fan", "th_sensor", "globe", "probe", "anemometer", "arm", "clamp", "harness", "lanyard"]
 
 
 def pole_context(p=PARAMS):

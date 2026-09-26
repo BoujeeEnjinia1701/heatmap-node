@@ -21,9 +21,10 @@ D = derived(P)
 m = build_parts(P)
 
 STYLE = {  # model key: (color, exploded offset in mm)
-    "fieldnode": ("#CBD5E1", (0, -420, 0)),
+    "fieldnode": ("#CBD5E1", (100, 950, -250)),
     "shield": ("#F3F4F6", (0, -350, -250)),
-    "th_sensor": ("#0EA5E9", (0, -350, -520)),
+    "fan": ("#0F172A", (0, -350, 60)),
+    "th_sensor": ("#0EA5E9", (0, -600, -300)),
     "globe": ("#1F2937", (160, 0, -380)),
     "probe": ("#C2410C", (160, -320, -120)),
     "anemometer": ("#0F766E", (180, 0, 260)),
@@ -31,7 +32,7 @@ STYLE = {  # model key: (color, exploded offset in mm)
     "clamp": ("#D4A017", (0, 0, 0)),
     "harness": ("#111827", (-60, -300, -80)),
     "lanyard": ("#B45309", (60, 250, 60)),
-    "adapter": ("#D4A017", (0, -200, -60)),
+    "adapter": ("#D4A017", (-200, 250, -650)),
 }
 parts = []
 for key, (num, name) in BOM.items():
@@ -48,15 +49,15 @@ for p in parts + context:
 
 render_all(
     parts, project="HeatMap Node", title="Street heat stress node concept", dwg_no="HMN-DWG-010",
-    key_figures=["Air temperature, humidity, 150 mm globe temperature and wind",
-                 "Sensors at about 2.7 m on an existing pole; FieldNode core below",
+    key_figures=["Air temperature and humidity in a fan-aspirated shield, 150 mm globe, wind",
+                 "Sensors at about 2.7 m; arm and FieldNode core below it face the equator",
                  "Example: 35 C air, 40 %RH, 50 C globe, 1 m/s: MRT 74.8 C, WBGT 31.7 C (HMN-CAL-001)",
-                 "Sensor draw 0.12 mW against a 100 mW FieldNode allowance",
-                 "Sensor head $130 (budget $120); with FieldNode core $256; node 4.68 kg"],
+                 "Shield error 0.43 C with the fan; sensors and fan 35 mW of a 100 mW allowance",
+                 "Sensor head $127 (budget $120), 1.91 kg; full node $268 (estimates)"],
     scale_figure=False, context=context,
     cut_exclude=tuple(BOM[k][1] for k in ("fieldnode", "adapter", "harness", "lanyard", "clamp")),
     flow={"title": "data flow from street to map (values from HMN-CAL-001)", "unit": "",
-          "stages": [("Sensors on the arm", "Ta, RH, Tg, wind\nsampled each 60 s"),
+          "stages": [("Sensors on the arm", "Ta, RH each 3 min (fan)\nTg, wind each 60 s"),
                      ("FieldNode core", "15 min means\nstored in flash"),
                      ("LoRaWAN uplink", "20 B payload,\n96 per node per day"),
                      ("Gateway (TwinKit)", "resends gaps\nfrom node flash"),

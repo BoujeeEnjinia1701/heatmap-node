@@ -2,7 +2,7 @@
 
 ![TRL 3](https://img.shields.io/badge/TRL-3%20of%209-0F766E) ![Hardware: CERN-OHL-S-2.0](https://img.shields.io/badge/hardware-CERN--OHL--S--2.0-111827) ![Software: MIT](https://img.shields.io/badge/software-MIT-111827)
 
-**Area:** Smart Cities · **TRL:** 3 of 9 (proof of concept on paper) · **Prototype budget:** $120 USD for the sensor head (FieldNode core budgeted separately) · **Difficulty:** 2 of 5
+**Area:** Smart Cities · **TRL:** 3 of 9 (proof of concept on paper) · **Prototype budget:** $120 USD for the sensor head (FieldNode core and its pole adapter budgeted separately) · **Difficulty:** 2 of 5
 
 A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.
 
@@ -47,7 +47,7 @@ Cities concentrate the risk and spread it unevenly. The US EPA reports urban day
 
 ## What sparked the idea
 
-It came out of a September 2026 review of Design Molecule's applied research areas against the open projects already in the lab. The real-world trigger is the evidence that heat risk follows neighborhood lines, such as the redlining and heat island studies above ([Hoffman et al., 2020](https://www.mdpi.com/2225-1154/8/1/12); [Hsu et al., 2021](https://www.nature.com/articles/s41467-021-22799-5)), while most cities still lack street-level heat stress data to act on it. It pairs with CoolShade, the lab's shade structure concept, which needs this data to decide where shade goes.
+The idea traces back to US Marine Corps training sites in the late 1940s and early 1950s. Heat flags were introduced there to address high rates of heat illness, but the temperature readings behind them did not account for sunlight or wind ([Human Performance Resource Center, US Department of Defense](https://www.hprc-online.org/physical-fitness/environmental-extremes/military-heat-flag-conditions-explained)). Yaglou and Minard's answer in 1957 was wet bulb globe temperature, which adds a black globe to catch the sun, and a review of the index's history records that it cut both heat casualties and lost training time ([Budd, *Journal of Science and Medicine in Sport*, 2008](https://doi.org/10.1016/j.jsams.2007.07.003)). HeatMap Node takes the same black globe, wind reading and shaded air temperature off the training ground and onto city street poles, where the neighborhoods hit hardest by heat are often the least measured.
 
 ## Problem
 
@@ -55,26 +55,27 @@ Heat waves kill more people than most other weather hazards, and cities lack fin
 
 ## Concept
 
-A sensor arm clamps to an existing street pole with its axis at 2.8 m and plugs into a FieldNode core (solar panel, LiFePO4 cell, LoRaWAN radio). It carries a naturally ventilated radiation shield with a temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. Nodes send 15 min means; a server computes mean radiant temperature and WBGT and maps them block by block. Only environmental values leave the node: no camera, microphone or personal data.
+A sensor arm clamps to an existing street pole with its axis at 2.8 m, points toward the equator and plugs into a FieldNode core (solar panel, LiFePO4 cell, LoRaWAN radio, and a sun shield for hot sites) mounted below it. It carries a fan-aspirated radiation shield with a temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. Every 3 min the fan runs for 6 s before the air is read. Nodes send 15 min means; a server computes mean radiant temperature and WBGT, flags calm intervals below the anemometer's start-up, and maps the results block by block. Only environmental values leave the node: no camera, microphone or personal data.
 
-TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C, and the sensor input errors add up to ±0.59 °C of WBGT. The sensors draw 0.12 mW against FieldNode's 100 mW allowance, and the arm has a factor of 13.8 on yield in a 35 m/s gust. Not met on paper: air temperature accuracy with the passive shield (about 1 °C high in full sun at 1 m/s), wind below about 0.8 m/s, the FieldNode core's temperature at the top of the ambient range, pedestrian measurement height (sensors at about 2.7 m), the sensor head cost ($130 against $120; the full node with the $126 FieldNode core is $256) and mass (4.68 kg against 4 kg). WBGT accuracy in calm air, installation time and calibration of the assembled globe are at risk.
+TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C. With the fan the shield reads 0.43 °C high in full sun at any wind speed (1.04 °C at 1 m/s without it), and the sensor input errors add up to ±0.30 °C of WBGT. The sensors and fan draw 35 mW against FieldNode's 100 mW allowance, the sensor head weighs 1.91 kg, and the arm has a factor of 13.4 on yield in a 35 m/s gust. Not met on paper: pedestrian measurement height (sensors at about 2.7 m) and the sensor head cost ($127 against $120; the full node with the FieldNode core, sun shield and pole adapter is $268). WBGT accuracy against a reference meter, installation time and calibration of the assembled globe are at risk. With the arm toward the equator, the sensor head shades part of the FieldNode panel near noon; a fix is awaiting review.
 
 Full design precis: [docs/02-concept.md](docs/02-concept.md). Requirements: [docs/03-requirements.md](docs/03-requirements.md).
 
 ## Key components
 
-1. FieldNode core (enclosure, 6 W panel, LiFePO4 cell, LoRaWAN radio)
-2. Multi-plate radiation shield, naturally ventilated
+1. FieldNode core with its hot-climate sun shield (enclosure, 6 W panel, LiFePO4 cell, LoRaWAN radio)
+2. Multi-plate radiation shield
 3. Air temperature and humidity sensor (SHT45)
 4. Black globe, 150 mm copper sphere, matte black
 5. Globe temperature probe (NTC at the center)
 6. Cup anemometer
 7. Sensor arm, 25 mm aluminium tube
-8. Arm clamp: 120° V-saddle with stainless strap bands for 60 to 200 mm poles
+8. Arm clamp: formed sheet 120° V-saddle with stainless strap bands for 60 to 200 mm poles
 9. Sensor harness with M12 plugs
 10. Hardware and consumables
 11. Secondary retention lanyards for the globe and shield
 12. Pole adapter that seats the FieldNode core on street poles
+13. Aspiration fan and cowl on the shield
 
 The working bill of materials is in [bom/bom.csv](bom/bom.csv).
 
@@ -82,7 +83,7 @@ The working bill of materials is in [bom/bom.csv](bom/bom.csv).
 
 > Street furniture and pole mounts must be installed only with the asset owner's permission, by trained crews, with fall protection and traffic management as local rules require. Keep clear of overhead power lines and live parts of lighting poles.
 >
-> The FieldNode core contains a LiFePO4 cell: fuse it, charge only within the maker's temperature limits and never install a damaged or wet cell. The black globe and arm get hot in the sun (about 67 °C at 50 °C air, HMN-CAL-001), and the anemometer cups spin. The globe and shield are backed by stainless lanyards so that a failed fixing does not drop them onto the street.
+> The FieldNode core contains a LiFePO4 cell: fuse it, charge only within the maker's temperature limits and never install a damaged or wet cell. The black globe and arm get hot in the sun (about 67 °C at 50 °C air, HMN-CAL-001), the anemometer cups spin, and the shield fan starts on its own every 3 min; unplug the sensor lead before working on it. The globe and shield are backed by stainless lanyards so that a failed fixing does not drop them onto the street.
 >
 > HeatMap Node data is for planning and research, not an official heat warning.
 
@@ -109,4 +110,4 @@ Controlled documents follow the portfolio [documentation standard](.kit/STANDARD
 - **Hardware** (CAD, drawings, BOM, electronics): [CERN-OHL-S v2](LICENSE)
 - **Software** (firmware, scripts, notebooks): [MIT](LICENSE-SOFTWARE)
 
-A project of the [Design Molecule](https://designmolecule.com) lab. Smart cities set.
+A project of the [Design Molecule](https://designmolecule.com) lab.
