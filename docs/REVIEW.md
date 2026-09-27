@@ -215,3 +215,28 @@ Every link in "Concept rationale", "Burning platform", "Where it could be used" 
 - Documents revised: HMN-REQ-001 v0.5, HMN-CAL-001 v0.3, HMN-DDR-002 v0.2, HMN-PRC-001 v0.5, HMN-PRB-001 v0.5 (budget constraint only); `README.md` budget line and Concept paragraph; `bom/bom-notes.md`.
 - Concept media: the blueprint key figure in `cad/src/concept_media.py` now reads "budget $130"; all of `media/` was regenerated and the temporary `_views` folders deleted.
 - Still awaiting Amish: O1, O2 and N8.
+
+## Session 2026-09-26: product appearance model and photoreal renders
+
+Amish chose this repo for the first batch of product renders on 2026-09-26.
+
+### What was done
+
+- New `cad/src/product_model.py`: `product_parts()` returns 65 named parts (49 shell, 11 internal, 4 accessory, 1 context), each with a colour, a render material, its BOM line and an exploded-view offset. It imports PARAMS, `derived()` and the `path` and `rod` helpers from `cad/src/model.py`, so every main dimension, height and interface is unchanged. It also defines `TITLE` and three `RENDER_VIEWS`: hero (on a short section of the existing street pole), exploded and detail (without the pole).
+- What the appearance model adds: filleted arm tube with a black end cap and an identity label with the teal accent; the V-saddle with rounded edges, a rubber liner, bolt heads, and strap bands with buckles and screws; eight shield plates with rounded edges on stainless rods with top nuts and acorn nuts; the aspiration fan as a frame, a seven-blade rotor and a hub label under the white cowl; the temperature and humidity capsule with a PTFE membrane cap and an M12 connector; the matte black globe with its seam flange, a brass boss and a probe gland, and the probe stem and bead inside; the anemometer as mast, body, teal rotor cap and cups; the harness with an M12 plug, cable ties along the arm and the stainless lanyards; the FieldNode core as back plate, enclosure base and lid with a parting line and lid screws, sun shield with a name plate, solar panel frame with cells, busbars and a junction box, support bars, whip antenna with base nut, M12 sockets and a vent plug; and the pole adapter V-blocks and strap bands.
+- `README.md`: the hero image now points to `media/render-hero.png`, and the links line starts with the exploded render. The render files are produced separately and were not created in this session.
+- Matplotlib previews were checked for the hero, exploded and detail views (kept outside the repo). All shapes are valid and tessellate; `.kit/product_export.py` exports all 65 parts.
+
+### Differences from model.py
+
+Each item below is appearance only, and none changes a PARAMS value.
+
+- **FieldNode internals and split enclosure.** The model treats the FieldNode core as an envelope. The appearance model splits the enclosure into a base and a front lid and shows a board, a LoRaWAN module can and a horizontal 32 mm LiFePO4 cell inside, so the exploded view can show the board and battery. These are stand-ins; FND-DWG-001 and the FieldNode BOM define the real parts. Proposed, awaiting Amish. Recommendation: keep them as stand-ins and ask the FieldNode repo to confirm the cell format and board position at its next update.
+- **Vent slots and name plate on the FieldNode sun shield.** Four vent slots in each side sheet and a HeatMap Node name plate on the front are not in FND-DWG-001. Proposed, awaiting Amish. Recommendation: keep the name plate (it identifies the node to the public and the pole owner) and drop the side slots unless FieldNode adopts them, since its sun shield is already ventilated through the top slot and open bottom.
+- **Arm end cap.** A 2.5 mm black plug is drawn beyond the arm tip, so the arm reads 2.5 mm longer than `arm_len`; the overall reach is set by the anemometer cups and is unchanged. Proposed, awaiting Amish. Recommendation: accept, and add a plug to BOM line 10 at the next BOM revision.
+- **Globe seam flange.** A 1.2 mm raised seam ring is drawn at the globe equator, as on pressed float balls. Proposed, awaiting Amish. Recommendation: accept for appearance; its effect on the globe reading is negligible at this TRL.
+- **Harness start.** The harness is drawn from the M12 plug under the FieldNode port instead of from inside the port; routing is otherwise the same.
+
+### TRL
+
+This is an appearance model only: no tolerances, no fabrication detail, no PCB layout. `trl` and `trl_target` stay at 3, and TRL 4 remains on hold.
