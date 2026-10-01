@@ -2,13 +2,13 @@
 
 ![TRL 3](https://img.shields.io/badge/TRL-3%20of%209-0F766E) ![Hardware: CERN-OHL-S-2.0](https://img.shields.io/badge/hardware-CERN--OHL--S--2.0-111827) ![Software: MIT](https://img.shields.io/badge/software-MIT-111827) [![DOI](https://zenodo.org/badge/1388476860.svg)](https://zenodo.org/badge/latestdoi/1388476860) [![REUSE compliant](https://github.com/BoujeeEnjinia1701/heatmap-node/actions/workflows/reuse.yml/badge.svg)](https://github.com/BoujeeEnjinia1701/heatmap-node/actions/workflows/reuse.yml) [![Archived in Software Heritage](https://archive.softwareheritage.org/badge/origin/https://github.com/BoujeeEnjinia1701/heatmap-node/)](https://archive.softwareheritage.org/browse/origin/?origin_url=https://github.com/BoujeeEnjinia1701/heatmap-node)
 
-**Area:** Smart Cities · **TRL:** 3 of 9 (proof of concept on paper) · **Prototype budget:** $130 USD for the sensor head (FieldNode core and its pole adapter budgeted separately) · **Difficulty:** 2 of 5
+**Area:** Smart Cities · **TRL:** 3 of 9 (proof of concept on paper) · **Value-engineering target:** USD 130 for the sensor head; estimated cost of the constructable design USD 136 (FieldNode core and its pole adapter counted separately) · **Difficulty:** 2 of 5
 
 A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.
 
 ![HeatMap Node: street-pole heat stress sensor with a black globe thermometer, product render](media/render-hero.png)
 
-[Exploded render](media/render-exploded.png) · [Detail render](media/render-detail.png) · [Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [General arrangement (PDF)](cad/drawings/HMN-DWG-001.pdf) · [Calculations](docs/04-calcs/01-sizing.md) · [Review note](docs/REVIEW.md)
+[Exploded render](media/render-exploded.png) · [Detail render](media/render-detail.png) · [Interactive 3D model](media/viewer.html) · [Concept blueprint (PDF)](media/concept-blueprint.pdf) · [General arrangement (PDF)](cad/drawings/HMN-DWG-001.pdf) · [Calculations](docs/04-calcs/01-sizing.md) · [Prototype build plan](docs/05-build-plan.md) · [Design decisions](docs/06-design-decisions.md) · [Review note](docs/REVIEW.md)
 
 ## Concept rationale
 
@@ -57,7 +57,7 @@ Heat waves kill more people than most other weather hazards, and cities lack fin
 
 A sensor arm clamps to an existing street pole with its axis at 2.8 m, points toward the equator and plugs into a FieldNode core (solar panel, LiFePO4 cell, LoRaWAN radio, and a sun shield for hot sites) mounted below it. It carries a fan-aspirated radiation shield with a temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. Every 3 min the fan runs for 6 s before the air is read. Nodes send 15 min means; a server computes mean radiant temperature and WBGT, flags calm intervals below the anemometer's start-up, and maps the results block by block. Only environmental values leave the node: no camera, microphone or personal data.
 
-TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C. With the fan the shield reads 0.43 °C high in full sun at any wind speed (1.04 °C at 1 m/s without it), and the sensor input errors add up to ±0.30 °C of WBGT. The sensors and fan draw 35 mW against FieldNode's 100 mW allowance, the sensor head weighs 1.91 kg, and the arm has a factor of 13.4 on yield in a 35 m/s gust. Not met on paper: pedestrian measurement height (sensors at about 2.7 m). The sensor head costs $127 against its $130 budget; the full node with the FieldNode core, sun shield and pole adapter is $268. WBGT accuracy against a reference meter, installation time and calibration of the assembled globe are at risk. With the arm toward the equator, the sensor head shades part of the FieldNode panel near noon; a fix is awaiting review.
+TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C. With the fan the shield reads 0.43 °C high in full sun at any wind speed (1.04 °C at 1 m/s without it), and the sensor input errors add up to ±0.30 °C of WBGT. The sensors and fan draw 35 mW against FieldNode's 100 mW allowance, the sensor head weighs 2.12 kg, and the arm has a factor of 13.0 on yield in a 35 m/s gust. Not met on paper: pedestrian measurement height (sensors at about 2.7 m). Value-engineering target: USD 130. Estimated cost of the constructable sensor head: USD 136 (USD 6 over the target); the full node with the FieldNode core, sun shield and pole adapter is about USD 292. WBGT accuracy against a reference meter, installation time and calibration of the assembled globe are at risk. With the arm toward the equator, the sensor head shades part of the FieldNode panel near noon; a fix is awaiting review.
 
 Full design precis: [docs/02-concept.md](docs/02-concept.md). Requirements: [docs/03-requirements.md](docs/03-requirements.md).
 
@@ -78,6 +78,12 @@ Full design precis: [docs/02-concept.md](docs/02-concept.md). Requirements: [doc
 13. Aspiration fan and cowl on the shield
 
 The working bill of materials is in [bom/bom.csv](bom/bom.csv).
+
+## Building the prototype
+
+The design is now constructable: every part can be cut, bent, drilled, printed or bought, and every part fits and fastens to the next ([HMN-DDR-003](docs/decisions/0003-design-for-construction.md)). The [prototype build plan](docs/05-build-plan.md) shows how to make the bent sheet saddle, the arm cheeks, the drilled arm and the printed shield plates, cowl and pole adapter blocks, and how to put the sensor head together on the bench in twelve steps before it goes on the pole above a FieldNode core built to its own plan. Every component and step has a picture drawn from the model. Decisions still open are in the [design decisions register](docs/06-design-decisions.md). It is a plan; nothing has been built yet.
+
+![Every component of the HeatMap Node prototype, pulled apart and numbered in build order](docs/05-build-plan/overview.png)
 
 ## Safety
 

@@ -1,10 +1,10 @@
-"""HeatMap Node sizing calculations, HMN-CAL-001 v0.2 (TRL 3, decisions of HMN-DDR-002 applied).
+"""HeatMap Node sizing calculations, HMN-CAL-001 v0.4 (TRL 3, HMN-DDR-002 and the design for construction HMN-DDR-003 applied).
 
 Run from the repo root:  python docs/04-calcs/sizing.py
 Prints every number quoted in docs/04-calcs/01-sizing.md. Each line carries a tag such as
 [A3] that the note cites. Geometry comes from cad/src/model.py (PARAMS, derived and the part
 solids), the parts cost from bom/bom.csv and the budget from project.yaml. FieldNode figures
-are quoted from FND-CAL-001 v0.2 in the FieldNode repo (hot-climate node with its sun shield). First-principles estimates for a
+are quoted from FND-CAL-001 v0.4 in the FieldNode repo (hot-climate node with its sun shield, Rev P3). First-principles estimates for a
 paper proof of concept; not a substitute for tests.
 """
 import csv
@@ -36,8 +36,8 @@ WICK_D = 0.007          # m, notional natural wet-bulb wick used by the model (a
 EPS_W = 0.95
 V_START = 0.8           # m/s anemometer start-up (typical low-cost class; unverified)
 FN_ALLOW_W = 0.100      # W FieldNode design sensor allowance (FND-CAL-001 [A5]); 0.115 W published
-FN_MASS = 2.55          # kg FieldNode hot-climate node with the sun shield (FND-CAL-001 v0.2, R14)
-FN_COST = 134.00        # USD FieldNode base $126.00 plus the $8.00 sun shield, BOM line 14 (FND-CAL-001 v0.2, R16)
+FN_MASS = 2.61          # kg FieldNode hot-climate node with the sun shield (FND-CAL-001 v0.4 [F1b], after FND-DDR-003)
+FN_COST = 148.00        # USD FieldNode base $139.00 plus the $9.00 sun shield, BOM line 14 (FND-CAL-001 v0.4, after FND-DDR-003)
 FN_WIND_N = 52.2 + 36.3  # N panel plus shielded enclosure at 35 m/s (FND-CAL-001 v0.2 [D1], [D3b])
 FN_RISE_SHIELD = 52.2 - 45.0   # K interior over ambient, dusty, worst sun position, with the shield (FND-CAL-001 v0.2, R2)
 FN_RISE_BARE = 73.3 - 45.0     # K the same without the shield (FND-CAL-001 v0.1)
@@ -109,7 +109,7 @@ def wbgt(ta, rh, tg, v):
     return 0.7 * tw + 0.2 * tg + 0.1 * ta, tw, tm
 
 
-print("HeatMap Node sizing, HMN-CAL-001 v0.2")
+print("HeatMap Node sizing, HMN-CAL-001 v0.4")
 print(f"Geometry from cad/src/model.py: arm at {P['arm_z']:.0f} mm, globe {P['globe_d']:.0f} mm, "
       f"shield {P['n_plates']} x {P['shield_d']:.0f} mm plates, pole {P['pole_od']} mm")
 
@@ -410,20 +410,19 @@ tag("H3", f"tip deflection across the wind at 20 m/s ({q20:.0f} Pa): {tip_defl(q
 torsion = sum(q35 * c * z for _, c, _, z in elems)
 tag("H4", f"torsion on the arm from offset loads at 35 m/s: {torsion:.2f} N m")
 
-# masses (needed for the clamp checks)
-parts = build_parts(P)
-vol = lambda k: parts[k].volume / 1e9                       # m3
-m_arm = vol("arm") * 2700
-bands_m = 2 * 0.013 * 0.0007 * (math.pi * P["pole_range"][1] / 1000 + 0.15) * 7900
-m_clamp = (vol("clamp") - 2 * 0.013 * 0.0015 * math.pi * P["pole_od"] / 1000) * 2700 + bands_m
-rod_v = 3 * math.pi * (P["rod_d"] / 2000) ** 2 * stack
-m_shield = (vol("shield") - rod_v) * 1070 + rod_v * 7900
-m_globe = m_shell + m_boss + 0.010                          # paint and gland
-m_probe, m_th, m_anemo = 0.010, 0.020, 0.30
+# masses (needed for the clamp checks), from the constructable model's component volumes (HMN-DDR-003)
+from model import build_components  # noqa: E402
+COMP = build_components(P)
+cm = lambda *ks: sum(COMP[k].shape.volume / 1e9 * COMP[k].density for k in ks)   # kg
+m_arm = cm("arm", "plug", "sleeves")
+m_clamp = cm("saddle", "trim", "cheeks", "bands", "clamp_bolts")
+m_shield = cm("plates", "rods", "spacers")
+m_globe = m_shell + m_boss + 0.010 + cm("hanger")           # paint, gland and the brass hanger tube with its nuts
+m_probe, m_th, m_anemo = 0.010, 0.020, 0.30 + cm("mast_bolt")
 m_harness = 2 * 1.5 * 0.08 + 0.03
-m_lanyard, m_hw = 0.02, 0.05
-m_fan = 0.035 + (P["cowl"][0] ** 2 * 3.0 + 4 * 8 * 8 * (P["cowl"][1] - 3)) * 1e-9 * 1070   # fan (assumed 35 g) plus ASA cowl
-m_adapter = vol("adapter") * 1070 * 0.9 + 2 * 0.013 * 0.0007 * (math.pi * P["pole_range"][1] / 1000 + 0.15) * 7900
+m_lanyard, m_hw = 0.02, 0.03                                # hardware: cable ties, paint and sealant
+m_fan = 0.035 + cm("cowl", "fan_screws")                    # fan (assumed 35 g) plus the ASA cowl and its screws
+m_adapter = cm("vblocks", "ascrews", "abands")
 head = {"arm": m_arm, "clamp": m_clamp, "shield": m_shield, "fan and cowl": m_fan, "T/RH sensor": m_th, "globe": m_globe, "probe": m_probe,
         "anemometer": m_anemo, "harness": m_harness, "lanyards": m_lanyard, "hardware": m_hw}
 m_head = sum(head.values())
@@ -455,7 +454,7 @@ tag("I2", f"FieldNode interior rise, dusty and worst sun position: {FN_RISE_SHIE
 print("\nJ. Fit and installation")
 half = math.radians(P["v_angle"] / 2)
 for d in (P["pole_range"][0], P["pole_od"], P["pole_range"][1]):
-    tag("J1", f"pole {d:.0f} mm: V-saddle contacts at +/- {d / 2 * math.cos(half):.0f} mm (saddle half-width {P['saddle'][0] / 2:.0f} mm); "
+    tag("J1", f"pole {d:.0f} mm: V-saddle contacts at +/- {d / 2 * math.cos(half):.0f} mm (saddle notch half-width {D['notch_half']:.0f} mm, adapter V {P['adapter_vblock'][0] / 2:.0f} mm); "
               f"band length {math.pi * d + 150:.0f} mm")
 TASKS = [("FieldNode core with the pole adapter", 15), ("arm clamp", 6), ("arm with shield, fan, globe and anemometer, pre-assembled", 4),
          ("harness and cable ties", 5), ("lanyards", 2), ("commissioning and photo record", 5)]
@@ -465,7 +464,7 @@ tag("J2", "tasks (min): " + ", ".join(f"{n} {t}" for n, t in TASKS) + f"; total 
 print("\nK. Mass")
 tag("K1", "sensor head: " + ", ".join(f"{n} {m * 1000:.0f} g" for n, m in head.items()) + f"; head {m_head:.2f} kg")
 tag("K2", f"sensor head {m_head:.2f} kg against the 4.0 kg of R15 (sensor head only, HMN-DDR-002); for information, FieldNode core with "
-          f"its sun shield {FN_MASS:.2f} kg (FND-CAL-001 v0.2) plus pole adapter {m_adapter:.2f} kg: complete node {m_head + FN_MASS + m_adapter:.2f} kg")
+          f"its sun shield {FN_MASS:.2f} kg (FND-CAL-001 v0.4) plus pole adapter {m_adapter:.2f} kg: complete node {m_head + FN_MASS + m_adapter:.2f} kg")
 tag("K3", f"largest part other than the arm: FieldNode panel {P['fn_panel'][0]:.0f} mm; anemometer across the cups {2 * P['cup_arm'] + P['cup_d']:.0f} mm (limit 300 mm)")
 
 # ------------------------------------------------------------------ L. Cost (R13)
@@ -480,5 +479,5 @@ for line in (ROOT / "project.yaml").read_text().splitlines():
 head_cost = tot - core
 tag("L1", f"BOM {len(rows)} lines; sensor head (lines 2 to 11 and 13) ${head_cost:.2f}; FieldNode core with its sun shield and the "
           f"pole adapter (lines 1 and 12, counted against FieldNode) ${core:.2f}; full node ${tot:.2f}")
-tag("L2", f"budget_usd ${budget_usd:.0f}: sensor head {'within' if head_cost <= budget_usd else 'over'} by ${abs(budget_usd - head_cost):.2f}; "
-          f"full node over by ${tot - budget_usd:.2f}")
+tag("L2", f"value-engineering target (budget_usd) ${budget_usd:.0f} for the sensor head; estimated cost of the constructable design "
+          f"${head_cost:.2f}, ${abs(budget_usd - head_cost):.2f} {'under' if head_cost <= budget_usd else 'over'} the target")

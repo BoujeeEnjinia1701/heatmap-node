@@ -1,4 +1,4 @@
-"""HeatMap Node general arrangement sheet HMN-DWG-001, Rev P2 (TRL 3, HMN-DDR-002 applied).
+"""HeatMap Node general arrangement sheet HMN-DWG-001, Rev P4 (TRL 3, constructable design of HMN-DDR-003).
 
 Run from the repo root:  python cad/src/sheets.py
 Writes cad/drawings/HMN-DWG-001.svg, .pdf and .png from the parametric model in
@@ -15,6 +15,7 @@ from drawing import Sheet, _viewbox, _t, M, TB_Y, INK, MUTED  # noqa: E402
 from model import PARAMS as P, build_parts, derived, zcyl  # noqa: E402
 
 DATE = "2026-09-25"
+DATE_P4 = "2026-10-01"
 POLE_BOT, POLE_TOP = 1960.0, 3080.0     # pole stub shown on the sheet
 
 
@@ -97,13 +98,14 @@ def main():
     work = ROOT / "cad" / "drawings" / "_views"
     views = safe_project_views(asm, work)
     bb = asm.bounding_box()
-    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P3",
-              author="Amish Chadha", date=DATE, scale=0.1, theme="technical",
+    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P4",
+              author="Amish Chadha", date=DATE_P4, scale=0.1, theme="technical",
               material="Al arm and formed sheet saddle; ASA shield and cowl; copper globe; bought-in parts per bom/bom.csv. "
                        "PRELIMINARY, NOT FOR FABRICATION",
               revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
                          ("P2", "HMN-DDR-002: fan, formed saddle, arm to equator, FieldNode shield", DATE, "AC"),
-                         ("P3", "Layout and labels tidied", DATE, "AC")])
+                         ("P3", "Layout and labels tidied", DATE, "AC"),
+                         ("P4", "HMN-DDR-003: design for construction (saddle, cheeks, rods, hanger)", DATE_P4, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)
@@ -142,7 +144,6 @@ def main():
     Xt = lambda mx: x + (mx - bb.min.X) * k
     Yt = lambda my: y + h - (my - bb.min.Y) * k
     L += leader(Xt(D["panel_front_x_w"]), Yt(0), Xt(-120), Yt(bb.min.Y) + 4, "ARM AND PANEL FACE +X (EQUATOR)", "end")
-    L += dim_h(Xt(D["anemo_x"] - P["cup_arm"] - P["cup_d"] / 2), Xt(D["reach"]), Yt(bb.max.Y) - 3, f"{D['reach']:.0f} reach")
 
     # right view (from +X): Y to the right... +Y appears to the right
     x, y, w, h = c["front"]
@@ -150,17 +151,17 @@ def main():
                 f"FIELDNODE PANEL, TILT {P['fn_tilt']:.0f} DEG")
 
     s._layers += L
-    s.add_svg(views["iso"], 276, 32, 140, 100, label="Isometric view", sublabel="Not to scale")
+    s.add_svg(views["iso"], 276, 42, 140, 90, label="Isometric view", sublabel="Not to scale")
     sw, sh, sd = P["saddle"]
     s.add_notes("Main dimensions and interfaces (mm)", [
         f"Pole D{P['pole_od']} design case; clamps fit {P['pole_range'][0]:.0f} to {P['pole_range'][1]:.0f}; no drilling",
-        f"Arm {P['arm_w']:.0f} x {P['arm_w']:.0f} x {P['arm_t']:.0f} Al, {P['arm_len']:.0f} long, axis at {az:.0f}",
-        f"Saddle {P['v_angle']:.0f} deg V, {sw:.0f} x {sh:.0f} x {sd:.0f}; two 13 mm strap bands",
-        f"Shield {P['n_plates']} plates D{P['shield_d']:.0f} at {P['plate_pitch']:.0f} pitch; sensor at stack center",
+        f"Arm {P['arm_w']:.0f} x {P['arm_w']:.0f} x {P['arm_t']:.0f} Al, {P['arm_len']:.0f} long, axis at {az:.0f}; reach {D['reach']:.0f}",
+        f"Saddle: 3 mm sheet channel {sw:.0f} x {sh:.0f} x {sd:.0f}, {P['v_angle']:.0f} deg V notches, cheeks",
+        f"Shield {P['n_plates']} plates D{P['shield_d']:.0f} at {P['plate_pitch']:.0f} pitch on 4 M5 rods",
         f"Fan {P['fan'][0]:.0f} x {P['fan'][1]:.0f} x {P['fan'][2]:.0f} 5 V in {P['cowl'][0]:.0f} sq cowl on the top plate",
-        f"Globe D{P['globe_d']:.0f} copper, matte black; NTC bead at center",
+        f"Globe D{P['globe_d']:.0f} copper on an M10 hollow hanger tube",
         f"Anemometer mast {P['mast_h']:.0f} above the arm; cup circle D{2 * P['cup_arm'] + P['cup_d']:.0f}",
-        "FieldNode core with sun shield per FND-DWG-001, below the arm, on 120 deg V adapter",
+        "FieldNode core per FND-DWG-001 Rev P3 on printed 120 deg V adapter",
         "Lanyards: globe and shield to arm (secondary retention)",
         "Third-angle; front view from -Y; pole on the Z axis; +X to the equator",
     ], x=276, y=150, width=146)

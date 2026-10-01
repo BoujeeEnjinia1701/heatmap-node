@@ -3,9 +3,9 @@ doc_id: HMN-PRC-001
 title: HeatMap Node design precis
 project: HeatMap Node
 doc_type: Design precis
-version: "0.5"
+version: "0.6"
 status: Draft
-date: '2026-09-26'
+date: '2026-10-01'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -29,6 +29,10 @@ revisions:
   date: '2026-09-26'
   author: Amish Chadha
   change: "Budget top-up approved by Amish: sensor head within the $130 budget"
+- version: "0.6"
+  date: '2026-10-01'
+  author: Amish Chadha
+  change: "Design for construction (HMN-DDR-003): components, mass, wind and cost updated; budget reported as a value-engineering target; build plan HMN-BLD-001 added"
 ---
 
 # HeatMap Node design precis
@@ -37,7 +41,7 @@ revisions:
 
 HeatMap Node is a sensor head that clamps to an existing street pole and plugs into the lab's FieldNode core. A horizontal arm, pointing toward the equator, holds a fan-aspirated radiation shield with an air temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. From these four readings a server computes mean radiant temperature and an estimated wet bulb globe temperature (WBGT), the heat stress index defined in [ISO 7243:2017](https://www.iso.org/standard/67188.html), using the method of [Liljegren et al. (2008)](https://doi.org/10.1080/15459620802310770). Tens of nodes across a neighborhood give block-by-block heat stress maps, day and night, all season.
 
-The TRL 3 calculations (HMN-CAL-001 v0.3) confirm the heat stress method and the power, data and wind cases. With the decisions Amish accepted on 2026-09-25 (HMN-DDR-001 and HMN-DDR-002) applied, one requirement is not met on paper: the sensors sit at about 2.7 m rather than pedestrian height (R9). The aspiration fan adds $7 and brings the sensor head to $127, within the $130 budget that Amish approved on 2026-09-26 (R13 met on paper). The fan cuts the shield's radiation error from about 1.0 °C at 1 m/s to 0.43 °C at any wind speed, and the sensors and fan draw 35 mW. All design choices below are decided by Amish. The parametric model is `cad/src/model.py` and the general arrangement is drawing HMN-DWG-001 Rev P2.
+The TRL 3 calculations (HMN-CAL-001 v0.4) confirm the heat stress method and the power, data and wind cases. With the decisions Amish accepted on 2026-09-25 (HMN-DDR-001 and HMN-DDR-002) applied, one requirement is not met on paper: the sensors sit at about 2.7 m rather than pedestrian height (R9). The design for construction (HMN-DDR-003) made every part buildable; with the fan and the added fixings the sensor head is estimated at $136, $6 over its $130 value-engineering target (R13). The fan cuts the shield's radiation error from about 1.0 °C at 1 m/s to 0.43 °C at any wind speed, and the sensors and fan draw 35 mW. All design choices below are decided by Amish. The parametric model is `cad/src/model.py`, the general arrangement is drawing HMN-DWG-001 Rev P4, and the prototype build plan is [HMN-BLD-001](05-build-plan.md).
 
 ![Hero render](../media/hero.png)
 
@@ -65,18 +69,18 @@ Numbers match the exploded view (Figure 4) and `bom/bom.csv`. Line 10 (hardware)
 
 | # | Component | Choice (TRL 3) | Notes |
 | --- | --- | --- | --- |
-| 1 | FieldNode core | 150 x 90 x 200 mm IP65 enclosure with FieldNode's hot-climate sun shield, 6 W 9 V class panel as sun hood at 40°, 3.2 V 6 Ah LiFePO4 cell, MPPT board, STM32WL-class LoRaWAN module, two M12 ports (FND-DWG-001) | Shared lab component, 2.55 kg, $134.00 with the shield (FND-CAL-001 v0.2); below the arm, facing the equator |
-| 2 | Radiation shield | Eight 110 mm white plates at 15 mm pitch, printed UV-stable ASA; 56 mm hole in the top plate under the fan | Aspirated by line 13 |
+| 1 | FieldNode core | 150 x 90 x 200 mm IP65 enclosure with FieldNode's hot-climate sun shield, 6 W 9 V class panel as sun hood at 40°, 3.2 V 6 Ah LiFePO4 cell, MPPT board, STM32WL-class LoRaWAN module, two M12 ports (FND-DWG-001 Rev P3), built to FND-BLD-001 | Shared lab component, 2.61 kg, $148.00 with the shield (FND-CAL-001 v0.4); below the arm, facing the equator |
+| 2 | Radiation shield | Eight 110 mm white plates at 15 mm pitch, printed UV-stable ASA with bosses between them, on four M5 rods; 56 mm hole in the top plate under the fan; hung from the arm on two of the rods | Aspirated by line 13 |
 | 3 | Temperature and humidity sensor | SHT45 digital sensor (typical ±0.1 °C, ±1.0 %RH) with PTFE membrane cap | I2C over the M12 port |
-| 4 | Black globe | 150 mm copper sphere, about 0.4 mm wall, matte black | Standard globe size, so published globe equations apply |
+| 4 | Black globe | 150 mm copper sphere, about 0.4 mm wall, matte black, hung on a hollow M10 brass tube through the arm | Standard globe size, so published globe equations apply |
 | 5 | Globe probe | 10 k NTC bead at the globe center | Calibrated in CalRig |
-| 6 | Cup anemometer | Three-cup, pulse output, on a short mast at the arm tip | Counted by the FieldNode low-power timer |
-| 7 | Sensor arm | 25 mm square aluminium tube, about 520 mm | Keeps globe and shield about 250 to 450 mm clear of the pole |
-| 8 | Arm clamp | 120° V-saddle 110 x 180 x 30 mm formed from 3 mm aluminium sheet, and two 13 mm stainless strap bands for 60 to 200 mm poles | No drilling; formed sheet saves about $3 and 0.17 kg |
+| 6 | Cup anemometer | Three-cup, pulse output, its mast through the arm tip and pinned | Counted by the FieldNode low-power timer |
+| 7 | Sensor arm | 25 mm square aluminium tube, 530 mm | Keeps globe and shield about 250 to 450 mm clear of the pole |
+| 8 | Arm clamp | Channel 120 x 180 x 40 mm bent from 3 mm aluminium sheet, with 120° V notches in its flanges lined with rubber trim; two angle cheeks that hold the arm; two 13 mm stainless strap bands for 60 to 200 mm poles | No drilling of the pole |
 | 9 | Sensor harness | Two M12 5-pin leads along the pole and arm | Plug-in at both ends |
 | 11 | Secondary retention | Two 1.5 mm stainless lanyards, globe boss and shield top to the arm | Added at TRL 3 |
-| 12 | FieldNode pole adapter | Two 120° V-blocks and strap bands in place of FieldNode's 50 mm V-blocks | Added at TRL 3; FieldNode's kit seats only on poles up to about 71 mm; counted against FieldNode |
-| 13 | Aspiration fan and cowl | 60 x 60 x 15 mm 5 V fan (about 0.9 W) in a printed ASA cowl 76 x 76 x 30 mm on the top plate, exhausting sideways under a solid lid | Added under HMN-DDR-002; 6 s every 3 min from FieldNode's switched 5 V rail |
+| 12 | FieldNode pole adapter | Two printed 120° V-blocks, fixed by FieldNode's own V-block screws, and strap bands, in place of FieldNode's own V-blocks | Added at TRL 3; FieldNode's kit seats only small poles; counted against FieldNode |
+| 13 | Aspiration fan and cowl | 60 x 60 x 15 mm 5 V fan (about 0.9 W) on the top plate under a printed ASA cowl 76 x 76 x 30 mm, exhausting sideways under a solid lid | Added under HMN-DDR-002; 6 s every 3 min from FieldNode's switched 5 V rail |
 
 ![Exploded view](../media/exploded.png)
 
@@ -110,13 +114,13 @@ At the 15 min default, each node sends 96 uplinks of 20 bytes a day (eleven fiel
 
 ### Wind load and mass
 
-At a 35 m/s gust (750 Pa) the sensor head carries 46.1 N (globe 6.6 N, shield 10.7 N, fan cowl 2.1 N, anemometer 7.2 N, arm 19.5 N) and the FieldNode core with its sun shield 88 N (FND-CAL-001 v0.2). The arm root sees 14.1 N·m and 10.8 MPa, a factor of 13.4 on yield; the tip deflects 0.29 mm at 20 m/s. The clamp's band friction resists the twist with a factor of 2.5 at the assumed 1,000 N preload. The node adds about 337 N·m at the pole base, which the pole owner should check.
+At a 35 m/s gust (750 Pa) the sensor head carries 46.5 N (globe 6.6 N, shield 10.7 N, fan cowl 2.1 N, anemometer 7.2 N, arm 19.9 N) and the FieldNode core with its sun shield 88 N (FND-CAL-001 v0.2). The arm root sees 14.6 N·m and 11.1 MPa, a factor of 13.0 on yield; the tip deflects 0.31 mm at 20 m/s. The clamp's band friction resists the twist with a factor of 2.5 at the assumed 1,000 N preload. The node adds about 338 N·m at the pole base, which the pole owner should check.
 
-The sensor head weighs 1.91 kg (clamp 0.40 kg, globe 0.28 kg, anemometer 0.30 kg, arm 0.27 kg, harness 0.27 kg, shield 0.23 kg, fan and cowl 0.06 kg and small parts), within the 4 kg of R15, which now applies to the sensor head. With the FieldNode core and shield (2.55 kg) and the pole adapter (0.24 kg) the complete node weighs 4.70 kg.
+The sensor head weighs 2.12 kg (clamp 0.44 kg, globe with its hanger 0.35 kg, shield 0.32 kg, anemometer 0.31 kg, harness 0.27 kg, arm 0.27 kg, fan and cowl 0.08 kg and small parts), within the 4 kg of R15, which now applies to the sensor head. With the FieldNode core and shield (2.61 kg) and the pole adapter (0.22 kg) the complete node weighs 4.95 kg.
 
 ### Cost
 
-The sensor head (BOM lines 2 to 11 and 13) costs $127.00. The FieldNode core with its sun shield ($134.00) and the pole adapter ($7.00) are counted against FieldNode, and the full node costs $268.00. The fan and cowl took the head $7 over the earlier $120 budget; Amish approved a top-up to $130 on 2026-09-26 (HMN-DDR-002 v0.2), and the head is now $3 within it (R13 met on paper).
+`budget_usd` is a hypothetical value-engineering target, not a spending limit (Amish, 2026-10-01). Value-engineering target: USD 130 for the sensor head. Estimated cost of the constructable design: USD 136 (USD 6 over the target), from BOM lines 2 to 11 and 13. The FieldNode core with its sun shield ($148.00) and the pole adapter ($8.00) are counted against FieldNode, and the full node costs about $292.00. The fan and cowl added $7 in HMN-DDR-002 and the fixings that make the node buildable a further $9 (HMN-DDR-003); the cost drivers and savings worth trying are in the design decisions register (HMN-DEC-001).
 
 ## Key design choices
 
@@ -145,8 +149,8 @@ Decided by Amish, 2026-09-25 (HMN-DDR-001 and HMN-DDR-002).
 
 ## Open questions
 
-- [x] Budget: the sensor head ($127 with the fan) is within the $130 budget approved by Amish on 2026-09-26.
-- [ ] Panel shading: the sensor head shades 16 to 44 % of the FieldNode panel near noon with the arm toward the equator; where should the core go (see the review note)?
+- [x] Budget: `budget_usd` ($130) is a value-engineering target; the constructable sensor head is estimated at $136.
+- [ ] Panel shading: the sensor head shades 16 to 44 % of the FieldNode panel near noon with the arm toward the equator; where should the core go (design decisions register, HMN-DEC-001)?
 - [ ] Mounting height: what do pole owners allow? The calculated difference (0.2 to 0.8 °C) needs a field comparison.
 - [ ] Fan: does a chosen 60 mm fan deliver the 3.4 L/s through the stack that ±0.5 °C needs, and how long does it last outdoors?
 - [ ] Globe response: HMN-CAL-001 estimates about 12 min to 90 %, faster than the TRL 2 estimate; a step test is needed.

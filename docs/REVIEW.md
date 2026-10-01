@@ -246,3 +246,59 @@ This is an appearance model only: no tolerances, no fabrication detail, no PCB l
 - Kit 1.5.0 synced: STANDARDS v1.5 (sections 12 to 15: product renders, storefront images and image quality, public release, authorship and signing), `.kit/cards.py`, `.kit/image_qc.py`, `.kit/release_gate.py`, issue templates, and the `/render-product` and `/release` commands. `CLAUDE.md` now matches `.kit/CLAUDE.md`.
 - Every `media/render-*.png` recaptioned from its original render with the new layout: the title, concept label and repository sit in a band above the render and the view note in a band below it, each line wrapped to the image width, so no text overlaps other text or the render or runs off the image. `media/card.png` and `media/social-preview.png` regenerated with the same rules.
 - `python .kit/image_qc.py` and `python .kit/release_gate.py` pass. trl stays 3.
+
+## Session 2026-10-01: design for construction and prototype build plan (kit 1.7.0)
+
+Under Amish's 2026-09-30 instruction to make the design physically buildable and to write an illustrated build plan ("fix the design assumptions to match and be physically feasible"), and his 2026-10-01 note that `budget_usd` is a value-engineering target. Kit 1.7.0 installed (`.kit/`, `.claude/commands/`, `CLAUDE.md`).
+
+### Design changes made for construction (HMN-DDR-003, Draft, open for Amish's review)
+
+1. Arm saddle: a channel bent from 3 mm 5052 sheet, 120 x 180 x 40 mm (was a 110 mm tray with a round seat for one pole size), with 120° V notches in its flanges lined with rubber edge trim; seats 60 to 200 mm poles.
+2. Arm fixing: two 40 x 40 x 3 mm angle cheeks on the saddle web (four M6 button-head screws); the arm bolted between them by two M6 bolts through crush sleeves.
+3. Saddle bands: through four 3 x 16 mm web slots and across the web front (were rings through the saddle).
+4. Shield: four M5 rods on a 92 mm circle, clear of the cowl (were three, two inside the cowl); printed 12 mm bosses set the plate gaps; two rods continue through the arm on 41 mm spacers (the unfixed central hanger rod is gone).
+5. Fan and cowl: fan flat on the top plate; cowl on four legs over the fan's corner holes; four M4 x 40 screws through cowl, fan and plate.
+6. Sensor: held in a hub on three spokes printed on the third plate, with a nylon set screw.
+7. Globe: hung on a hollow M10 x 1 brass tube nutted above and below the arm; the probe runs down inside it (the solid hanger rod met the probe).
+8. Anemometer: mast through the arm, pinned by one M5 bolt; arm 530 mm (was 520 mm); reach 668 mm (was 679 mm).
+9. Arm end plug added.
+10. Harness rerouted round every part: up the pole outside the bands, round the saddle side, along the arm's left side, tails between the plates, to the hanger tube top and into the mast foot.
+11. Lanyards looped round the arm with snap hooks.
+12. FieldNode pole adapter: printed 120° V-blocks 110 x 30 x 38 mm with band slots in line with FieldNode's plate slots and M4 heat-set inserts at its V-block screw holes (were flat blocks for one pole size covering the slots).
+13. FieldNode envelope updated to FND-DWG-001 Rev P3; FieldNode figures to $148.00 and 2.61 kg after FND-DDR-003.
+
+`python cad/src/model.py --check`: 399 constructability checks (no overlaps, contacts, clearances, pole range), all pass.
+
+### What was done, with file paths
+
+- `cad/src/model.py`: rebuilt as separate components (`build_components`) with the changes above and the checks; STEP and STL re-exported (`cad/step/`, `cad/stl/`).
+- `bom/bom.csv` lines 1, 2, 4, 6, 7, 8, 10, 12 and 13 respecified; `bom/bom-notes.md` updated.
+- `docs/04-calcs/sizing.py` (mass now from the component volumes) re-run; HMN-CAL-001 v0.4, HMN-REQ-001 v0.6, HMN-PRC-001 v0.6.
+- `cad/drawings/HMN-DWG-001` Rev P4; making sketches `HMN-DWG-101` to `107` (saddle, cheek, arm, top plate, ring plates, cowl, adapter V-block).
+- `cad/src/build_plan_media.py`: overview, arm hole layout, 8 joint close-ups and 16 assembly step pictures in `docs/05-build-plan/`.
+- New `docs/05-build-plan.md` (HMN-BLD-001), `docs/06-design-decisions.md` (HMN-DEC-001), `docs/decisions/0003-design-for-construction.md` (HMN-DDR-003).
+- Concept media regenerated (`media/hero.png`, `concept-blueprint.*`, `exploded.png`, `cutaway.png`, `flow.png`, `model.glb`, `viewer.html`).
+- `project.yaml`: `design_state: constructable`; the build plan, register and HMN-DDR-003 added to `trl_evidence`; `budget_usd` unchanged. `README.md`: links line, value-engineering line, Concept figures and a "Building the prototype" section.
+
+### Key results
+
+- Sensor head 2.12 kg (was 1.91 kg) against 4 kg (R15 met on paper); complete node 4.95 kg.
+- Value-engineering target: USD 130. Estimated cost of the constructable design: USD 136 (USD 6 over the target). Full node about USD 292.
+- Arm factor 13.0 on yield, tip 0.31 mm at 20 m/s, clamp twist factor 2.5 (R11 met on paper, preload assumed).
+- Requirement status: 1 not met (R9, measurement height), 3 at risk (R5, R10, R14), 8 met on paper, 2 met by design, R13 $6 over its value-engineering target.
+
+### Decisions proposed and awaiting Amish
+
+All open items are in `docs/06-design-decisions.md`: accept HMN-DDR-003; the sensor hub spokes in the air path (A1); FieldNode panel shading (N8); first partner and city (O1); data publisher (O2); port pinout shared with FieldNode; three appearance-model items from 2026-09-26.
+
+### Stale media (made on Amish's Mac, not regenerated here)
+
+The design changed visibly, so `media/render-hero.png`, `media/render-exploded.png`, `media/render-detail.png`, `media/card.png` and `media/social-preview.png` and the appearance model `cad/src/product_model.py` are stale (they show the tray saddle, three-rod shield and solid globe rod). The `media/render-*.png` files are not in this cloud copy, so the README hero image and render links do not resolve here.
+
+### Safety
+
+No change to the safety case. The build plan adds safety stops for work at height, the FieldNode cell (its own plan), and the self-starting fan, hot globe and spinning cups. Clamp preload still carries the smallest margin (twist factor 2.5); the band tool setting is an item to confirm.
+
+### Recommended next step
+
+Amish's review of HMN-DDR-003 and the register. TRL 4 (building to HMN-BLD-001 and testing) stays on hold by his instruction.
