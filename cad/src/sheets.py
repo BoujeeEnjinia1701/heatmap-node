@@ -97,12 +97,13 @@ def main():
     work = ROOT / "cad" / "drawings" / "_views"
     views = safe_project_views(asm, work)
     bb = asm.bounding_box()
-    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P2",
+    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P3",
               author="Amish Chadha", date=DATE, scale=0.1, theme="technical",
               material="Al arm and formed sheet saddle; ASA shield and cowl; copper globe; bought-in parts per bom/bom.csv. "
                        "PRELIMINARY, NOT FOR FABRICATION",
               revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
-                         ("P2", "HMN-DDR-002: fan, formed saddle, arm to equator, FieldNode shield", DATE, "AC")])
+                         ("P2", "HMN-DDR-002: fan, formed saddle, arm to equator, FieldNode shield", DATE, "AC"),
+                         ("P3", "Layout and labels tidied", DATE, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)
@@ -117,7 +118,7 @@ def main():
     # horizontal positions from the pole axis, stacked above the model
     for i, (xx, lab) in enumerate(((P["shield_x"], f"{P['shield_x']:.0f} shield"), (P["globe_x"], f"{P['globe_x']:.0f} globe"),
                                    (D["anemo_x"], f"{D['anemo_x']:.0f} anemometer"))):
-        yd = Z(top_dim) - 5 * i
+        yd = Z(top_dim) + 8 - 4 * i
         L += [ext(X(0), Z(POLE_TOP) - 1, X(0), yd - 1), ext(X(xx), Z(az) - 1, X(xx), yd - 1)]
         L += dim_h(X(0), X(xx), yd, lab)
     # elevations to the left of the model
@@ -130,10 +131,11 @@ def main():
         x_from = X(D["anemo_x"]) if zz == D["cup_z"] else (X(P["globe_x"]) if zz == D["globe_zc"] else
                   (X(P["shield_x"]) if zz == D["shield_zc"] else (X(0) if zz == az else X(-D["enc_yc"] + P["fn_enc"][1] / 2))))
         L.append(ext(x_from, Z(zz), xl + 1, Z(zz)))
-        L.append(_t(xl, Z(zz) + 0.8, f"EL {lab.upper()}", 2.1, 400, INK, "end"))
+        dy = 1.0 if zz == D["globe_zc"] else (-1.0 if zz == D["shield_zc"] else 0)
+        L.append(_t(xl, Z(zz) + 0.8 + dy, f"EL {lab.upper()}", 2.1, 400, INK, "end"))
     L += dim_h(X(P["globe_x"] - P["globe_d"] / 2), X(P["globe_x"] + P["globe_d"] / 2), Z(D["globe_bot"]) + 5, f"D{P['globe_d']:.0f}")
     L.append(_t(xl, Z(D["overall_top"]) - 12, "ELEVATIONS ABOVE PAVEMENT", 2.0, 600, MUTED, "end"))
-    L += leader(X(0), Z(POLE_BOT + 150), X(0) + 8, Z(POLE_BOT + 60), "EXISTING POLE D114 (NOT SUPPLIED)")
+    L += leader(X(0), Z(POLE_BOT + 150), X(0) + 17, Z(POLE_BOT + 60), "EXISTING POLE D114 (NOT SUPPLIED)")
 
     # top view (from +Z): X to the right, Y up the sheet
     x, y, w, h = c["top"]
