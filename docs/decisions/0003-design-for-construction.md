@@ -3,9 +3,9 @@ doc_id: HMN-DDR-003
 title: HeatMap Node design for construction
 project: HeatMap Node
 doc_type: Design decision record
-version: "0.1"
+version: "0.2"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -13,12 +13,16 @@ revisions:
   date: '2026-10-01'
   author: Amish Chadha
   change: Changes that make the concept physically buildable, with the reason for each; made under Amish's 2026-09-30 instruction to make the design physically buildable; open for his review
+- version: "0.2"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Accepted by Amish on 2026-10-02, with A1 as recommended"
 ---
 
 # 0003: Design for construction
 
 - **Date:** 2026-10-01
-- **Status:** Draft. Made under Amish's 2026-09-30 instruction to make the design physically buildable; open for his review. The one item in Table 3 that touches what the node measures is "Proposed, awaiting Amish".
+- **Status:** accepted. Amish, 2026-10-02: "i approve your recommendations for all 555 open decisions." This covers every change in Tables 1 and 2 and the item in Table 3 (A1), now decided as recommended and recorded in the design decisions register (HMN-DEC-001).
 
 ## Context
 
@@ -56,11 +60,11 @@ The changes keep what the node does: the same sensors, globe, fan-aspirated shie
 | Drawing | HMN-DWG-001 Rev P4; making sketches HMN-DWG-101 to 107 added. | Follows the model. |
 | Documents | HMN-CAL-001 v0.4, HMN-REQ-001 v0.6, HMN-PRC-001 v0.6. R13 is now reported against the value-engineering target; no other requirement changed status. | Follows the model. |
 
-*Table 3. Proposed, awaiting Amish.*
+*Table 3. Proposed, then accepted by Amish as recommended on 2026-10-02.*
 
 | # | Question | Options | Recommendation |
 | --- | --- | --- | --- |
-| A1 | The sensor hub's three 4 mm spokes sit in the aspirated air path, 15 mm above the sensing tip. HMN-CAL-001 does not include their effect on the 0.43 °C shield error. | (a) keep the hub on spokes and include it in the TRL 4 side-by-side shield test; (b) hang the capsule on its lead from a clip on the second plate, with no spokes. | (a): the hub ring and spokes block about 13 % of the 56 mm opening at that one plate, beyond what the capsule itself blocks; a lead-hung capsule can swing against the plates. |
+| A1 | The sensor hub's three 4 mm spokes sit in the aspirated air path, 15 mm above the sensing tip. HMN-CAL-001 does not include their effect on the 0.43 °C shield error. | (a) keep the hub on spokes and include it in the TRL 4 side-by-side shield test; (b) hang the capsule on its lead from a clip on the second plate, with no spokes. | (a): the hub ring and spokes block about 13 % of the 56 mm opening at that one plate, beyond what the capsule itself blocks; a lead-hung capsule can swing against the plates. **Decided 2026-10-02: (a).** |
 
 ## Consequences
 

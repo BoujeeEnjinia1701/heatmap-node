@@ -3,9 +3,9 @@ doc_id: HMN-DEC-001
 title: HeatMap Node design decisions register
 project: HeatMap Node
 doc_type: Design decisions register
-version: "0.1"
+version: "0.2"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -13,6 +13,10 @@ revisions:
     date: '2026-10-01'
     author: Amish Chadha
     change: Register opened with the build plan; open decisions, items to confirm, value engineering and decisions made
+  - version: "0.2"
+    date: '2026-10-02'
+    author: Amish Chadha
+    change: "Amish approved the recommendations for all nine open decisions (HMN-DDR-003 accepted); moved to decisions made"
 ---
 
 # HeatMap Node design decisions register
@@ -21,19 +25,7 @@ Every design decision still to be made, and every decision made, in one place. E
 
 ## Open decisions
 
-| # | Decision needed | Options | Recommendation | Affects in the build | Source |
-| --- | --- | --- | --- | --- | --- |
-| 1 | Accept the design for construction | Accept the thirteen changes of HMN-DDR-003 (saddle as a V-notched channel, cheeks, four-rod shield, fan and cowl screws, sensor hub, hollow globe hanger, through-mast, end plug, harness route, lanyard loops, V-block adapter, FieldNode Rev P3 envelope), or ask for changes | Accept | Every component of the build plan | HMN-DDR-003, Table 1 |
-| 2 | Sensor hub in the air path | (a) keep the hub on three spokes and include it in the TRL 4 shield test; (b) hang the capsule on its lead from a clip on the second plate | (a) | Third shield plate (making sketch HMN-DWG-105) | HMN-DDR-003, A1 |
-| 3 | FieldNode panel shading by the sensor head (16 to 44 % of the panel near noon with the sun along the arm) | (a) mount the core above the arm; (b) keep it below and accept the loss, pending FieldNode's bypass diode layout; (c) move the core to the pole's east or west face | (a) | Where the FieldNode core and its adapter go on the pole, the harness length and steps 14 to 16; the plan builds option (b) as modelled until this is decided | HMN-DDR-002, N8; HMN-CAL-001 [E3] |
-| 4 | First partner and city for co-design and a pilot | Any city or agency willing to host a network | None made | Not part of the TRL 3 build; sets the pole size, the radio band and the site for TRL 4 | HMN-DDR-001, O1 |
-| 5 | Who publishes and hosts the data | TwinKit, CityTwin or a public platform, agreed with the first partner | None made | Not part of the build | HMN-DDR-001, O2 |
-| 6 | Sensor port pin assignment, shared with FieldNode's open pinout | The pins of the two M12 ports for the I2C sensor and fan (port A) and the thermistor and anemometer pulse (port B) | Agree with FieldNode's pinout decision (its O2) | Which wires of each lead go to which sensor tail (step 12) | FieldNode FND-DDR-001, O2; HMN-DDR-002 cross-repo actions |
-| 7 | Appearance model: FieldNode internals shown as stand-ins (board, module can, cell) | Keep as stand-ins; or remove | Keep, and ask the FieldNode repo to confirm cell format and board position | None (appearance only) | REVIEW.md, 2026-09-26 |
-| 8 | Appearance model: vent slots and a HeatMap Node name plate on the FieldNode sun shield | Keep both; keep the name plate only; drop both | Keep the name plate, drop the side slots unless FieldNode adopts them | None at TRL 3; a name plate would be a FieldNode shield change | REVIEW.md, 2026-09-26 |
-| 9 | Appearance model: raised seam ring at the globe equator | Accept for appearance; or remove | Accept | None | REVIEW.md, 2026-09-26 |
-
-The arm end cap of the 2026-09-26 appearance review is now part of the design for construction (HMN-DDR-003, P9) and is covered by decision 1.
+None. All open decisions were decided on 2026-10-02.
 
 ## To confirm when parts are bought
 
@@ -69,3 +61,12 @@ Value-engineering target: USD 130 for the sensor head (a hypothetical control ta
 | 2026-09-25 | N6: R4 restated to 0.8 to 20 m/s with calm intervals flagged | Amish, same instruction | HMN-DDR-002 |
 | 2026-09-26 | N7: `budget_usd` raised from $120 to $130 | Amish: "I am ok with the budget top ups" | HMN-DDR-002 v0.2 |
 | 2026-10-01 | `budget_usd` is a hypothetical value-engineering target, not a limit; cost is reported against it | Amish: "the budgets are a hypothethical control target to ensure we are thinking along a value engineering lens. its ok to ensure wording reflects that the hypothesis budget was x - the real cost being accrued is y" | This register; HMN-CAL-001 v0.4 |
+| 2026-10-02 | Design for construction accepted: the thirteen changes of HMN-DDR-003 as made, including the arm end cap of the 2026-09-26 appearance review (P9) (open item 1) | Amish: "i approve your recommendations for all 555 open decisions." | HMN-DDR-003, Table 1 |
+| 2026-10-02 | Sensor hub kept on three spokes (option a) and included in the TRL 4 side-by-side shield test (open item 2) | Amish: "i approve your recommendations for all 555 open decisions." | HMN-DDR-003, A1 |
+| 2026-10-02 | FieldNode core mounted above the arm (option a), provided its lid stays reachable from the ladder or lift used to fit the arm; if not, the core goes on the pole's east or west face (option c) (open item 3) | Amish: "i approve your recommendations for all 555 open decisions." | HMN-DDR-002, N8; HMN-CAL-001 [E3] |
+| 2026-10-02 | First partner and city: a hot US city with a dedicated heat office; first candidate to approach the City of Phoenix Office of Heat Response and Mitigation, using the US915 band (open item 4) | Amish: "i approve your recommendations for all 555 open decisions." | HMN-DDR-001, O1 |
+| 2026-10-02 | Data routed through a TwinKit gateway and published from CityTwin's open data export under an open licence, with Amish's lab as publisher until the partner city takes it over; mirrored on the city's own open data portal if it has one (open item 5) | Amish: "i approve your recommendations for all 555 open decisions." | HMN-DDR-001, O2 |
+| 2026-10-02 | Sensor ports follow FieldNode's candidate pinout: port A, the I2C sensor on data pins 2 and 4 with sensor and fan on the switched rail; port B, the thermistor on analog pin 5 and the anemometer pulse on pin 2 (open item 6) | Amish: "i approve your recommendations for all 555 open decisions." | FieldNode FND-DDR-001, O2; HMN-DDR-002 cross-repo actions |
+| 2026-10-02 | FieldNode internals kept as stand-ins in the appearance model; the FieldNode repo is asked to confirm the cell format and board position at its next update (open item 7) | Amish: "i approve your recommendations for all 555 open decisions." | REVIEW.md, 2026-09-26 |
+| 2026-10-02 | Name plate kept on the FieldNode sun shield; side vent slots dropped unless FieldNode adopts them (open item 8) | Amish: "i approve your recommendations for all 555 open decisions." | REVIEW.md, 2026-09-26 |
+| 2026-10-02 | Raised seam ring at the globe equator accepted for appearance (open item 9) | Amish: "i approve your recommendations for all 555 open decisions." | REVIEW.md, 2026-09-26 |

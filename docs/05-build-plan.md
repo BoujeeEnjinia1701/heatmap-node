@@ -3,9 +3,9 @@ doc_id: HMN-BLD-001
 title: HeatMap Node prototype build plan
 project: HeatMap Node
 doc_type: Build plan
-version: "0.1"
+version: "0.2"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -13,6 +13,10 @@ revisions:
     date: '2026-10-01'
     author: Amish Chadha
     change: First build plan at TRL 3, with pictures by component and step; design made constructable (HMN-DDR-003)
+  - version: "0.2"
+    date: '2026-10-02'
+    author: Amish Chadha
+    change: "Step 12 gives the sensor port pinout decided by Amish on 2026-10-02 (HMN-DEC-001)"
 ---
 
 # HeatMap Node prototype build plan
@@ -309,7 +313,7 @@ Fit one lanyard through a 2 mm hole drilled in the top plate between two rods, o
 
 ![Step 12](05-build-plan/step-12.png)
 
-Plug the sensor's plug into lead A and join the fan's two wires to its tail; join the probe and the anemometer to lead B's tails. Run both leads along the left side of the arm with a short cable tie every 80, and leave the rest of each lead coiled at the root. **Hold point:** the leads pass outside the cheek bolt heads and nothing touches the cups.
+Plug the sensor's plug into lead A and join the fan's two wires to its tail; join the probe and the anemometer to lead B's tails. The pins follow FieldNode's candidate pinout (HMN-DEC-001): on port A, the sensor's I2C lines on data pins 2 and 4, with sensor and fan on the switched rail; on port B, the thermistor on analog pin 5 and the anemometer pulse on pin 2. Run both leads along the left side of the arm with a short cable tie every 80, and leave the rest of each lead coiled at the root. **Hold point:** the leads pass outside the cheek bolt heads and nothing touches the cups.
 
 ### Step 13: adapter V-blocks onto the FieldNode core
 

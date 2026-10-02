@@ -302,3 +302,37 @@ No change to the safety case. The build plan adds safety stops for work at heigh
 ### Recommended next step
 
 Amish's review of HMN-DDR-003 and the register. TRL 4 (building to HMN-BLD-001 and testing) stays on hold by his instruction.
+
+## Session 2026-10-02: open decisions decided
+
+Amish approved every recommendation for the open decisions on 2026-10-02: "i approve your recommendations for all 555 open decisions."
+
+### Decisions recorded
+
+Nine, all moved to "Decisions made" in HMN-DEC-001 (open items 1 to 9): design for construction accepted (HMN-DDR-003); sensor hub kept on three spokes and included in the TRL 4 shield test; FieldNode core above the arm if its lid stays reachable, otherwise on the pole's east or west face; a hot US city with a dedicated heat office first, with the City of Phoenix Office of Heat Response and Mitigation as the first candidate to approach, on US915; data through a TwinKit gateway and published from CityTwin's open data export under an open licence, with Amish's lab as publisher until the city takes it over; FieldNode's candidate pinout adopted for the two sensor ports; FieldNode internals kept as stand-ins in the appearance model; name plate kept and side vent slots dropped; raised seam ring accepted.
+
+### Documents changed
+
+- `docs/06-design-decisions.md` HMN-DEC-001 v0.2: decisions made; open decisions section now reads "None".
+- `docs/decisions/0003-design-for-construction.md` HMN-DDR-003 v0.2: accepted (status Draft kept); A1 as recommended.
+- `docs/01-problem.md` HMN-PRB-001 v0.6: first partner city and data publisher.
+- `docs/02-concept.md` HMN-PRC-001 v0.7: core position and data publishing; open questions answered.
+- `docs/04-calcs/01-sizing.md` HMN-CAL-001 v0.5: panel shading text notes the decided core position; no figures changed.
+- `docs/05-build-plan.md` HMN-BLD-001 v0.2: step 12 gives the decided port pinout.
+
+### Follow-up actions to carry approved decisions into the design
+
+1. Decision 3 (model): move the FieldNode core and its adapter above the arm in `cad/src/model.py`, or to the pole's east or west face if its lid cannot be reached from the ladder or lift there; re-run the constructability check.
+2. Decision 3 (pictures, drawings): redraw steps 14 to 16, the overview and the adapter making sketch for the new core position, and update the build plan text of those steps.
+3. Decision 3 (BOM): re-specify the harness lead length (line 9) for the new core position.
+4. Decision 3 (calculations): rerun the panel shading [E3], the wind load and the clamp check for the core above the arm, and check the core height against FieldNode's decided 1.75 m mounting height.
+5. Decision 2 (docs): put the hub and spokes in the TRL 4 side-by-side shield test plan.
+6. Decision 6 (docs): ask the FieldNode repo to adopt the same pinout as its O2 decision, so that both repos agree.
+7. Decision 7 (docs): ask the FieldNode repo to confirm the cell format and board position at its next update, then update the stand-ins.
+8. Decision 8 (pictures): drop the side vent slots from `cad/src/product_model.py`, keep the name plate, and re-render on Amish's Mac.
+
+### Points found in the review
+
+- R9 (sensors at 1.1 to 2.0 m) is not met, with sensors at about 2.68 m, yet no open decision addresses it; either restate R9 around the height correction already decided or add an item.
+- Item 3 says the plan builds option (b) until decided; if option (a) is chosen, steps 14 to 16 and the harness length change, and the core rises above FieldNode's decided 1.75 m mounting height.
+- Sensor head cost is $136 against the $130 target, $6 over; the full node is $292.

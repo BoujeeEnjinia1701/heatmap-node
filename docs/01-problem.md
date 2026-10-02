@@ -3,9 +3,9 @@ doc_id: HMN-PRB-001
 title: HeatMap Node problem statement
 project: HeatMap Node
 doc_type: Problem statement
-version: "0.5"
+version: "0.6"
 status: Draft
-date: '2026-09-26'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -29,6 +29,10 @@ revisions:
   date: '2026-09-26'
   author: Amish Chadha
   change: "Budget top-up approved by Amish: sensor head limit $130"
+- version: "0.6"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "First partner city and data publisher decided by Amish on 2026-10-02; City of Phoenix Office of Heat Response and Mitigation named as the first candidate to approach"
 ---
 
 # HeatMap Node problem statement
@@ -87,10 +91,10 @@ Three gaps keep cities from acting on this at block scale:
 
 ## Open questions
 
-- Which city or community partner hosts the first network, and on whose poles?
+- Which city or community partner hosts the first network, and on whose poles? Decided 2026-10-02: a hot US city with a dedicated heat office; the first candidate to approach is the City of Phoenix Office of Heat Response and Mitigation, using the US915 band. Nothing is agreed, and whose poles is still to be settled with the city (HMN-DEC-001).
 - What mounting height is acceptable to pole owners? HMN-CAL-001 gives a first estimate of the height error (up to about 0.8 °C in strong sun); a field comparison of 2.0 and 2.8 m is still needed.
 - Which output do users want most: air temperature, WBGT, mean radiant temperature, or a simple heat stress category?
-- Who owns and publishes the data?
+- Who owns and publishes the data? Decided 2026-10-02: Amish's lab publishes it under an open licence from CityTwin's open data export until the partner city takes it over (HMN-DEC-001).
 
 ## User research and co-design
 

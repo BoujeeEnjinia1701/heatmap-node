@@ -3,9 +3,9 @@ doc_id: HMN-PRC-001
 title: HeatMap Node design precis
 project: HeatMap Node
 doc_type: Design precis
-version: "0.6"
+version: "0.7"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -33,6 +33,10 @@ revisions:
   date: '2026-10-01'
   author: Amish Chadha
   change: "Design for construction (HMN-DDR-003): components, mass, wind and cost updated; budget reported as a value-engineering target; build plan HMN-BLD-001 added"
+- version: "0.7"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Core position and data publishing decided by Amish on 2026-10-02 (HMN-DEC-001)"
 ---
 
 # HeatMap Node design precis
@@ -132,8 +136,8 @@ Decided by Amish, 2026-09-25 (HMN-DDR-001 and HMN-DDR-002).
 4. **Fit a cup anemometer** rather than use wind from the nearest official station, because street wind differs strongly from airport wind and MRT is sensitive to it. Its range starts at about 0.8 m/s, and calm intervals are flagged rather than corrected.
 5. **Fan-aspirated shield**, run 6 s before each reading every 3 min, rather than a naturally ventilated shield, which reads about 1 °C high in full sun at 1 m/s. The fan adds 35 mW, a wear part and $7.
 6. **Arm at about 2.8 m** to deter tampering (D2), with a correction to pedestrian height (HMN-CAL-001 estimates 0.2 to 0.8 °C in strong sun) and a later pilot comparing 2.0 and 2.8 m (TRL 4, on hold), rather than at 1.5 to 2 m where the data is most representative (R9 not met).
-7. **Arm toward the equator**, with the FieldNode core below it, so the pole does not shade the globe near midday. HMN-CAL-001 finds that the sensor head then shades part of the FieldNode panel; a response is awaiting Amish.
-8. **Open data, environmental channels only** (R12, D8). Who publishes and hosts the data remains open.
+7. **Arm toward the equator**, with the FieldNode core below it, so the pole does not shade the globe near midday. HMN-CAL-001 finds that the sensor head then shades part of the FieldNode panel. Amish decided on 2026-10-02 to mount the FieldNode core above the arm, provided its lid stays reachable from the ladder or lift used to fit the arm, and otherwise on the pole's east or west face (HMN-DEC-001); the model and build plan still show the core below the arm.
+8. **Open data, environmental channels only** (R12, D8). The data go through a TwinKit gateway and are published from CityTwin's open data export under an open licence, with Amish's lab as publisher until the partner city takes it over (decided 2026-10-02, HMN-DEC-001).
 
 ## Safety
 
@@ -150,10 +154,10 @@ Decided by Amish, 2026-09-25 (HMN-DDR-001 and HMN-DDR-002).
 ## Open questions
 
 - [x] Budget: `budget_usd` ($130) is a value-engineering target; the constructable sensor head is estimated at $136.
-- [ ] Panel shading: the sensor head shades 16 to 44 % of the FieldNode panel near noon with the arm toward the equator; where should the core go (design decisions register, HMN-DEC-001)?
+- [x] Panel shading: the sensor head shades 16 to 44 % of the FieldNode panel near noon with the arm toward the equator; where should the core go? Decided 2026-10-02: above the arm if its lid stays reachable, otherwise on the pole's east or west face (HMN-DEC-001).
 - [ ] Mounting height: what do pole owners allow? The calculated difference (0.2 to 0.8 °C) needs a field comparison.
 - [ ] Fan: does a chosen 60 mm fan deliver the 3.4 L/s through the stack that ±0.5 °C needs, and how long does it last outdoors?
 - [ ] Globe response: HMN-CAL-001 estimates about 12 min to 90 %, faster than the TRL 2 estimate; a step test is needed.
 - [ ] How often must nodes be recalibrated in CalRig, and how are dust and fading of the black paint handled?
-- [ ] Data model and hosting: TwinKit, CityTwin or a public platform, and who publishes it?
+- [x] Data model and hosting: TwinKit, CityTwin or a public platform, and who publishes it? Decided 2026-10-02: through a TwinKit gateway, published from CityTwin's open data export under an open licence, with Amish's lab as publisher until the partner city takes it over, and mirrored on the city's own open data portal if it has one (HMN-DEC-001).
 - [ ] Night-time value: are 15 min means enough to capture nights that do not cool, when the body cannot recover from daytime heat?

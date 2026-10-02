@@ -3,9 +3,9 @@ doc_id: HMN-CAL-001
 title: HeatMap Node sizing calculations
 project: HeatMap Node
 doc_type: Calculation
-version: "0.4"
+version: "0.5"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -25,6 +25,10 @@ revisions:
   date: '2026-10-01'
   author: Amish Chadha
   change: Design for construction (HMN-DDR-003); mass from the constructable model; FieldNode figures after FND-DDR-003; cost reported against the value-engineering target
+- version: "0.5"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Panel shading text notes the core position decided on 2026-10-02; no figures changed"
 ---
 
 # HeatMap Node sizing calculations
@@ -91,7 +95,7 @@ The design case is a node on a 114.3 mm (4.5 in) street pole with the arm axis 2
 - **Height correction.** On a sunny afternoon the air near the pavement is warmer than at the sensor. At 1 m/s the estimate gives +0.72 °C at 1.1 m, +0.44 °C at 1.5 m and +0.21 °C at 2.0 m relative to the 2.69 m of the shield; at 3 m/s, +0.80, +0.50 and +0.24 °C [E1]. A node at 2.7 m therefore reads pedestrian-height air temperature low by up to about 0.8 °C in strong sun, which would enter WBGT at about 0.4 °C (section B). At night and in shade the difference is smaller or reversed. The radiant field changes less with height, because the pavement fills about half of the globe's view at any height above an open street; walls change this in narrow streets.
 - **R9 is not met.** The target is unchanged under HMN-DDR-001 D2, decided by Amish on 2026-09-25; the correction above, with a pilot comparing 2.0 and 2.8 m (TRL 4, on hold), is the decided path. The fan cowl lowers the shield by 25 mm, so the sensors now sit at 2.67 to 2.69 m.
 - **Pole shading of the globe.** From the globe, the 114 mm pole spans 13.0°. With the arm pointing east or west the sun would pass behind it for about 0.9 h a day. The arm now points toward the equator (HMN-DDR-002), so the pole is on the poleward side of the globe, which the sun reaches only in the tropics, near noon and high in the sky [E2].
-- **Shading of the FieldNode panel.** With the core below the arm and both facing the equator, the shield, cowl, globe and arm cast shadows onto the FieldNode panel. With the sun straight along the arm, 44 % of the panel is shaded at 30° elevation, 34 % at 45°, 27 % at 60° and 16 % at 75°; 30° off the arm's azimuth the shares are 15 to 33 %, and 60° off, 1 to 17 % [E3]. Shade on part of a series-connected panel can cut its output by much more than the shaded share, depending on its bypass diodes. This was not foreseen when the orientation was recommended and is raised in `docs/REVIEW.md` as a new item awaiting Amish.
+- **Shading of the FieldNode panel.** With the core below the arm and both facing the equator, the shield, cowl, globe and arm cast shadows onto the FieldNode panel. With the sun straight along the arm, 44 % of the panel is shaded at 30° elevation, 34 % at 45°, 27 % at 60° and 16 % at 75°; 30° off the arm's azimuth the shares are 15 to 33 %, and 60° off, 1 to 17 % [E3]. Shade on part of a series-connected panel can cut its output by much more than the shaded share, depending on its bypass diodes. This was not foreseen when the orientation was recommended. Amish decided on 2026-10-02 to mount the core above the arm, or on the pole's east or west face if its lid cannot be reached there (HMN-DEC-001); these figures are for the core below the arm and are to be rerun.
 
 ## F. Sensor power (R7)
 
