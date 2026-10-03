@@ -300,7 +300,7 @@ def product_parts(P=PARAMS):
     yb = D["enc_yc"]
     hy = -r - 6
     pts = [(-yb, px1, z0 - 30), (-yb, px1, z0 - 50), (20, hy, z0 - 50),
-           (20, hy, az - 60), (r * 0.7, -r * 0.75, az - 60),
+           (20, hy, az + 105), (r * 0.7, -r * 0.75, az + 105), (90, -64, az + 105), (90, -64, az - 20),   # core above the arm: leads run down the pole
            (x0 + 10, -18, az - 20), (D["anemo_x"] - 30, -18, az - 20)]
     harness = _pipe(pts, 3.5)
     harness += _pipe([(sx + 30, -18, az - 20), (sx + 5, -20, D["cowl_top"] + 2), (sx + 5, -20, D["shield_top"] - 10)], 2.5)
@@ -390,9 +390,7 @@ def product_parts(P=PARAMS):
         shield += _box(sxn * (xo + st / 2), (yb_s + yf_s - st) / 2, zlo + hs / 2, st, yb_s - (yf_s - st), hs)
     shield += _box(0, (yf_s - st + yb_s - P["fns_slot"]) / 2, zhi + st / 2, 2 * (xo + st),
                    yb_s - P["fns_slot"] - (yf_s - st), st)
-    for k in range(4):                                   # vent slots in the sides
-        for sxn in (-1, 1):
-            shield -= _box(sxn * (xo + st / 2), (yb_s + yf_s) / 2, zlo + 40 + 40 * k, 4, 60, 8)
+    # side vent slots dropped (HMN-DEC-001, item 8, 2026-10-02); the name plate stays
     add("FieldNode sun shield (white)", turn * shield, C_WHITE, "painted", 1, "shell", fn(400))
     fy = yf_s - st
     npl = _box(0, fy - 0.2, zlo + hs * 0.62, 110, 0.4, 36)

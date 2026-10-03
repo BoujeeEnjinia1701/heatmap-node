@@ -3,9 +3,9 @@ doc_id: HMN-REQ-001
 title: HeatMap Node requirements
 project: HeatMap Node
 doc_type: Requirements
-version: "0.6"
+version: "0.7"
 status: Draft
-date: '2026-10-01'
+date: '2026-10-02'
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -33,6 +33,10 @@ revisions:
   date: '2026-10-01'
   author: Amish Chadha
   change: Status from HMN-CAL-001 v0.4 after the design for construction (HMN-DDR-003); R13 reported against the value-engineering target
+- version: "0.7"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Core above the arm carried into the model (2026-10-02): R7 note, R15 mass 2.08 kg head and 4.92 kg node; no status changes"
 ---
 
 # HeatMap Node requirements
@@ -73,11 +77,11 @@ One requirement is **not met** on paper (R9), three are **at risk** (R5, R10 and
 | R3 | Probe ±0.18 °C (±0.26 °C with a maximum-tolerance reference); 90 % response about 12 min | Met on paper |
 | R4 | Start-up about 0.8 m/s (typical, unverified); calm share reported and flagged at 20 % of an interval | Met on paper (start-up unverified) |
 | R6 | 20 B payload; 23.7 s/day at SF9; 7 days in 21.5 kB; 16 min latency for 99 % of intervals | Met on paper |
-| R7 | Sensors and fan 35.4 mW, 35 % of FieldNode's 100 mW design allowance | Met on paper (panel shading not included) |
+| R7 | Sensors and fan 35.4 mW, 35 % of FieldNode's 100 mW design allowance | Met on paper (the head no longer shades the panel) |
 | R8 | FieldNode interior 57.2 °C at 50 °C air with its sun shield, against 70 °C; sensor head parts within ratings | Met on paper (shield factor assumed) |
 | R11 | Arm factor 13.0 on yield; 0.31 mm at 20 m/s; clamp twist factor 2.5 | Met on paper (preload assumed) |
 | R13 | Value-engineering target: USD 130. Estimated cost of the constructable design: USD 136 (USD 6 over the target). FieldNode core with shield and adapter $156.00; full node $292.00 | Over the target by $6.00 |
-| R15 | Sensor head 2.12 kg; complete node 4.95 kg for information; largest part 290 mm | Met on paper |
+| R15 | Sensor head 2.08 kg; complete node 4.92 kg for information; largest part 290 mm | Met on paper |
 | R2 | SHT45 ±1.0 %RH typical | Met by design |
 | R12 | No imaging, audio or radio scanning parts; environmental payload only | Met by design |
 

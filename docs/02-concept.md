@@ -3,7 +3,7 @@ doc_id: HMN-PRC-001
 title: HeatMap Node design precis
 project: HeatMap Node
 doc_type: Design precis
-version: "0.7"
+version: "0.8"
 status: Draft
 date: '2026-10-02'
 author: Amish Chadha
@@ -37,6 +37,10 @@ revisions:
   date: '2026-10-02'
   author: Amish Chadha
   change: "Core position and data publishing decided by Amish on 2026-10-02 (HMN-DEC-001)"
+- version: "0.8"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "FieldNode core above the arm in the model and pictures (HMN-DEC-001, item 3); mass 2.08 kg"
 ---
 
 # HeatMap Node design precis
@@ -49,7 +53,7 @@ The TRL 3 calculations (HMN-CAL-001 v0.4) confirm the heat stress method and the
 
 ![Hero render](../media/hero.png)
 
-*Figure 1. HeatMap Node on a 114 mm street pole, arm axis at 2.8 m pointing toward the equator, FieldNode core with its sun shield below the arm and facing the same way, with a 1.75 m person for scale. The pole is not supplied. CONCEPT, NOT FOR FABRICATION.*
+*Figure 1. HeatMap Node on a 114 mm street pole, arm axis at 2.8 m pointing toward the equator, FieldNode core with its sun shield above the arm and facing the same way, with a 1.75 m person for scale. The pole is not supplied. CONCEPT, NOT FOR FABRICATION.*
 
 ## How it works
 
@@ -120,7 +124,7 @@ At the 15 min default, each node sends 96 uplinks of 20 bytes a day (eleven fiel
 
 At a 35 m/s gust (750 Pa) the sensor head carries 46.5 N (globe 6.6 N, shield 10.7 N, fan cowl 2.1 N, anemometer 7.2 N, arm 19.9 N) and the FieldNode core with its sun shield 88 N (FND-CAL-001 v0.2). The arm root sees 14.6 N·m and 11.1 MPa, a factor of 13.0 on yield; the tip deflects 0.31 mm at 20 m/s. The clamp's band friction resists the twist with a factor of 2.5 at the assumed 1,000 N preload. The node adds about 338 N·m at the pole base, which the pole owner should check.
 
-The sensor head weighs 2.12 kg (clamp 0.44 kg, globe with its hanger 0.35 kg, shield 0.32 kg, anemometer 0.31 kg, harness 0.27 kg, arm 0.27 kg, fan and cowl 0.08 kg and small parts), within the 4 kg of R15, which now applies to the sensor head. With the FieldNode core and shield (2.61 kg) and the pole adapter (0.22 kg) the complete node weighs 4.95 kg.
+The sensor head weighs 2.08 kg (clamp 0.44 kg, globe with its hanger 0.35 kg, shield 0.32 kg, anemometer 0.31 kg, harness 0.24 kg, arm 0.27 kg, fan and cowl 0.08 kg and small parts), within the 4 kg of R15, which now applies to the sensor head. With the FieldNode core and shield (2.61 kg) and the pole adapter (0.22 kg) the complete node weighs 4.92 kg.
 
 ### Cost
 
@@ -136,7 +140,7 @@ Decided by Amish, 2026-09-25 (HMN-DDR-001 and HMN-DDR-002).
 4. **Fit a cup anemometer** rather than use wind from the nearest official station, because street wind differs strongly from airport wind and MRT is sensitive to it. Its range starts at about 0.8 m/s, and calm intervals are flagged rather than corrected.
 5. **Fan-aspirated shield**, run 6 s before each reading every 3 min, rather than a naturally ventilated shield, which reads about 1 °C high in full sun at 1 m/s. The fan adds 35 mW, a wear part and $7.
 6. **Arm at about 2.8 m** to deter tampering (D2), with a correction to pedestrian height (HMN-CAL-001 estimates 0.2 to 0.8 °C in strong sun) and a later pilot comparing 2.0 and 2.8 m (TRL 4, on hold), rather than at 1.5 to 2 m where the data is most representative (R9 not met).
-7. **Arm toward the equator**, with the FieldNode core below it, so the pole does not shade the globe near midday. HMN-CAL-001 finds that the sensor head then shades part of the FieldNode panel. Amish decided on 2026-10-02 to mount the FieldNode core above the arm, provided its lid stays reachable from the ladder or lift used to fit the arm, and otherwise on the pole's east or west face (HMN-DEC-001); the model and build plan still show the core below the arm.
+7. **Arm toward the equator**, so the pole does not shade the globe near midday. With the FieldNode core below the arm, HMN-CAL-001 found that the sensor head shaded part of the FieldNode panel. Amish decided on 2026-10-02 to mount the core above the arm, provided its lid stays reachable from the ladder or lift used to fit the arm, and otherwise on the pole's east or west face (HMN-DEC-001). The model and build plan now have the core above the arm, its bottom at 3.11 m, and the head shades none of the panel; the panel and core can shade the sensors only with the sun on the pole side, in the tropics near noon (HMN-CAL-001 E3b).
 8. **Open data, environmental channels only** (R12, D8). The data go through a TwinKit gateway and are published from CityTwin's open data export under an open licence, with Amish's lab as publisher until the partner city takes it over (decided 2026-10-02, HMN-DEC-001).
 
 ## Safety

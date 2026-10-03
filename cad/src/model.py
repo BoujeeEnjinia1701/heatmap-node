@@ -1,7 +1,7 @@
 """HeatMap Node parametric model (build123d), TRL 3, constructable design (HMN-DDR-003).
 
 Revised under HMN-DDR-002 (2026-09-25): aspiration fan and cowl on the shield, formed sheet
-saddle, arm pointing toward the equator with the FieldNode core below it, and FieldNode's
+saddle, arm pointing toward the equator with the FieldNode core above it (2026-10-02), and FieldNode's
 hot-climate sun shield on the core. Made constructable under HMN-DDR-003 (2026-10-01,
 "Design for construction"): every part can now be cut, bent, drilled, printed or bought, and
 every part touches and is fixed to the parts next to it. `python cad/src/model.py --check`
@@ -16,7 +16,9 @@ Exports STEP and STL into cad/step and cad/stl:
 Axes: the existing street pole is the Z axis (x = y = 0), Z is up with the pavement at
 z = 0. The sensor arm reaches out along +X, which points toward the equator (HMN-DDR-002).
 The FieldNode core is built in its own convention (panel facing -Y) and turned by fn_azimuth
-about the pole, so it hangs on the pole's +X face below the arm with its panel facing +X.
+about the pole, so it sits on the pole's +X face above the arm (its whip 100 mm or more clear of the arm)
+with its panel facing +X. Decided 2026-10-02 (HMN-DEC-001, item 3, option a); the sensor leads run
+down the pole from the core ports to the arm.
 The FieldNode core is an envelope taken from FND-DWG-001 Rev P3 (back plate with its band slots
 and V-block screw holes, enclosure, ports, whip, panel, a simplified bracket and the hot-climate
 sun shield); it is built to the FieldNode build plan FND-BLD-001 in its own repo. Main
@@ -32,7 +34,7 @@ from pathlib import Path
 # Top-level parameters (mm). Edit these, not the geometry below.
 PARAMS = {
     # site interface: existing round pole (design case 114.3 mm OD, 4 in nominal); fit range
-    "pole_od": 114.3, "pole_range": (60.0, 200.0), "pole_h": 3400.0,   # shown height only
+    "pole_od": 114.3, "pole_range": (60.0, 200.0), "pole_h": 4000.0,   # shown height only
     # 8 arm clamp (HMN-DDR-003): 3 mm aluminium sheet formed into a channel; web (Y) x height (Z)
     #   x depth (X); the top and bottom flanges carry 120 deg V notches lined with rubber edge trim
     "saddle": (120.0, 180.0, 40.0), "saddle_wall": 3.0, "v_angle": 120.0, "trim_t": 1.5,
@@ -66,7 +68,7 @@ PARAMS = {
     # 1 FieldNode core envelope, from FND-DWG-001 Rev P3: enclosure W (X) x D (Y) x H (Z),
     #   bottom height, back plate W x H x t, panel (X x slope x t), tilt, center (y from the plate
     #   rear face, height above the enclosure bottom), whip, port and antenna positions
-    "fn_enc": (150.0, 90.0, 200.0), "fn_z0": 2150.0, "fn_plate": (180.0, 320.0, 3.0), "fn_plate_drop": 40.0,
+    "fn_enc": (150.0, 90.0, 200.0), "fn_z0": 3110.0, "fn_plate": (180.0, 320.0, 3.0), "fn_plate_drop": 40.0,
     "fn_panel": (290.0, 200.0, 17.0), "fn_tilt": 40.0, "fn_panel_c": (-73.0, 385.0),
     "fn_whip": (10.0, 190.0), "fn_ports_x": (-54.0, -22.0), "fn_ant_x": 30.0, "fn_front_row": 55.0,
     "fn_band_slot_x": 51.0, "fn_vscrew_x": 18.0,
@@ -78,6 +80,9 @@ PARAMS = {
     # FieldNode hot-climate sun shield (FND BOM line 14): sheet (drawn), gap, low edge, top slot
     "fns_t": 1.0, "fns_gap": 15.0, "fns_low": 10.0, "fns_slot": 30.0,
 }
+
+
+HARNESS_RUN = {}   # filled by build_components: mm of lead from each core port to the arm sensors (the main run, before the sensor tails)
 
 
 def derived(p=PARAMS):
@@ -515,9 +520,9 @@ def build_components(p=PARAMS):
         wx, wy = -yrow, px          # port after the 90 deg turn: (x, y) -> (-y, x)
         a = math.radians(ang + dang)
         prx, pry = rr_ * math.cos(a), rr_ * math.sin(a)
-        zlow = z0 - 70 - 10 * k
-        pts = [(wx, wy, z0 - 16), (wx, wy, zlow), (60, -80 - 8 * k, zlow), (prx, pry, zlow), (prx, pry, az - 105 + 8 * k),
-               (45, -82 - 8 * k, az - 105 + 8 * k), (90, -64 - 8 * k, az - 105 + 8 * k), (90, -64 - 8 * k, az + dzl), (125, -27, az + dzl), (140, -19.5, az + dzl)]
+        zlow = z0 - 70 - 10 * k          # the leads leave the core ports downward and run down the pole
+        pts = [(wx, wy, z0 - 16), (wx, wy, zlow), (60, -80 - 8 * k, zlow), (prx, pry, zlow), (prx, pry, az + 105 - 8 * k),
+               (45, -82 - 8 * k, az + 105 - 8 * k), (90, -64 - 8 * k, az + 105 - 8 * k), (90, -64 - 8 * k, az + dzl), (125, -27, az + dzl), (140, -19.5, az + dzl)]
         if k == 0:      # lead A: temperature and humidity sensor and fan
             pts += [(sx + 60, -19.5, az + dzl)]
             lead = path(pts, ld_)
@@ -529,6 +534,7 @@ def build_components(p=PARAMS):
             lead = path(pts, ld_)
             lead = lead + path([(gx - 25, -19.5, az + dzl), (gx - 25, -19.5, h_top + 6), (gx, 0, h_top + 6)], td)
             lead = lead + path([(ax - 14, -19.5, az + dzl), (ax - 14, -10, mb - 4), (ax, 0, mb - 4)], td)
+        HARNESS_RUN[k] = sum(math.dist(pts[i], pts[i + 1]) for i in range(len(pts) - 1))
         leads = lead if leads is None else leads + lead
     add("harness", "Sensor harness (2 leads)", leads, 9, "bought", 0)
     return C
@@ -578,7 +584,7 @@ def check(p=PARAMS, verbose=True):
     import itertools
     C = build_components(p)
     D = derived(p)
-    pole = pole_context(p, p["fn_z0"] - 200, p["arm_z"] + 300)
+    pole = pole_context(p, p["arm_z"] - 300, p["fn_z0"] + 700)
     shapes = {k: c.shape for k, c in C.items()}
     shapes["pole"] = pole
     # pairs that are meant to share material: a threaded or pressed joint modelled as one volume
@@ -608,7 +614,8 @@ def check(p=PARAMS, verbose=True):
     clear = [("harness", "pole", 0.5), ("harness", "saddle", 2.0), ("harness", "cheeks", 0.5), ("harness", "plates", 0.5),
              ("harness", "clamp_bolts", 0.5), ("harness", "bands", 0.5), ("harness", "abands", 0.5), ("harness", "vblocks", 2.0),
              ("cowl", "rods", 2.0), ("cowl", "spacers", 2.0), ("globe", "arm", 30.0), ("plates", "arm", 30.0),
-             ("fieldnode", "arm", 100.0), ("fieldnode", "plates", 50.0), ("fieldnode", "globe", 50.0), ("anemometer", "globe", 10.0),
+             ("fieldnode", "arm", 100.0), ("fieldnode", "saddle", 50.0), ("fieldnode", "cheeks", 50.0), ("fieldnode", "bands", 50.0),
+             ("fieldnode", "anemometer", 100.0), ("fieldnode", "plates", 50.0), ("fieldnode", "globe", 50.0), ("anemometer", "globe", 10.0),
              ("saddle", "pole", 1.0), ("th_sensor", "plates", 0.1)]
     for a, c, m in clear:
         d = dist(a, c)

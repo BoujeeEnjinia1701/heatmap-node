@@ -3,7 +3,7 @@ doc_id: HMN-BLD-001
 title: HeatMap Node prototype build plan
 project: HeatMap Node
 doc_type: Build plan
-version: "0.2"
+version: "0.3"
 status: Draft
 date: '2026-10-02'
 author: Amish Chadha
@@ -17,6 +17,10 @@ revisions:
     date: '2026-10-02'
     author: Amish Chadha
     change: "Step 12 gives the sensor port pinout decided by Amish on 2026-10-02 (HMN-DEC-001)"
+  - version: "0.3"
+    date: '2026-10-02'
+    author: Amish Chadha
+    change: "FieldNode core moved above the arm (HMN-DEC-001, item 3): steps 14 to 16 reordered and redrawn, harness leads re-specified, pictures redrawn"
 ---
 
 # HeatMap Node prototype build plan
@@ -29,9 +33,9 @@ revisions:
 
 *Figure 1. Every component pulled apart and numbered in build order. The pole is not shown.*
 
-The prototype is one HeatMap Node on a street pole: a sensor head on a short aluminium arm, about 2.8 m up, and a FieldNode core below it that powers the sensors and sends their readings by radio. The arm carries a stack of white plates with a small fan on top and an air temperature and humidity sensor inside, a 150 mm black globe with a temperature probe at its centre, and a cup anemometer at its tip. Figure 1 shows the 19 components in the order you make or fit them. Six kinds are made in a small workshop: the arm saddle (a bent aluminium sheet), two arm cheeks, the arm, the printed shield plates, the printed fan cowl and two printed V-blocks that seat the FieldNode core on a large pole. Everything else is bought and fitted, and the FieldNode core is built to its own plan (FND-BLD-001) with these V-blocks in place of its own. The work is sawing, drilling and filing aluminium, one sheet-metal bending job that a local shop can do, 3D printing in ASA, cutting threaded rod and tube to length, and plugging in bought sensors. The sensor head's parts cost about $136, from the bill of materials.
+The prototype is one HeatMap Node on a street pole: a sensor head on a short aluminium arm, about 2.8 m up, and a FieldNode core above it, its bottom at about 3.1 m, that powers the sensors and sends their readings by radio. The arm carries a stack of white plates with a small fan on top and an air temperature and humidity sensor inside, a 150 mm black globe with a temperature probe at its centre, and a cup anemometer at its tip. Figure 1 shows the 19 components in the order you make or fit them. Six kinds are made in a small workshop: the arm saddle (a bent aluminium sheet), two arm cheeks, the arm, the printed shield plates, the printed fan cowl and two printed V-blocks that seat the FieldNode core on a large pole. Everything else is bought and fitted, and the FieldNode core is built to its own plan (FND-BLD-001) with these V-blocks in place of its own. The work is sawing, drilling and filing aluminium, one sheet-metal bending job that a local shop can do, 3D printing in ASA, cutting threaded rod and tube to length, and plugging in bought sensors. The sensor head's parts cost about $136, from the bill of materials.
 
-> **Safety:** The node is fitted at about 2.2 to 3 m on a street pole next to traffic: that work needs the pole owner's written permission, a lift or a stable ladder with a second person, fall protection and traffic management, and must stay clear of overhead lines and any live parts of a lighting pole. The FieldNode core holds a lithium iron phosphate cell of about 19 Wh; follow the cell stops in its own build plan. The black globe gets hot in sun (about 67 °C at 50 °C air), the cups spin, and the fan starts by itself every 3 minutes once powered. Cut aluminium edges are sharp: deburr everything. Printing ASA gives off fumes; print in a ventilated space.
+> **Safety:** The node is fitted at about 2.7 to 3.6 m on a street pole next to traffic: that work needs the pole owner's written permission, a lift or a stable ladder with a second person, fall protection and traffic management, and must stay clear of overhead lines and any live parts of a lighting pole. The FieldNode core holds a lithium iron phosphate cell of about 19 Wh; follow the cell stops in its own build plan. The black globe gets hot in sun (about 67 °C at 50 °C air), the cups spin, and the fan starts by itself every 3 minutes once powered. Cut aluminium edges are sharp: deburr everything. Printing ASA gives off fumes; print in a ventilated space.
 
 ## 2. What changed to make it buildable
 
@@ -50,6 +54,7 @@ The concept showed what the node does; some of its parts could not be made or fi
 | Globe hanger | A solid rod meeting the probe at the same point | A hollow threaded brass tube, nutted to the arm; the probe runs down inside it (Figure 16) | The hanger and the probe share one path |
 | Anemometer | Standing on the arm with no fixing | Mast through the arm, pinned with one bolt; arm 10 mm longer (Figure 17) | Cannot tip or turn |
 | Harness and lanyards | Passing through parts; ending at the arm | Rerouted round every part; lanyards looped round the arm | Every cable and wire has a real path |
+| FieldNode core position | Below the arm, its bottom at 2.15 m, with the sensor leads running up the pole to the arm | Above the arm, its bottom at 3.11 m so that its antenna whip clears the arm by 100 or more; the leads run from the ports up the pole and down to the arm | The sensor head no longer shades the core's solar panel, and the core's lid is reached from the same ladder or lift that fits the arm |
 | FieldNode adapter | Flat blocks for one pole size, covering FieldNode's band slots | V-blocks with band slots and inserts at FieldNode's screw holes (Figure 15) | Fits the FieldNode back plate with no new holes |
 
 ## 3. Making the components
@@ -235,7 +240,7 @@ Buy to specification, not brand. Line numbers are those of the bill of materials
 - **Shield rods and spacers (line 2).** M5 316 stainless threaded rod cut to two lengths of 192 and two of 121; two spacers 41 long cut from 8 mm aluminium tube with a 5.3 bore; four M5 acorn nuts and six M5 nuts.
 - **Fan (line 13).** 60 x 60 x 15, 5 V, ball bearing, corner holes on a 50 square for M4.
 - **Rubber edge trim and strap bands (lines 8 and 12).** Edge trim for 3 mm sheet with about 1.5 of rubber on the edge. Four 13 mm 316 stainless strap bands with buckles, two for the saddle and two for the adapter, cut to length for the pole on site (about 0.5 m each on a 114 mm pole).
-- **Sensor harness (line 9).** Two outdoor cables about 1.5 m long with M12 5-pin A-coded plugs at the core end. At the sensor end, lead A ends in a plug for the temperature and humidity sensor and a two-wire tail for the fan; lead B ends in a tail for the probe and a tail for the anemometer, each with a sealed heat-shrink breakout.
+- **Sensor harness (line 9).** Two outdoor cables, lead A about 1.2 m and lead B about 1.4 m long, with M12 5-pin A-coded plugs at the core end. At the sensor end, lead A ends in a plug for the temperature and humidity sensor and a two-wire tail for the fan; lead B ends in a tail for the probe and a tail for the anemometer, each with a sealed heat-shrink breakout.
 - **Lanyards (line 11).** Two 1.5 mm 316 stainless wire lanyards with ferrules and snap hooks, about 150 long.
 - **Fixings (line 10).** Stainless: 2 x M6 x 40 hex bolts and 4 x M6 x 16 button-head screws with nyloc nuts; 1 x M5 x 35 bolt with a nyloc nut; 4 x M4 x 40 pan-head screws with nuts; 1 nylon M3 set screw; 25 mm square tube end plug; about 12 UV-stable cable ties 400 long and a bag of short ones; sealant.
 
@@ -321,23 +326,23 @@ Plug the sensor's plug into lead A and join the fan's two wires to its tail; joi
 
 On the FieldNode core built to its own plan without its V-blocks: two M4 countersunk screws per block from the front of its back plate into the inserts, snug.
 
-### Step 14: FieldNode core onto the pole
+### Step 14: sensor head onto the pole
 
 ![Step 14](05-build-plan/step-14.png)
 
-At height, with the panel facing the equator and the core's bottom at about 2.15 m. Pass each band round the pole, through its block and plate slots and across the plate front, below and above the box. Tension each band with the band tool to its maker's setting for about 1,000 N and lock the buckle. **Hold point:** safety stop S3.
+The sensor head, assembled on the bench, goes on first, with the arm axis at 2.8 m and the arm toward the equator. Hold the saddle on the pole, pass each band round the pole, through its two web slots and across the web front, and tension each band with the band tool to its maker's setting for about 1,000 N and lock the buckle. Check the arm is level. **Hold point:** safety stop S3.
 
-### Step 15: sensor head onto the pole
+### Step 15: FieldNode core onto the pole above the arm
 
 ![Step 15](05-build-plan/step-15.png)
 
-The sensor head, assembled on the bench, goes on 650 above the core, arm toward the equator over the core. Hold the saddle on the pole, pass each band round the pole, through its two web slots and across the web front, and tension and lock it as in step 14. Check the arm is level.
+Lift the core, with its V-blocks on, to the pole on the same side as the arm, panel facing the equator, so that its bottom is about 310 above the top of the arm and its antenna whip clears the arm by 100 or more. Pass each band round the pole, through its block and plate slots and across the plate front, below and above the box, and tension and lock it as in step 14. **Check:** from the ladder or lift position that fitted the arm, the core's lid opens fully and its screws can be reached. If it cannot be reached, fit the core instead on the pole's east or west face at the same height, panel still toward the equator.
 
-### Step 16: leads down the pole to the ports
+### Step 16: leads up the pole to the ports
 
 ![Step 16](05-build-plan/step-16.png)
 
-Run both leads round the left side of the saddle, below its lower flange, and down the pole on its left side, outside both pairs of bands, with a long cable tie every 300. Under the core, bring them forward and plug lead A into port A and lead B into port B. Leave a drip loop below each plug. **Hold point:** safety stop S4.
+Plug lead A into port A and lead B into port B under the core, leaving a drip loop below each plug. Run both leads down the pole on its left side, outside the core's bands, with a long cable tie every 300, then over the top of the saddle's upper flange, down the left side of the saddle and out along the arm. **Hold point:** safety stop S4.
 
 ## 5. First checks
 
@@ -353,7 +358,7 @@ These are the checks a TRL 4 test report would record; this plan only lists them
 | Sensor readings | R1, R2, R3 | With the core running, read air temperature, humidity and globe temperature indoors | All three read within 1 °C (or 5 %RH) of a reference thermometer and hygrometer in still air |
 | Wind pulse | R4 | Spin the cups by hand | Pulses counted; the calm share reads zero while spinning |
 | Arm deflection | R11 | Dial gauge at the tip; 10 N sideways at the anemometer | Under 1 mm (0.31 mm expected at a 20 m/s gust) |
-| Mass | R15 | Weigh the sensor head before it goes on the pole | 4 kg or less (2.12 kg estimated) |
+| Mass | R15 | Weigh the sensor head before it goes on the pole | 4 kg or less (2.08 kg estimated) |
 | Fitting time | R10 | Time steps 14 to 16 with two people from one lift | 30 minutes or less (37 minutes estimated) |
 | Privacy | R12 | Look over the parts list and the board | No camera, microphone or radio scanning part |
 
@@ -363,7 +368,7 @@ Stop at each point. Carry on only when everything listed is true.
 
 - **S1. Before the first cut.** Safety glasses on; the tube, angle and sheet clamped before drilling; no gloves near a turning drill.
 - **S2. Before any work on the FieldNode core.** Its own safety stops (FND-BLD-001, section 6) are passed; its fuse stays out until its plan allows it.
-- **S3. Before going up the pole.** Written permission from the pole owner; the pole checked for its rating against about 340 N·m of added wind moment at its base; a lift or a stable ladder with a second person; fall protection; traffic management as local rules require; no overhead line within reach and no live parts open on a lighting pole. Tools and small parts tethered or in a bag.
+- **S3. Before going up the pole.** Written permission from the pole owner; the pole checked for its rating against about 420 N·m of added wind moment at its base; a lift or a stable ladder with a second person; fall protection; traffic management as local rules require; no overhead line within reach and no live parts open on a lighting pole. Tools and small parts tethered or in a bag.
 - **S4. Before the leads are plugged in.** Every nut on the rods, hanger tube and mast is tight; both lanyards are closed round the arm; the cups spin freely; hands clear of the fan, which starts by itself every 3 minutes once the core is powered.
 - **S5. Whenever the head is worked on later.** Unplug lead A before touching the shield (the fan); let the globe cool or wear gloves in sun; stop the cups by hand before working near them.
 

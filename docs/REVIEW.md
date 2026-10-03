@@ -336,3 +336,42 @@ Nine, all moved to "Decisions made" in HMN-DEC-001 (open items 1 to 9): design f
 - R9 (sensors at 1.1 to 2.0 m) is not met, with sensors at about 2.68 m, yet no open decision addresses it; either restate R9 around the height correction already decided or add an item.
 - Item 3 says the plan builds option (b) until decided; if option (a) is chosen, steps 14 to 16 and the harness length change, and the core rises above FieldNode's decided 1.75 m mounting height.
 - Sensor head cost is $136 against the $130 target, $6 over; the full node is $292.
+
+## Session 2026-10-02: approved follow-ups carried out
+
+Amish approved all follow-up actions from the open-decision sign-off (2026-10-02). trl stays 3; nothing was built, bought or tested.
+
+### Follow-ups
+
+| No. | Follow-up | Status |
+| --- | --- | --- |
+| 1 | Move the FieldNode core and adapter above the arm in the model; re-run the checks | Done. Core bottom at 3.11 m, its whip 100 mm or more above the arm, panel toward the equator; 403 checks pass (new clearances of the core from the arm, saddle, cheeks, bands and anemometer). Option (c), the east or west face, is kept in build plan step 15 as the fallback if the lid cannot be reached |
+| 2 | Redraw steps 14 to 16, the overview and the adapter making sketch; update the step text | Done. Steps 14 to 16 reordered: head on the pole first, then the core above it, then the leads; all pictures and HMN-DWG-001 (Rev P5) regenerated |
+| 3 | Re-specify the harness lead length (BOM line 9) | Done. Lead A about 1.2 m, lead B about 1.4 m (was 1.5 m each); the model runs are 0.83 m and 1.05 m to the arm sensors; price unchanged at $12.00 |
+| 4 | Rerun panel shading [E3], wind load and clamp check; check core height against FieldNode's 1.75 m | Done in HMN-CAL-001 v0.6: the head shades 0 % of the panel (was 16 to 44 %); new [E3b] shows the panel and core can shade the globe, shield or cups only with the sun on the pole side (tropics, near noon); wind moment at the pole base 423 N·m (was 338); clamp factor unchanged. The core is at 3.11 m against FieldNode's decided 1.75 m mounting height, 1.36 m higher; the FieldNode repo must confirm that its design (antenna, wind and sun figures) holds there (see cross-repo actions) |
+| 5 | Put the hub and spokes in the TRL 4 side-by-side shield test plan | Not done: TRL 4 test plan work, capped at TRL 3 |
+| 6 | Ask the FieldNode repo to adopt the same pinout | Not done here: lives in the FieldNode repo (see cross-repo actions) |
+| 7 | Ask the FieldNode repo to confirm cell format and board position | Not done here: lives in the FieldNode repo (see cross-repo actions) |
+| 8 | Drop the side vent slots from the appearance model, keep the name plate | Done in `cad/src/product_model.py`; photoreal renders are made on Amish's Mac |
+
+### Requirement and figure changes
+
+- No requirement status changes. R7 note: the head no longer shades the panel. R15: sensor head 2.08 kg (was 2.12 kg, shorter leads), complete node 4.92 kg. R13: sensor head still $136.00, USD 6 over the USD 130 value-engineering target; `budget_usd` unchanged.
+- Added wind moment at the pole base rises from 338 to 423 N·m (core 0.96 m higher); the build plan safety stop S3 now says about 420 N·m for the pole owner.
+
+### Documents changed
+
+- `cad/src/model.py`, `cad/step/`, `cad/stl/`; `bom/bom.csv` (line 9), `bom/bom-notes.md`.
+- `docs/04-calcs/sizing.py`, `01-sizing.md` (HMN-CAL-001 v0.6), `docs/03-requirements.md` (HMN-REQ-001 v0.7), `docs/02-concept.md` (HMN-PRC-001 v0.8), `docs/05-build-plan.md` (HMN-BLD-001 v0.3), `README.md`.
+- Pictures: HMN-DWG-001 Rev P5, the adapter making sketch, every build plan joint and step picture, the overview, and the concept media.
+- `cad/src/product_model.py`: core above the arm, leads down the pole, side vent slots dropped. Render scenes exported to `/home/claude/renders/heatmap-node`.
+
+### Cross-repo actions
+
+- FieldNode: adopt the same sensor port pinout as its O2 decision (port A, I2C on data pins 2 and 4 with sensor and fan on the switched rail; port B, thermistor on analog pin 5 and anemometer pulse on pin 2).
+- FieldNode: confirm cell format and board position at its next update, so the appearance stand-ins can be replaced.
+- FieldNode: confirm that the core works at 3.11 m on a pole above an arm (its decided mounting height is 1.75 m), and publish a large-pole adapter variant (still open from earlier sessions).
+
+## 2026-10-02: photoreal renders redone on the constructable design
+
+Rendered with Blender Cycles on Amish's Mac from the updated appearance model; captioned with `.kit/photo_caption.py`; `media/card.png` and `media/social-preview.png` regenerated with `.kit/cards.py`. Views: hero, exploded, detail. image_qc passes. Appearance deviations are those logged above as proposed, awaiting Amish.

@@ -333,8 +333,55 @@ def panel_shade(elev, azim, n=24):
 
 
 shade = {(el, az_): panel_shade(el, az_) for el in (30, 45, 60, 75) for az_ in (0, 30, 60)}
-tag("E3", "share of the FieldNode panel shaded by the shield, cowl, globe and arm, core below the arm, both facing the equator: "
+tag("E3", "share of the FieldNode panel shaded by the shield, cowl, globe and arm, core above the arm (decided 2026-10-02), both facing the equator: "
     + "; ".join(f"sun {el} deg high, {az_} deg off the arm azimuth {shade[(el, az_)] * 100:.0f} %" for el, az_ in shade))
+
+
+def head_shaded(elev, azim):
+    """Which sensor positions (shield stack centre, globe centre, cup centre) lie in the shadow of the FieldNode
+    panel or of its enclosure with the sun shield, for a sun at elevation elev and azimuth azim from +X (deg).
+    The core is above the arm, so the panel and enclosure can shade the head only when the sun is on the pole side."""
+    e, a = math.radians(elev), math.radians(azim)
+    d = (math.cos(e) * math.cos(a), math.cos(e) * math.sin(a), math.sin(e))
+    t = math.radians(P["fn_tilt"])
+    ew, ed, eh = P["fn_enc"]
+    gap = P["fns_gap"] + P["fns_t"]
+    slabs = [  # centre, axes (unit vectors), half sizes
+        ((D["panel_cx_w"], 0.0, D["panel_cz"]), ((math.cos(t), 0, -math.sin(t)), (0, 1, 0), (math.sin(t), 0, math.cos(t))),
+         (P["fn_panel"][1] / 2, P["fn_panel"][0] / 2, P["fn_panel"][2] / 2)),
+        ((-D["enc_yc"], 0.0, P["fn_z0"] + eh / 2), ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+         (ed / 2 + gap, ew / 2 + gap, eh / 2 + gap)),
+    ]
+    targets = {"shield": (P["shield_x"], 0.0, D["shield_zc"]), "globe": (P["globe_x"], 0.0, D["globe_zc"]),
+               "cups": (D["anemo_x"], 0.0, D["cup_z"])}
+    out = []
+    for name, pt in targets.items():
+        for c, axes, hs in slabs:
+            tmin, tmax = 0.0, 1e9
+            for ax_, h_ in zip(axes, hs):
+                o = sum((pt[k] - c[k]) * ax_[k] for k in range(3))
+                dd = sum(d[k] * ax_[k] for k in range(3))
+                if abs(dd) < 1e-12:
+                    if abs(o) > h_:
+                        tmin, tmax = 1, 0
+                else:
+                    ta, tb = (-h_ - o) / dd, (h_ - o) / dd
+                    tmin, tmax = max(tmin, min(ta, tb)), min(tmax, max(ta, tb))
+            if tmin <= tmax:
+                out.append(name)
+                break
+    return out
+
+
+cases = [(el, az_) for el in (30, 45, 60, 75, 85) for az_ in (0, 90, 150, 180)]
+sh_cases = {c: head_shaded(*c) for c in cases}
+equator_side = [c for c in cases if c[1] <= 90 and sh_cases[c]]
+pole_side = [(c, sh_cases[c]) for c in cases if c[1] > 90 and sh_cases[c]]
+tag("E3b", "shading of the sensors by the FieldNode panel and enclosure (core above the arm), sun 30 to 85 deg high: "
+    + ("none with the sun on the equator side (0 and 90 deg off the arm azimuth); " if not equator_side else f"equator side {equator_side}; ")
+    + ("none on the pole side either" if not pole_side else "pole side (tropics, near noon only): "
+       + "; ".join(f"sun {c[0]} deg high, {c[1]} deg off the arm: {', '.join(v)}" for c, v in pole_side))
+    + ". Outside the tropics the sun is never on the pole side, so the sensors are not shaded by the core there")
 
 # ------------------------------------------------------------------ F. Power (R7)
 print("\nF. Sensor power")
@@ -419,7 +466,8 @@ m_clamp = cm("saddle", "trim", "cheeks", "bands", "clamp_bolts")
 m_shield = cm("plates", "rods", "spacers")
 m_globe = m_shell + m_boss + 0.010 + cm("hanger")           # paint, gland and the brass hanger tube with its nuts
 m_probe, m_th, m_anemo = 0.010, 0.020, 0.30 + cm("mast_bolt")
-m_harness = 2 * 1.5 * 0.08 + 0.03
+LEAD_A, LEAD_B = 1.2, 1.4        # m, harness leads cut for the core above the arm (2026-10-02): the run from the ports plus the sensor tails and slack
+m_harness = (LEAD_A + LEAD_B) * 0.08 + 0.03
 m_lanyard, m_hw = 0.02, 0.03                                # hardware: cable ties, paint and sealant
 m_fan = 0.035 + cm("cowl", "fan_screws")                    # fan (assumed 35 g) plus the ASA cowl and its screws
 m_adapter = cm("vblocks", "ascrews", "abands")

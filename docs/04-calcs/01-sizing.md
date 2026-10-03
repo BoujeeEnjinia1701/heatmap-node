@@ -3,7 +3,7 @@ doc_id: HMN-CAL-001
 title: HeatMap Node sizing calculations
 project: HeatMap Node
 doc_type: Calculation
-version: "0.5"
+version: "0.6"
 status: Draft
 date: '2026-10-02'
 author: Amish Chadha
@@ -29,11 +29,15 @@ revisions:
   date: '2026-10-02'
   author: Amish Chadha
   change: "Panel shading text notes the core position decided on 2026-10-02; no figures changed"
+- version: "0.6"
+  date: '2026-10-02'
+  author: Amish Chadha
+  change: "Core moved above the arm in the model (2026-10-02): panel shading rerun (E3, new E3b), added pole moment 423 N m, shorter harness, head 2.08 kg; no requirement status changes"
 ---
 
 # HeatMap Node sizing calculations
 
-On paper, HeatMap Node meets or is on track for thirteen of its fifteen requirements; one is not met, and the sensor head's estimated cost is $6 over its value-engineering target. Version 0.2 applies the decisions Amish accepted on 2026-09-25 (HMN-DDR-002): a small fan aspirates the radiation shield before each air reading, R4, R8, R13 and R15 are restated, the saddle is formed from sheet, the arm points toward the equator with the FieldNode core below it, and the FieldNode core carries FieldNode's hot-climate sun shield. The heat stress method is unchanged: in the worked example (35 °C air, 40 %RH, 50 °C globe, 1 m/s wind) mean radiant temperature is 74.8 °C and WBGT is 31.7 °C, and with the fan the input errors add up to ±0.30 °C of WBGT (root sum square), against ±0.59 °C with the passive shield. The one miss is R9, because the sensors sit at about 2.7 m, where the air is 0.2 to 0.8 °C cooler than at pedestrian height on a sunny afternoon. Version 0.3 applies the budget top-up Amish approved on 2026-09-26 (HMN-DDR-002 v0.2): `budget_usd` became $130, and the $127 sensor head was then $3 under it. Version 0.4 follows the design for construction (HMN-DDR-003): the parts added to make the node buildable bring the sensor head to 2.12 kg and $136.00, $6.00 over the $130 value-engineering target (`budget_usd` is a hypothetical control target, not a limit: Amish, 2026-10-01), and the 530 mm arm changes the wind figures slightly. The new orientation raises one new problem: the shield, globe and arm shade 16 to 44 % of the FieldNode panel near noon (section E). Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [A1], is the line of that script's output that carries it.
+On paper, HeatMap Node meets or is on track for thirteen of its fifteen requirements; one is not met, and the sensor head's estimated cost is $6 over its value-engineering target. Version 0.2 applies the decisions Amish accepted on 2026-09-25 (HMN-DDR-002): a small fan aspirates the radiation shield before each air reading, R4, R8, R13 and R15 are restated, the saddle is formed from sheet, the arm points toward the equator with the FieldNode core (since 2026-10-02, above it), and the FieldNode core carries FieldNode's hot-climate sun shield. The heat stress method is unchanged: in the worked example (35 °C air, 40 %RH, 50 °C globe, 1 m/s wind) mean radiant temperature is 74.8 °C and WBGT is 31.7 °C, and with the fan the input errors add up to ±0.30 °C of WBGT (root sum square), against ±0.59 °C with the passive shield. The one miss is R9, because the sensors sit at about 2.7 m, where the air is 0.2 to 0.8 °C cooler than at pedestrian height on a sunny afternoon. Version 0.3 applies the budget top-up Amish approved on 2026-09-26 (HMN-DDR-002 v0.2): `budget_usd` became $130, and the $127 sensor head was then $3 under it. Version 0.4 follows the design for construction (HMN-DDR-003): the parts added to make the node buildable bring the sensor head to 2.12 kg and $136.00, $6.00 over the $130 value-engineering target (`budget_usd` is a hypothetical control target, not a limit: Amish, 2026-10-01), and the 530 mm arm changes the wind figures slightly. The new orientation raised one problem: with the core below the arm, the shield, globe and arm shaded 16 to 44 % of the FieldNode panel near noon (section E). Version 0.6 carries the decision of 2026-10-02 into the model: the core is above the arm (bottom at 3.11 m), the panel is no longer shaded by the head (0 % in every case run), the harness leads are shorter (1.2 m and 1.4 m), and the added moment at the pole base rises from 338 to 423 N·m. Every number in this note is printed by `docs/04-calcs/sizing.py`; the tag in brackets, for example [A1], is the line of that script's output that carries it.
 
 > **Safety:** These are first-principles estimates for a paper proof of concept. They do not show that a place is safe or unsafe for people, and HeatMap Node data must not be used to decide whether a particular person may work or exercise. Pole mounting, the pole's added wind load and the FieldNode cell are safety matters; see HMN-PRC-001, Safety.
 
@@ -95,7 +99,7 @@ The design case is a node on a 114.3 mm (4.5 in) street pole with the arm axis 2
 - **Height correction.** On a sunny afternoon the air near the pavement is warmer than at the sensor. At 1 m/s the estimate gives +0.72 °C at 1.1 m, +0.44 °C at 1.5 m and +0.21 °C at 2.0 m relative to the 2.69 m of the shield; at 3 m/s, +0.80, +0.50 and +0.24 °C [E1]. A node at 2.7 m therefore reads pedestrian-height air temperature low by up to about 0.8 °C in strong sun, which would enter WBGT at about 0.4 °C (section B). At night and in shade the difference is smaller or reversed. The radiant field changes less with height, because the pavement fills about half of the globe's view at any height above an open street; walls change this in narrow streets.
 - **R9 is not met.** The target is unchanged under HMN-DDR-001 D2, decided by Amish on 2026-09-25; the correction above, with a pilot comparing 2.0 and 2.8 m (TRL 4, on hold), is the decided path. The fan cowl lowers the shield by 25 mm, so the sensors now sit at 2.67 to 2.69 m.
 - **Pole shading of the globe.** From the globe, the 114 mm pole spans 13.0°. With the arm pointing east or west the sun would pass behind it for about 0.9 h a day. The arm now points toward the equator (HMN-DDR-002), so the pole is on the poleward side of the globe, which the sun reaches only in the tropics, near noon and high in the sky [E2].
-- **Shading of the FieldNode panel.** With the core below the arm and both facing the equator, the shield, cowl, globe and arm cast shadows onto the FieldNode panel. With the sun straight along the arm, 44 % of the panel is shaded at 30° elevation, 34 % at 45°, 27 % at 60° and 16 % at 75°; 30° off the arm's azimuth the shares are 15 to 33 %, and 60° off, 1 to 17 % [E3]. Shade on part of a series-connected panel can cut its output by much more than the shaded share, depending on its bypass diodes. This was not foreseen when the orientation was recommended. Amish decided on 2026-10-02 to mount the core above the arm, or on the pole's east or west face if its lid cannot be reached there (HMN-DEC-001); these figures are for the core below the arm and are to be rerun.
+- **Shading of the FieldNode panel.** With the core below the arm (v0.5 and earlier), the shield, cowl, globe and arm shaded 44 % of the panel at 30° elevation, 34 % at 45°, 27 % at 60° and 16 % at 75° with the sun straight along the arm, and less off axis. Amish decided on 2026-10-02 to mount the core above the arm, provided its lid stays reachable from the ladder or lift that fits the arm; the model now has the core's bottom at 3.11 m, its whip 100 mm or more above the arm. The sensor head is then wholly below the panel, and the shield, cowl, globe and arm shade 0 % of it at every sun position run (30 to 75° high, 0 to 60° off the arm's azimuth) [E3]. The reverse now needs checking: the panel and enclosure can shade the sensors, but only when the sun is on the pole side of the node. That happens only in the tropics near noon; there, a sun 45 to 75° high on the pole side shades the globe or the shield stack, and one 30° high shades the cups [E3b]. On the equator side, where the sun is outside the tropics, nothing is shaded. Shade on a series-connected panel could still cut its output by more than the shaded share, but the head no longer shades it.
 
 ## F. Sensor power (R7)
 
@@ -113,7 +117,7 @@ The temperature and humidity sensor takes about 11 µJ per reading, now 480 time
 - **Loads.** A 35 m/s gust across the arm puts 6.6 N on the globe, 10.7 N on the shield, 2.1 N on the fan cowl, 7.2 N on the anemometer and 19.9 N on the 530 mm arm: 46.5 N on the sensor head [H1]. The TRL 2 estimate of 110 N included the FieldNode panel and enclosure (88 N with the sun shield in FND-CAL-001 v0.2).
 - **Arm.** The 25 x 25 x 2 mm tube (second moment of area 16,345 mm⁴) sees 14.6 N·m at its root and 11.1 MPa, a factor of 13.0 on yield [H2]. Its tip deflects 0.31 mm at 20 m/s and 0.95 mm at 35 m/s [H3], far inside the 10 mm of R11. Torsion from the offset loads is 0.84 N·m [H4].
 - **Clamp.** Wind twists the arm about the pole with 18.1 N·m against 45.7 N·m of band friction, a factor of 2.5. The 1.37 kg on the arm, with its center of mass 425 mm out, pulls the upper band with 41 N against 2,000 N, and pushes down with 13 N against 800 N of friction [H5]. The formed 3 mm sheet saddle (now a channel whose V-notched flanges bear on the pole, HMN-DDR-003) carries these loads through the band preload; its bending stiffness has not been checked and should be at detail design. **R11 is met on paper**, subject to the preload, which a torque figure at installation must secure; the twist factor of 2.5 is the smallest margin in this section.
-- **Pole.** The node adds 46 N (head) plus 88 N (FieldNode with its shield) and about 338 N·m at the pole base [H6]. The pole owner should check this against the pole's rating.
+- **Pole.** The node adds 46 N (head) plus 88 N (FieldNode with its shield) and about 423 N·m at the pole base [H6] (338 N·m before the core moved above the arm, 2.15 m to 3.11 m up). The pole owner should check this against the pole's rating.
 
 ## I. Outdoor temperatures (R8)
 
@@ -127,8 +131,8 @@ The temperature and humidity sensor takes about 11 µJ per reading, now 480 time
 
 ## K. Mass (R15)
 
-- **Sensor head.** From the component volumes of the constructable model: arm with plug and sleeves 268 g, clamp (saddle, trim, cheeks, bands and bolts) 442 g, shield with rods and spacers 324 g, fan and cowl 78 g, sensor 20 g, globe with its brass hanger tube 348 g, probe 10 g, anemometer 307 g, harness 270 g, lanyards 20 g and consumables 30 g: 2.12 kg [K1]. The design for construction added 0.21 kg (HMN-DDR-003).
-- **Against R15.** R15 now covers the sensor head only (HMN-DDR-002), so 2.12 kg against 4.0 kg: **R15 is met on paper**. For information, with the FieldNode core and its sun shield (2.61 kg) and the pole adapter (0.22 kg) the complete node weighs 4.95 kg [K2]. The largest part other than the arm is the 290 mm FieldNode panel, within the 300 mm limit [K3].
+- **Sensor head.** From the component volumes of the constructable model: arm with plug and sleeves 268 g, clamp (saddle, trim, cheeks, bands and bolts) 442 g, shield with rods and spacers 324 g, fan and cowl 78 g, sensor 20 g, globe with its brass hanger tube 348 g, probe 10 g, anemometer 307 g, harness 238 g (two leads cut for the core above the arm, 1.2 m and 1.4 m), lanyards 20 g and consumables 30 g: 2.08 kg [K1]. The design for construction added 0.21 kg (HMN-DDR-003).
+- **Against R15.** R15 now covers the sensor head only (HMN-DDR-002), so 2.08 kg against 4.0 kg: **R15 is met on paper**. For information, with the FieldNode core and its sun shield (2.61 kg) and the pole adapter (0.22 kg) the complete node weighs 4.92 kg [K2]. The largest part other than the arm is the 290 mm FieldNode panel, within the 300 mm limit [K3].
 
 ## L. Cost (R13)
 
@@ -148,11 +152,11 @@ The BOM has 13 lines. Under HMN-DDR-002 the pole adapter (line 12) counts agains
 | R3 | Globe temperature | ±0.18 °C (±0.26 °C) [D4]; 90 % response about 12 min [D5] | ±0.3 °C; 30 min | Met on paper |
 | R4 | Wind speed | Start-up about 0.8 m/s (typical, unverified); calm share sent and flagged [G1], [G4] | 0.8 to 20 m/s; calm intervals flagged | Met on paper (start-up unverified) |
 | R6 | Reporting | 20 B, 23.7 s/day at SF9, 21.5 kB for 7 days, 16 min latency for 99 % [G1] to [G3] | 15 min means; 30 min; 7 days | Met on paper |
-| R7 | Power autonomy | 35.4 mW with the fan, 35 % of the allowance [F2] | 5 days without sun on FieldNode | Met on paper (panel shading not included) |
+| R7 | Power autonomy | 35.4 mW with the fan, 35 % of the allowance [F2] | 5 days without sun on FieldNode | Met on paper (the head no longer shades the panel [E3]) |
 | R8 | Outdoor survival | FieldNode interior 57.2 °C at 50 °C air with its sun shield [I2]; sensor head parts within ratings | Operate at -20 to +50 °C at the node | Met on paper (shield factor assumed) |
 | R11 | Wind survival | Factor 13.0 on the arm; clamp twist factor 2.5; 0.31 mm at 20 m/s [H2] to [H5] | No failure at 35 m/s; under 10 mm at 20 m/s | Met on paper (preload assumed) |
 | R13 | Cost | Sensor head $136.00 estimated [L1], [L2] | Value-engineering target $130 (sensor head, excluding the FieldNode core and its pole adapter) | Over the target by $6.00 |
-| R15 | Mass and loading | Sensor head 2.12 kg [K2]; largest part 290 mm [K3] | 4 kg or less (sensor head); 300 mm | Met on paper |
+| R15 | Mass and loading | Sensor head 2.08 kg [K2]; largest part 290 mm [K3] | 4 kg or less (sensor head); 300 mm | Met on paper |
 | R2 | Relative humidity | SHT45 ±1.0 %RH typical | ±3 %RH | Met by design |
 | R12 | Privacy | No camera, microphone or radio scanning parts; payload has environmental fields only [G1] | Environmental data only | Met by design |
 

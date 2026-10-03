@@ -16,7 +16,8 @@ from model import PARAMS as P, build_parts, derived, zcyl  # noqa: E402
 
 DATE = "2026-09-25"
 DATE_P4 = "2026-10-01"
-POLE_BOT, POLE_TOP = 1960.0, 3080.0     # pole stub shown on the sheet
+DATE_P5 = "2026-10-02"
+POLE_BOT, POLE_TOP = 2300.0, 3600.0     # pole stub shown on the sheet
 
 
 def safe_project_views(part, workdir, line_weight=0.35):
@@ -98,14 +99,15 @@ def main():
     work = ROOT / "cad" / "drawings" / "_views"
     views = safe_project_views(asm, work)
     bb = asm.bounding_box()
-    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P4",
-              author="Amish Chadha", date=DATE_P4, scale=0.1, theme="technical",
+    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P5",
+              author="Amish Chadha", date=DATE_P5, scale=0.08, theme="technical",
               material="Al arm and formed sheet saddle; ASA shield and cowl; copper globe; bought-in parts per bom/bom.csv. "
                        "PRELIMINARY, NOT FOR FABRICATION",
               revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
                          ("P2", "HMN-DDR-002: fan, formed saddle, arm to equator, FieldNode shield", DATE, "AC"),
                          ("P3", "Layout and labels tidied", DATE, "AC"),
-                         ("P4", "HMN-DDR-003: design for construction (saddle, cheeks, rods, hanger)", DATE_P4, "AC")])
+                         ("P4", "HMN-DDR-003: design for construction (saddle, cheeks, rods, hanger)", DATE_P4, "AC"),
+                         ("P5", "FieldNode core above the arm, leads up the pole (HMN-DEC-001, item 3)", DATE_P5, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)
@@ -116,12 +118,12 @@ def main():
     x, y, w, h = c["front"]
     X = lambda mx: x + (mx - bb.min.X) * k
     Z = lambda mz: y + h - (mz - bb.min.Z) * k
-    top_dim = D["overall_top"] + 60
+    low_dim = D["globe_bot"] - 45     # the horizontal dimensions go below the head, clear of the core above it
     # horizontal positions from the pole axis, stacked above the model
     for i, (xx, lab) in enumerate(((P["shield_x"], f"{P['shield_x']:.0f} shield"), (P["globe_x"], f"{P['globe_x']:.0f} globe"),
                                    (D["anemo_x"], f"{D['anemo_x']:.0f} anemometer"))):
-        yd = Z(top_dim) + 8 - 4 * i
-        L += [ext(X(0), Z(POLE_TOP) - 1, X(0), yd - 1), ext(X(xx), Z(az) - 1, X(xx), yd - 1)]
+        yd = Z(low_dim) + 4 * i
+        L += [ext(X(0), Z(az) + 1, X(0), yd + 1), ext(X(xx), Z(D["globe_bot"] if xx == P["globe_x"] else (D["shield_bot"] if xx == P["shield_x"] else D["cup_z"])) + 1, X(xx), yd + 1)]
         L += dim_h(X(0), X(xx), yd, lab)
     # elevations to the left of the model
     xl = X(bb.min.X) - 4
@@ -137,7 +139,7 @@ def main():
         L.append(_t(xl, Z(zz) + 0.8 + dy, f"EL {lab.upper()}", 2.1, 400, INK, "end"))
     L += dim_h(X(P["globe_x"] - P["globe_d"] / 2), X(P["globe_x"] + P["globe_d"] / 2), Z(D["globe_bot"]) + 5, f"D{P['globe_d']:.0f}")
     L.append(_t(xl, Z(D["overall_top"]) - 12, "ELEVATIONS ABOVE PAVEMENT", 2.0, 600, MUTED, "end"))
-    L += leader(X(0), Z(POLE_BOT + 150), X(0) + 17, Z(POLE_BOT + 60), "EXISTING POLE D114 (NOT SUPPLIED)")
+    L += leader(X(0), Z(POLE_TOP - 120), X(0) + 17, Z(POLE_TOP - 40), "EXISTING POLE D114 (NOT SUPPLIED)")
 
     # top view (from +Z): X to the right, Y up the sheet
     x, y, w, h = c["top"]

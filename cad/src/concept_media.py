@@ -50,10 +50,10 @@ for p in parts + context:
 render_all(
     parts, project="HeatMap Node", title="Street heat stress node concept", dwg_no="HMN-DWG-010",
     key_figures=["Air temperature and humidity in a fan-aspirated shield, 150 mm globe, wind",
-                 "Sensors at about 2.7 m; arm and FieldNode core below it face the equator",
+                 "Sensors at about 2.7 m; arm and the FieldNode core above it face the equator",
                  "Example: 35 C air, 40 %RH, 50 C globe, 1 m/s: MRT 74.8 C, WBGT 31.7 C (HMN-CAL-001)",
                  "Shield error 0.43 C with the fan; sensors and fan 35 mW of a 100 mW allowance",
-                 "Sensor head about $136 (value-engineering target $130), 2.12 kg (estimates)"],
+                 "Sensor head about $136 (value-engineering target $130), 2.08 kg (estimates)"],
     scale_figure=False, context=context,
     cut_exclude=tuple(BOM[k][1] for k in ("fieldnode", "adapter", "harness", "lanyard", "clamp")),
     flow={"title": "data flow from street to map (values from HMN-CAL-001)", "unit": "",

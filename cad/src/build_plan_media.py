@@ -24,7 +24,7 @@ from model import PARAMS as P, build_components, derived, pole_context, fuse  # 
 
 OUT = ROOT / "docs" / "05-build-plan"
 DWG = ROOT / "cad" / "drawings"
-DATE = "2026-10-01"
+DATE = "2026-10-02"
 D = derived(P)
 C = build_components(P)
 S = lambda *ks: fuse(C[k].shape for k in ks)  # noqa: E731
@@ -105,8 +105,8 @@ def overview():
     off = {"saddle": (-170, 0, 0), "trim": (-330, 0, 40), "cheeks": (-50, 0, 30), "arm": (0, 0, 230),
            "plates": (0, 0, 0), "rods": (-140, 0, 0), "th": (0, 0, -190), "fan": (0, 0, 110), "cowl": (0, 0, 190),
            "globe": (0, 0, -40), "hanger": (0, 0, 90), "probe": (110, 0, 40), "anemo": (0, 0, 330),
-           "lanyard": (0, 230, 70), "harness": (520, 0, -560), "vblocks": (-280, 0, -520), "fieldnode": (-90, 0, -520),
-           "abands": (-450, 0, -520), "bands": (-460, 0, 0)}
+           "lanyard": (0, 230, 70), "harness": (520, 0, -560), "vblocks": (-280, 0, 520), "fieldnode": (-90, 0, 520),
+           "abands": (-450, 0, 520), "bands": (-460, 0, 0)}
     parts = []
     for k in ORDER:
         p = M[k]
@@ -428,19 +428,21 @@ def steps(only=None):
        "In place of FieldNode's own V-blocks: two M4 countersunk screws each from the front of its back plate",
        elev=18, azim=-140)
     core = [fn, M["vblocks"]]
-    st(14, core, [mv(M["abands"], (-160, 0, 0))], "FieldNode core onto the pole",
-       "At height. Each band round the pole, through its block and plate slots, across the plate front; tension and lock",
-       context=[pole(Z0 - 250, Z0 + 650)], elev=15, azim=-105)
     head_all = part("Sensor head, assembled on the ground", S("saddle", "trim", "cheeks", "clamp_bolts", "arm", "plug", "plates", "th_sensor",
                                                              "rods", "spacers", "fan", "cowl", "fan_screws", "globe", "hanger",
                                                              "probe", "anemometer", "mast_bolt", "lanyard"), "#14B8A6")
-    st(15, core + [M["abands"]], [mv(head_all, (250, 0, 0)), mv(M["bands"], (-200, 0, 0))], "sensor head onto the pole",
-       "At height, 650 mm above the core. Saddle on the pole, arm toward the equator; bands through the web slots",
-       context=[pole(Z0 - 250, AZ + 300)], elev=15, azim=-105, size=(8, 7))
-    st(16, core + [M["abands"], head_all, M["bands"]], [mv(part("Sensor harness", C["harness"].shape, COL["harness"]), (0, -150, 0))],
-       "sensor leads down the pole to the FieldNode ports",
-       "Leads round the side of the saddle and down the pole, a tie every 300 mm; plugs into ports A and B",
-       context=[pole(Z0 - 250, AZ + 300)], elev=15, azim=-105, size=(8, 7), label_done=False)
+    st(14, [], [mv(head_all, (250, 0, 0)), mv(M["bands"], (-200, 0, 0))], "sensor head onto the pole",
+       "At height. Saddle on the pole, arm toward the equator; bands through the web slots, tension and lock",
+       context=[pole(AZ - 350, AZ + 350)], elev=15, azim=-105, size=(8, 7))
+    st(15, [head_all, M["bands"]], [mv(part("FieldNode core on its adapter", S("fieldnode", "vblocks"), COL["fieldnode"]), (260, 0, 120)),
+                                    mv(M["abands"], (-200, 0, 120))],
+       "FieldNode core onto the pole above the arm",
+       "Core's bottom 310 above the arm; each band round the pole, through its block and plate slots; tension and lock",
+       context=[pole(AZ - 350, Z0 + 700)], elev=12, azim=-105, size=(8, 9))
+    st(16, [head_all, M["bands"], fn, M["vblocks"], M["abands"]], [mv(part("Sensor harness", C["harness"].shape, COL["harness"]), (0, -150, 0))],
+       "sensor leads up the pole to the FieldNode ports",
+       "Leads round the side of the saddle, up the pole and under the core; plugs into ports A and B",
+       context=[pole(AZ - 350, Z0 + 700)], elev=12, azim=-105, size=(8, 9), label_done=False)
     return out
 
 
