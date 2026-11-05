@@ -1,35 +1,48 @@
-"""HeatMap Node parametric model (build123d), TRL 3, constructable design (HMN-DDR-003).
+"""HeatMap Node parametric model, kit 1.9 interface (STANDARDS section 24), detail level D3 for every option.
 
-Revised under HMN-DDR-002 (2026-09-25): aspiration fan and cowl on the shield, formed sheet
-saddle, arm pointing toward the equator with the FieldNode core above it (2026-10-02), and FieldNode's
-hot-climate sun shield on the core. Made constructable under HMN-DDR-003 (2026-10-01,
-"Design for construction"): every part can now be cut, bent, drilled, printed or bought, and
-every part touches and is fixed to the parts next to it. `python cad/src/model.py --check`
-runs the constructability checks (overlaps, contacts and clearances).
+Run from the repo root:
+    python .kit/cad_check.py --export     fidelity check, STEP per part and per assembly (cad/step/)
+    python cad/src/model.py               part list with masses; STL of the chosen design (cad/stl/)
+    python cad/src/model.py --check       constructability checks (touches and clearances) on the chosen design
 
-Run from the repo root:  python cad/src/model.py [--check]
-Exports STEP and STL into cad/step and cad/stl:
-    heatmap-node-assembly.step / .stl   sensor head and FieldNode core as fitted to the pole
-    sensor-head.step / .stl             arm, clamp, shield, sensors, globe, anemometer, harness
-    fieldnode-core-envelope.step / .stl FieldNode envelope, sun shield and the HeatMap pole adapter
+Axes: the existing street pole is the Z axis (x = y = 0), Z is up with the pavement at z = 0. The sensor arm
+reaches out along +X, which points toward the equator (HMN-DDR-002). The FieldNode core is built in its own
+convention (panel facing -Y) and turned by fn_azimuth about the pole, so it sits on the pole's +X face above the
+arm with its panel facing +X (HMN-DEC-001, item 3).
 
-Axes: the existing street pole is the Z axis (x = y = 0), Z is up with the pavement at
-z = 0. The sensor arm reaches out along +X, which points toward the equator (HMN-DDR-002).
-The FieldNode core is built in its own convention (panel facing -Y) and turned by fn_azimuth
-about the pole, so it sits on the pole's +X face above the arm (its whip 100 mm or more clear of the arm)
-with its panel facing +X. Decided 2026-10-02 (HMN-DEC-001, item 3, option a); the sensor leads run
-down the pole from the core ports to the arm.
-The FieldNode core is an envelope taken from FND-DWG-001 Rev P3 (back plate with its band slots
-and V-block screw holes, enclosure, ports, whip, panel, a simplified bracket and the hot-climate
-sun shield); it is built to the FieldNode build plan FND-BLD-001 in its own repo. Main
-dimensions and interfaces only; not for fabrication. The same PARAMS feed docs/04-calcs/sizing.py
-(HMN-CAL-001), the drawing HMN-DWG-001 (cad/src/sheets.py), the concept media
-(cad/src/concept_media.py) and the build plan pictures (cad/src/build_plan_media.py).
+Options (HMN-OPT-001):
+    A  fan-aspirated shield, 150 mm globe and cup anemometer: air temperature and humidity are read from air
+       the fan draws past the sensor, the globe and wind speed feed a model that derives MRT and WBGT. This is
+       the current design (HMN-PRC-001, HMN-DDR-001 to 003); the drawing, BOM and build plan describe it.
+    B  direct natural wet-bulb head: a wetted-wick sensor on a water reservoir, the same 150 mm globe and a
+       passive naturally ventilated shield; WBGT is computed from the three instruments as ISO 7243 defines
+       it, with no anemometer, fan or wind model.
+
+Both options share the clamp, the arm, the FieldNode core and its pole adapter, so what differs is the head.
+Every part is a cad_parts.part() dict: made (cut, bent, drilled or printed), bought, fastener or context (the
+existing pole). BOM line numbers are given on the made and bought parts of option A. The FieldNode core is
+an envelope taken from FND-DWG-001 Rev P3 (its board, cell, panel and bracket are appearance stand-ins for
+parts defined in the FieldNode repo); it is built to the FieldNode build plan FND-BLD-001 in that repo. The
+same PARAMS feed docs/04-calcs/sizing.py (HMN-CAL-001), the drawing HMN-DWG-001 (cad/src/sheets.py), the
+concept media (cad/src/concept_media.py) and the build plan pictures (cad/src/build_plan_media.py).
 """
+from __future__ import annotations
+
 import math
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+sys.path[:0] = [str(HERE), str(HERE.parents[1] / ".kit")]
+
+import build123d as b  # noqa: E402
+import cad_parts as cp  # noqa: E402
+from cad_parts import part, at  # noqa: E402
+from hmn_geom import (box, zcyl, rod, fuse, path, hexnut, ring_band, band_path, nut_local, pan_screw,  # noqa: E402,F401
+                      button_screw, brk)
+
+TITLE = "HeatMap Node"
 
 # Top-level parameters (mm). Edit these, not the geometry below.
 PARAMS = {
@@ -72,6 +85,9 @@ PARAMS = {
     "fn_panel": (290.0, 200.0, 17.0), "fn_tilt": 40.0, "fn_panel_c": (-73.0, 385.0),
     "fn_whip": (10.0, 190.0), "fn_ports_x": (-54.0, -22.0), "fn_ant_x": 30.0, "fn_front_row": 55.0,
     "fn_band_slot_x": 51.0, "fn_vscrew_x": 18.0,
+    # FieldNode envelope detail (appearance stand-ins for FND parts): enclosure wall, lid thickness, board (X x Z x t),
+    #   board stand-off height, 32700-class LiFePO4 cell (diameter x length)
+    "fn_wall": 3.0, "fn_lid": 6.0, "fn_pcb": (96.0, 150.0, 1.6), "fn_standoff": 10.0, "fn_cell": (32.0, 70.0),
     # 12 HeatMap pole adapter for the FieldNode core: two printed 120 deg V-blocks (W x H x depth)
     #   at the FieldNode clamp heights (from the enclosure bottom), and strap bands
     "adapter_vblock": (110.0, 30.0, 38.0), "adapter_dz": (-20.0, 230.0), "adapter_slot": (3.5, 16.0),
@@ -79,10 +95,12 @@ PARAMS = {
     "fn_azimuth": 90.0,
     # FieldNode hot-climate sun shield (FND BOM line 14): sheet (drawn), gap, low edge, top slot
     "fns_t": 1.0, "fns_gap": 15.0, "fns_low": 10.0, "fns_slot": 30.0,
+    # ---- option B, direct natural wet-bulb head (HMN-OPT-001): passive shield of 6 plates, wick reservoir
+    "b_n_plates": 6, "b_shield_x": 230.0,
+    "b_wick_x": 370.0, "b_wick_gap": 60.0, "b_wick_rods": 68.0,       # reservoir plate x, gap below arm, rod spacing
+    "b_wick_plate": (90.0, 40.0, 3.0), "b_bottle": (56.0, 100.0), "b_neck": (24.0, 18.0),   # bottle diameter x body height; neck OD x bore
+    "b_sensor_d": 6.0, "b_wick_len": 28.0, "b_sleeve_d": 8.0,
 }
-
-
-HARNESS_RUN = {}   # filled by build_components: mm of lead from each core port to the arm sensors (the main run, before the sensor tails)
 
 
 def derived(p=PARAMS):
@@ -117,6 +135,7 @@ def derived(p=PARAMS):
     pcz = p["fn_z0"] + p["fn_panel_c"][1]
     halfp = p["fn_panel"][1] / 2
     rmax = p["pole_range"][1] / 2
+    b_shield_top = shield_top
     return {
         "r": r, "arm_x0": arm_x0, "arm_x1": arm_x1, "arm_bot": arm_bot, "arm_top": arm_top,
         "v_apex": v_apex, "metal_apex": metal_apex, "web_out": web_out, "web_in": web_out - p["saddle_wall"],
@@ -137,118 +156,55 @@ def derived(p=PARAMS):
         "overall_top": hub_z + p["cup_d"] / 2 + 10,
         # a pole of radius R touches a 120 deg V at +/- R cos(half angle)... from its center line
         "v_contact_max": rmax * math.cos(half) * 2,
+        # option B
+        "b_shield_top": b_shield_top,
+        "b_shield_bot": b_shield_top - ((p["b_n_plates"] - 1) * p["plate_pitch"] + p["plate_t"]),
+        "sensor_zc": shield_top - 54.0,
+        "b_wick_zp": arm_bot - p["b_wick_gap"],
     }
 
 
-def _b3d():
-    import build123d as b
-    return b
+OPTIONS = {"A": "Fan-aspirated shield, globe and anemometer", "B": "Direct natural wet-bulb head"}
+PRINCIPLES = {
+    "A": "A fan draws air past the humidity sensor inside a white plate shield every 3 min, a 150 mm black globe and a "
+         "cup anemometer give radiant heat and wind, and a model derives mean radiant temperature and WBGT.",
+    "B": "A wetted-wick sensor on a small water reservoir measures the natural wet bulb directly, beside the same "
+         "150 mm globe and a passive shield, so WBGT is computed as ISO 7243 defines it with no wind input.",
+}
+CHOSEN = "A"
+OPTION_VIEWS = {k: {"el": 18, "az": -50, "scale": "person", "keep_context": True, "ground_z": 0} for k in OPTIONS}
+ALLOWED_CONTACTS = []
+
+HARNESS_RUN = {}   # filled by the harness builder: mm of lead from each core port to the arm sensors (before the sensor tails)
+
+ST, AL, WH, BLK, BR, SS = "stainless", "aluminium", "pe_tank_white", "matte_black", "brass", "stainless"
 
 
-def box(cx, cy, cz, sx, sy, sz):
-    b = _b3d()
-    return b.Pos(cx, cy, cz) * b.Box(sx, sy, sz)
+# ----------------------------------------------------------------------------------------------- helpers
+def _fs(items, origin, rot, group, prefix="", material=SS, kind="fastener", bom=None):
+    """Place a list of (name, shape) fastener items (cad_parts.hex_bolt_set and others) as part dicts."""
+    return [part(prefix + n, at(s, origin, rot), material, kind=kind, group=group, bom=bom) for n, s in items]
 
 
-def rod(a, c, r):
-    """Solid rod of radius r between two 3D points."""
-    b = _b3d()
-    a, c = b.Vector(*a), b.Vector(*c)
-    d = c - a
-    return b.Solid.make_cylinder(r, d.length, b.Plane(origin=a, z_dir=d.normalized()))
+def _shs_x(x0, x1, z, a, t):
+    """Square hollow section along +X from x0 to x1 with its axis at height z."""
+    return at(cp.shs(a, t, x1 - x0), (x0, 0, z), (0, 90, 0))
 
 
-def path(points, r):
-    """A cable or wire along a polyline, with round joints so the bends do not gap."""
-    b = _b3d()
-    out = fuse(rod(a, c, r) for a, c in zip(points, points[1:]))
-    for q in points[1:-1]:
-        out = out + b.Pos(*q) * b.Sphere(r)
-    return out
+def pole_context(p=PARAMS, z_lo=0.0, z_hi=None):
+    """Existing street pole (not supplied, not in the BOM)."""
+    z_hi = p["pole_h"] if z_hi is None else z_hi
+    return zcyl(0, 0, (z_lo + z_hi) / 2, p["pole_od"] / 2, z_hi - z_lo)
 
 
-def fuse(shapes):
-    out = None
-    for s in shapes:
-        out = s if out is None else out + s
-    return out
-
-
-def zcyl(x, y, z, r, h):
-    b = _b3d()
-    return b.Pos(x, y, z) * b.Cylinder(r, h)
-
-
-def hexnut(x, y, z0, af, h, bore, axis="z", blind=False):
-    """Hex nut across flats af, height h, with a bore; base at z0 along +axis (axis 'z', '-z', 'y', '-y')."""
-    b = _b3d()
-    n = b.extrude(b.RegularPolygon(af / math.sqrt(3), 6), amount=h)
-    if blind:       # acorn nut: bore open at the base only, domed top
-        n = n - b.Pos(0, 0, -0.01) * b.Cylinder(bore / 2, h * 0.7, align=(b.Align.CENTER, b.Align.CENTER, b.Align.MIN))
-        n = n + b.Pos(0, 0, h) * (b.Sphere(af / 2 * 0.95) & b.Pos(0, 0, af) * b.Box(2 * af, 2 * af, 2 * af))
-    else:
-        n = n - b.Cylinder(bore / 2, 4 * h)
-    rot = {"z": b.Rot(0, 0, 0), "-z": b.Rot(180, 0, 0), "y": b.Rot(-90, 0, 0), "-y": b.Rot(90, 0, 0)}[axis]
-    return b.Pos(x, y, z0) * rot * n
-
-
-def ring_band(points, w, t, z):
-    """A thin strap band (width w, thickness t) whose centerline is the closed polygon points, at height z."""
-    b = _b3d()
-    wire = b.Wire.make_polygon([b.Vector(x, y, 0) for x, y in points], close=True)
-    outer = wire.offset_2d(t / 2, kind=b.Kind.INTERSECTION)
-    inner = wire.offset_2d(-t / 2, kind=b.Kind.INTERSECTION)
-    face = b.Face(outer, [inner])
-    return b.Pos(0, 0, z - w / 2) * b.extrude(face, amount=w)
-
-
-def band_path(r, sx, sy_in, sy_out, front, n=40):
-    """Centerline of a band round the back of a pole of radius r (centred at the origin, the
-    clamped part on +X): from the pole it runs to (sx, +/-sy) at x = sy_in, through slots to
-    x = sy_out and across the front at x = front. Returns 2D points, counter-clockwise."""
-    # tangent point from (sy_in, sx) to the circle, on the back (-X) side
-    def tangent(px, py):
-        d = math.hypot(px, py)
-        a = math.atan2(py, px)
-        da = math.acos(r / d)
-        return a + da if py > 0 else a - da
-    a1 = tangent(sy_in, sx)          # upper side
-    a2 = tangent(sy_in, -sx) + 2 * math.pi
-    pts = [(front, -sx), (front, sx), (sy_out, sx), (sy_in, sx)]
-    for i in range(n + 1):
-        a = a1 + (a2 - a1) * i / n
-        pts.append((r * math.cos(a), r * math.sin(a)))
-    pts += [(sy_in, -sx), (sy_out, -sx)]
-    return pts
-
-
-@dataclass
-class Component:
-    """One component: a single made or bought piece, or a matched set of fixings."""
-    key: str
-    name: str
-    shape: object
-    line: int            # BOM line
-    kind: str            # "made", "bought", "fixing" or "fieldnode"
-    density: float       # kg/m3 for the mass estimate (0: mass taken from the calc note instead)
-
-
-def build_components(p=PARAMS):
-    """Return {key: Component} for every component, in build order."""
-    b = _b3d()
-    D = derived(p)
-    r = D["r"]
-    az = p["arm_z"]
-    half = math.radians(p["v_angle"] / 2)
-    C = {}
-
-    def add(key, name, shape, line, kind, density):
-        C[key] = Component(key, name, shape, line, kind, density)
-
-    # ------------------------------------------------------------ 8 arm clamp: saddle, trim, cheeks, bands
+# ----------------------------------------------------------------------------------------------- shared: clamp and arm
+def clamp_parts(p, D):
+    """Line 8: formed saddle, rubber trim, cheeks, strap bands and their buckles, with the clamp fixings (line 10)."""
+    r, az, half = D["r"], p["arm_z"], math.radians(p["v_angle"] / 2)
     sw, sh, sd = p["saddle"]
     wt = p["saddle_wall"]
     wo, wi, fe = D["web_out"], D["web_in"], D["flange_edge"]
+    out = []
     web = box(wo - wt / 2, 0, az, wt, sw, sh)
     flanges = fuse(box((wi + fe) / 2, 0, az + s * (sh / 2 - wt / 2), wi - fe, sw, wt) for s in (-1, 1))
     ma = D["metal_apex"]
@@ -263,25 +219,18 @@ def build_components(p=PARAMS):
             saddle = saddle - box(wo - wt / 2, s * p["band_slot_y"], az + dz, wt + 2, sx_, sz_)
         for dz in (-p["cheek_web_dz"], p["cheek_web_dz"]):
             saddle = saddle - b.Pos(wo - wt / 2, s * p["cheek_web_y"], az + dz) * b.Rot(0, 90, 0) * b.Cylinder(3.3, wt + 2)
-    add("saddle", "Arm saddle", saddle, 8, "made", 2700)
+    out.append(part("Arm saddle (3 mm sheet channel)", saddle, AL, "made", 8, "saddle"))
 
-    # rubber edge trim on the notch edges: the bearing strip, trim_t thick, 6 mm tall, on each flange
-    tt = p["trim_t"]
-    va = D["v_apex"]
-    trim = None
-    for s in (-1, 1):
+    tt, va = p["trim_t"], D["v_apex"]
+    for s, nm in ((1, "top"), (-1, "bottom")):
         zf = az + s * (sh / 2 - wt / 2)
         poly = b.Polygon((ma, 0), (fe, (ma - fe) * math.tan(half)), (fe, (ma - fe) * math.tan(half) - tt / math.cos(half)),
                          (va, 0), (fe, -(ma - fe) * math.tan(half) + tt / math.cos(half)), (fe, -(ma - fe) * math.tan(half)), align=None)
-        strip = b.Pos(0, 0, zf) * b.extrude(poly, amount=3.0, both=True)
-        trim = strip if trim is None else trim + strip
-    add("trim", "Rubber edge trim", trim, 8, "bought", 1200)
+        out.append(part(f"EPDM edge trim, {nm} flange", b.Pos(0, 0, zf) * b.extrude(poly, amount=3.0, both=True), "epdm", "bought", 8, "trim"))
 
-    # cheeks: angle with the flat leg on the web front and the upright leg against the arm side
     cl, ct, ch = p["cheek"]
     aw = p["arm_w"]
-    cheeks = None
-    for s in (-1, 1):
+    for s, nm in ((1, "+Y"), (-1, "-Y")):
         flat = box(wo + ct / 2, s * (aw / 2 + cl / 2), az, ct, cl, ch)
         up = box(wo + cl / 2, s * (aw / 2 + ct / 2), az, cl, ct, ch)
         c = flat + up
@@ -289,60 +238,64 @@ def build_components(p=PARAMS):
             c = c - b.Pos(wo + ct / 2, s * p["cheek_web_y"], az + dz) * b.Rot(0, 90, 0) * b.Cylinder(3.3, ct + 2)
         for bx in p["cheek_bolt_x"]:
             c = c - b.Pos(wo + bx, s * (aw / 2 + ct / 2), az) * b.Rot(90, 0, 0) * b.Cylinder(3.3, ct + 2)
-        cheeks = c if cheeks is None else cheeks + c
-    add("cheeks", "Arm cheeks (2)", cheeks, 8, "made", 2700)
+        out.append(part(f"Arm cheek {nm} (40 x 40 x 3 angle)", c, AL, "made", 8, "cheeks"))
 
-    # saddle bands: round the back of the pole, through the web slots, across the web front
     bt = p["band_t"]
-    bands = None
-    for dz in (-p["band_dz"], p["band_dz"]):
+    for k, dz in enumerate((-p["band_dz"], p["band_dz"])):
         pts = band_path(r + bt / 2 + 0.1, p["band_slot_y"], wi - 2, wo + bt / 2, wo + bt / 2)
-        bd = ring_band(pts, p["band_w"], bt, az + dz)
-        bands = bd if bands is None else bands + bd
-    add("bands", "Saddle strap bands (2)", bands, 8, "bought", 7900)
+        out.append(part(f"Saddle strap band {k + 1} (13 mm)", ring_band(pts, p["band_w"], bt, az + dz), SS, "bought", 8, "bands"))
+        out.append(part(f"Saddle band buckle {k + 1}", brk(box(wo + bt + 3.0, 0, az + dz, 6.0, 30.0, 16.0), 1.2), SS, "bought", 8, "bands"))
 
-    # ------------------------------------------------------------ 7 sensor arm, its end plug and crush sleeves
-    x0, x1 = D["arm_x0"], D["arm_x1"]
-    at = p["arm_t"]
-    arm = box((x0 + x1) / 2, 0, az, x1 - x0, aw, aw) - box((x0 + x1) / 2, 0, az, x1 - x0 + 4, aw - 2 * at, aw - 2 * at)
-    sx = p["shield_x"]
-    rr = p["rod_pcd"] / 2
-    for xx, d in ((sx - rr, 5.5), (sx + rr, 5.5), (p["globe_x"], p["hanger"][0] + 0.5), (D["anemo_x"], p["mast_d"] + 0.5)):
-        arm = arm - zcyl(xx, 0, az, d / 2, aw + 4)
+    # fixings (line 10): crush sleeves, two M6 cheek bolts through the arm, four M6 button screws with nyloc nuts
     for bx in p["cheek_bolt_x"]:
-        arm = arm - b.Pos(x0 + bx, 0, az) * b.Rot(90, 0, 0) * b.Cylinder(3.3, aw + 4)
-    arm = arm - b.Pos(D["anemo_x"], 0, az) * b.Rot(90, 0, 0) * b.Cylinder(2.75, aw + 4)
-    add("arm", "Sensor arm", arm, 7, "made", 2700)
-    plug = box(x1 - 6, 0, az, 12, aw - 2 * at, aw - 2 * at) + box(x1 + 1.25, 0, az, 2.5, aw, aw)
-    add("plug", "Arm end plug", plug, 10, "bought", 1100)
-    sleeves = fuse(b.Pos(x0 + bx, 0, az) * b.Rot(90, 0, 0) * (b.Cylinder(4.0, aw - 2 * at) - b.Cylinder(3.2, aw)) for bx in p["cheek_bolt_x"])
-    add("sleeves", "Crush sleeves (2)", sleeves, 10, "fixing", 2700)
-
-    # cheek bolts: two M6 through cheeks, arm and sleeves (heads +Y, nuts -Y); four M6 through web and cheeks
-    yy = aw / 2 + ct
-    cb = None
-    for bx in p["cheek_bolt_x"]:
-        cb_ = b.Pos(x0 + bx, 0, az) * b.Rot(90, 0, 0) * b.Cylinder(3.0, 2 * yy + 6)
-        cb_ = cb_ + hexnut(x0 + bx, yy, az, 10, 4, 6, axis="y") + hexnut(x0 + bx, -yy, az, 10, 5, 6, axis="-y")
-        cb = cb_ if cb is None else cb + cb_
+        sl = b.Pos(0, 0, 0) * (b.Cylinder(4.0, aw - 2 * p["arm_t"]) - b.Cylinder(3.2, aw))
+        out.append(part("Crush sleeve 8 x 0.8 mm", at(sl, (wo + bx, 0, az), (90, 0, 0)), AL, "fastener", None, "sleeves"))
+        grip = 2 * ct + aw
+        out += _fs(cp.hex_bolt_set(6, grip), (wo + bx, grip / 2, az), (-90, 0, 0), "clamp_bolts", "Cheek bolt: ")
     for s in (-1, 1):
         for dz in (-p["cheek_web_dz"], p["cheek_web_dz"]):
             y_, z_ = s * p["cheek_web_y"], az + dz
-            cb = cb + b.Pos((wi - 3.3 + wo + ct + 6) / 2, y_, z_) * b.Rot(0, 90, 0) * b.Cylinder(3.0, wo + ct + 6 - wi + 3.3)
-            cb = cb + b.Pos(wi - 1.65, y_, z_) * b.Rot(0, 90, 0) * b.Cylinder(5.25, 3.3)     # button head inside the web
-            cb = cb + b.Pos(wo + ct, y_, z_) * b.Rot(0, 90, 0) * (b.extrude(b.RegularPolygon(10 / math.sqrt(3), 6), amount=5) - b.Cylinder(3, 20))
-    add("clamp_bolts", "Clamp bolts", cb, 10, "fixing", 7900)
+            out.append(part("M6 x 20 button-head screw (ISO 7380)", at(button_screw(6, 20), (wi, y_, z_), (0, -90, 0)), SS, "fastener", None, "clamp_bolts"))
+            out.append(part("M6 washer (ISO 7089)", at(cp.washer(6), (wo + ct, y_, z_), (0, 90, 0)), SS, "fastener", None, "clamp_bolts"))
+            out.append(part("M6 nyloc nut (ISO 10511)", at(nut_local(10, 6.0, 6.0, "nyloc"), (wo + ct + 1.6, y_, z_), (0, 90, 0)), SS, "fastener", None, "clamp_bolts"))
+    return out
 
-    # ------------------------------------------------------------ 2 radiation shield: plates, rods, spacers, nuts
+
+def arm_parts(p, D, vertical_holes, cross_holes=()):
+    """Line 7: the 25 x 25 x 2 mm square tube, drilled; and its end plug (line 10)."""
+    az, aw, at_ = p["arm_z"], p["arm_w"], p["arm_t"]
+    x0, x1 = D["arm_x0"], D["arm_x1"]
+    arm = _shs_x(x0, x1, az, aw, at_)
+    for xx, d in vertical_holes:
+        arm = arm - zcyl(xx, 0, az, d / 2, aw + 4)
+    for bx in p["cheek_bolt_x"]:
+        arm = arm - b.Pos(x0 + bx, 0, az) * b.Rot(90, 0, 0) * b.Cylinder(3.3, aw + 4)
+    for xx, d in cross_holes:
+        arm = arm - b.Pos(xx, 0, az) * b.Rot(90, 0, 0) * b.Cylinder(d / 2, aw + 4)
+    out = [part("Sensor arm (25 x 25 x 2 SHS)", arm, AL, "made", 7, "arm")]
+    plug = at(b.extrude(b.Sketch() + b.RectangleRounded(aw - 2 * at_ - 0.4, aw - 2 * at_ - 0.4, 1.8), 12), (x1 - 12, 0, az), (0, 90, 0))
+    plug = plug + at(brk(b.extrude(b.Sketch() + b.RectangleRounded(aw, aw, 4.0), 2.5), 0.6), (x1, 0, az), (0, 90, 0))
+    out.append(part("Arm end plug", plug, "hdpe_black", "bought", 10, "plug"))
+    return out
+
+
+# ----------------------------------------------------------------------------------------------- shared: shield stack
+def shield_parts(p, D, n_plates, sx, fan=True, ST_=None):
+    """Line 2: the stack of white plates on four M5 rods; two rods continue through the arm on spacers."""
+    out = []
+    az = p["arm_z"]
     pt, pitch = p["plate_t"], p["plate_pitch"]
-    st = D["shield_top"]
+    st = D["shield_top"] if ST_ is None else ST_
     sr = p["shield_d"] / 2
+    rr = p["rod_pcd"] / 2
     rods_xy = [(sx + rr * math.cos(math.radians(a)), rr * math.sin(math.radians(a))) for a in (0, 90, 180, 270)]
     fh = p["fan_holes"] / 2
-    plates = {}
-    for i in range(p["n_plates"]):
+    for i in range(n_plates):
         z = st - pt / 2 - i * pitch
-        pl = zcyl(sx, 0, z, sr, pt) - zcyl(sx, 0, z, (p["top_hole"] if i == 0 else p["plate_hole"]) / 2, pt + 2)
+        hole = (p["top_hole"] if fan else 0) if i == 0 else p["plate_hole"]
+        pl = zcyl(sx, 0, z, sr, pt)
+        if hole:
+            pl = pl - zcyl(sx, 0, z, hole / 2, pt + 2)
         if i == p["hub_plate"]:      # sensor hub on three spokes
             hd, hh = p["hub"]
             pl = pl + zcyl(sx, 0, z - pt / 2 + (pt + hh) / 2, hd / 2, pt + hh)
@@ -356,32 +309,35 @@ def build_components(p=PARAMS):
                 pl = pl + zcyl(rx, ry, z + pt / 2 + (pitch - pt) / 2, p["boss_d"] / 2, pitch - pt)
         for (rx, ry) in rods_xy:
             pl = pl - zcyl(rx, ry, z, 2.75, pitch * 2 + 2)
-        if i == 0:
+        if i == 0 and fan:
             for ex in (-1, 1):
                 for ey in (-1, 1):
                     pl = pl - zcyl(sx + ex * fh, ey * fh, z, 2.2, pt + 2)
-        plates[i] = pl
-    add("plates", "Shield plates (8)", fuse(plates.values()), 2, "made", 1070)
-    sb = D["shield_bot"]
+        out.append(part(f"Shield plate {i + 1} (110 mm, white ASA)", pl, WH, "made", 2, "plates"))
+    sb = st - ((n_plates - 1) * pitch + pt)
     long_top = D["arm_top"] + 4 + 4
-    rods, nuts, spacers = None, None, None
     for k, (rx, ry) in enumerate(rods_xy):
         is_long = abs(ry) < 1
         top = long_top if is_long else st + 4 + 3
         rd = zcyl(rx, ry, (sb - 6 + top) / 2, p["rod_d"] / 2, top - (sb - 6))
-        rods = rd if rods is None else rods + rd
-        n = hexnut(rx, ry, sb, 8, 8, 5, axis="-z", blind=True) + hexnut(rx, ry, st, 8, 4, 5)
+        out.append(part(f"M5 threaded rod {k + 1} (316)", brk(rd, 0.4), SS, "fastener", None, "rods"))
+        out.append(part("M5 acorn nut (DIN 1587)", at(nut_local(8, 8.0, 5.0, "acorn"), (rx, ry, sb), (180, 0, 0)), SS, "fastener", None, "rods"))
+        out.append(part("M5 hex nut (ISO 4032)", at(nut_local(8, 4.0, 5.0), (rx, ry, st), (0, 0, 0)), SS, "fastener", None, "rods"))
         if is_long:
-            n = n + hexnut(rx, ry, D["arm_top"], 8, 4, 5)
+            out.append(part("M5 hex nut above the arm (ISO 4032)", at(nut_local(8, 4.0, 5.0), (rx, ry, D["arm_top"]), (0, 0, 0)), SS, "fastener", None, "rods"))
             sp = zcyl(rx, ry, (st + 4 + D["arm_bot"]) / 2, 4.0, D["arm_bot"] - st - 4) - zcyl(rx, ry, 0, 2.65, 1e5)
-            spacers = sp if spacers is None else spacers + sp
-        nuts = n if nuts is None else nuts + n
-    add("rods", "Shield rods (4) and nuts", rods + nuts, 2, "fixing", 7900)
-    add("spacers", "Shield spacers (2)", spacers, 2, "fixing", 2700)
+            out.append(part("Shield spacer 8 x 0.8 mm tube", sp, AL, "made", 2, "spacers"))
+    return out
 
-    # ------------------------------------------------------------ 13 fan, cowl and fan screws
+
+def fan_parts(p, D, sx):
+    """Line 13: 60 mm fan, cowl and four M4 screws with nuts."""
+    out = []
+    st = D["shield_top"]
+    pt = p["plate_t"]
     fw, _, fht = p["fan"]
     cw, chh = p["cowl"]
+    fh = p["fan_holes"] / 2
     fan = box(sx, 0, st + fht / 2, fw, fw, fht) - zcyl(sx, 0, st + fht / 2, fw / 2 - 2, fht + 2)
     fan = fan + zcyl(sx, 0, st + fht / 2, 12, fht - 2)
     for a in (0, 120, 240):
@@ -389,91 +345,201 @@ def build_components(p=PARAMS):
     for ex in (-1, 1):
         for ey in (-1, 1):
             fan = fan - zcyl(sx + ex * fh, ey * fh, st + fht / 2, 2.2, fht + 2)
-    add("fan", "Aspiration fan", fan, 13, "bought", 0)
+    out.append(part("Aspiration fan 60 x 60 x 15 mm, 5 V", fan, "hdpe_black", "bought", 13, "fan"))
     lid_t, leg = 3.0, 8.0
     cowl = box(sx, 0, st + chh - lid_t / 2, cw, cw, lid_t)
     for ex in (-1, 1):
         for ey in (-1, 1):
             cowl = cowl + box(sx + ex * fh, ey * fh, st + fht + (chh - lid_t - fht) / 2, leg, leg, chh - lid_t - fht)
             cowl = cowl - zcyl(sx + ex * fh, ey * fh, st + chh / 2, 2.2, chh + 2)
-    add("cowl", "Fan cowl", cowl, 13, "made", 1070)
-    fs = None
+    out.append(part("Fan cowl (white ASA)", cowl, WH, "made", 13, "cowl"))
     for ex in (-1, 1):
         for ey in (-1, 1):
             x_, y_ = sx + ex * fh, ey * fh
-            s_ = zcyl(x_, y_, (st - pt - 4 + st + chh) / 2, 2.0, chh + pt + 4) + zcyl(x_, y_, st + chh + 1.4, 4.0, 2.8)
-            s_ = s_ + hexnut(x_, y_, st - pt, 7, 3.2, 4, axis="-z")
-            fs = s_ if fs is None else fs + s_
-    add("fan_screws", "Fan screws (4)", fs, 13, "fixing", 7900)
+            out.append(part("M4 x 37 pan-head screw", at(pan_screw(4, chh + pt + 4), (x_, y_, st + chh), (0, 0, 0)), SS, "fastener", None, "fan_screws"))
+            out.append(part("M4 hex nut (ISO 4032)", at(nut_local(7, 3.2, 4.0), (x_, y_, st - pt), (180, 0, 0)), SS, "fastener", None, "fan_screws"))
+    return out
 
-    # ------------------------------------------------------------ 3 temperature and humidity sensor
+
+def sensor_parts(p, D, sx):
+    """Line 3: SHT45 board in a capsule with a PTFE membrane cap, seated in the hub of the third plate."""
     cd, cln = p["th_sensor"]
-    add("th_sensor", "Temperature and humidity sensor", zcyl(sx, 0, D["shield_zc"], cd / 2, cln), 3, "bought", 0)
+    zc = D["sensor_zc"]
+    wall = 1.5
+    cap = b.Pos(sx, 0, zc) * (b.Cylinder(cd / 2, cln) - b.Pos(0, 0, -wall) * b.Cylinder(cd / 2 - wall, cln))
+    cap = brk(cap, 1.0)
+    pcb = box(sx, 0, zc + 6.5, 9.0, 1.6, 29.0)
+    memb = zcyl(sx, 0, zc - cln / 2 + 0.75, cd / 2 - wall - 0.1, 1.5)
+    return [part("Sensor capsule (SHT45 housing)", cap, WH, "bought", 3, "th_sensor"),
+            part("SHT45 board", pcb, "polycarbonate", "bought", 3, "th_sensor", color="#166534"),
+            part("PTFE membrane cap", memb, "label", "bought", 3, "th_sensor")]
 
-    # ------------------------------------------------------------ 4 globe with its hanger tube and nuts; 5 probe
-    gx, gz, gr = p["globe_x"], D["globe_zc"], p["globe_d"] / 2
+
+def globe_parts(p, D, gx):
+    """Lines 4 and 5: copper globe on its M10 hanger tube with three nuts; probe stem and bead."""
+    out = []
+    gz, gr = D["globe_zc"], p["globe_d"] / 2
     ho, hb = p["hanger"]
     gt = D["globe_top"]
+    az = p["arm_z"]
     globe = b.Pos(gx, 0, gz) * (b.Sphere(gr) - b.Sphere(gr - p["globe_wall_drawn"]))
     globe = globe + zcyl(gx, 0, gt + 4, 10, 16)
-    globe = globe - zcyl(gx, 0, gt, ho / 2, 40)
-    add("globe", "Black globe", globe, 4, "bought", 0)
+    globe = globe - zcyl(gx, 0, gt, ho / 2 + 0.1, 40)
+    out.append(part("Black globe 150 mm (copper float ball, painted)", globe, BLK, "bought", 4, "globe"))
     h_bot, h_top = gt - 2, D["arm_top"] + 8 + 6
     hanger = zcyl(gx, 0, (h_bot + h_top) / 2, ho / 2, h_top - h_bot) - zcyl(gx, 0, (h_bot + h_top) / 2, hb / 2, h_top - h_bot + 2)
-    hanger = hanger + hexnut(gx, 0, gt + 12, 17, 8, ho) + hexnut(gx, 0, D["arm_bot"], 17, 8, ho, axis="-z") + hexnut(gx, 0, D["arm_top"], 17, 8, ho)
-    add("hanger", "Globe hanger tube and nuts", hanger, 4, "fixing", 8500)
-    probe = rod((gx, 0, h_top + 4), (gx, 0, gz), p["probe_d"] / 2) + b.Pos(gx, 0, gz) * b.Sphere(p["bead_d"] / 2)
-    add("probe", "Globe probe", probe, 5, "bought", 0)
+    out.append(part("Globe hanger tube (M10 lamp rod)", brk(hanger, 0.5), BR, "bought", 4, "hanger"))
+    for nm, z0, ax_ in (("on the globe boss", gt + 12, "z"), ("under the arm", D["arm_bot"], "-z"), ("above the arm", D["arm_top"], "z")):
+        out.append(part(f"M10 brass nut {nm}", hexnut(gx, 0, z0, 17, 8, ho, axis=ax_), BR, "fastener", None, "hanger"))
+    # probe: 5 mm stiff tube and a 10 mm epoxy bead at the globe centre
+    stem_bot = gz + p["bead_d"] / 2 - 0.5
+    stem = zcyl(gx, 0, (stem_bot + h_top + 4) / 2, p["probe_d"] / 2, h_top + 4 - stem_bot) - zcyl(gx, 0, (stem_bot + h_top + 4) / 2, p["probe_d"] / 2 - 0.6, h_top + 6 - stem_bot)
+    out.append(part("Globe probe stem (5 mm tube)", brk(stem, 0.3), SS, "bought", 5, "probe"))
+    out.append(part("NTC bead thermistor 10k (epoxy)", b.Pos(gx, 0, gz) * b.Sphere(p["bead_d"] / 2), "hdpe_recycled", "bought", 5, "probe", color="#7A4B2A"))
+    return out, h_top
 
-    # ------------------------------------------------------------ 6 anemometer on its mast through the arm
-    ax, hz = D["anemo_x"], D["hub_z"]
-    mb = D["arm_bot"] - p["mast_below"]
-    mast = zcyl(ax, 0, (mb + hz - 20) / 2, p["mast_d"] / 2, hz - 20 - mb) - zcyl(ax, 0, (mb + hz - 20) / 2, p["mast_d"] / 2 - 1.5, hz - mb)
-    mast = mast - b.Pos(ax, 0, az) * b.Rot(90, 0, 0) * b.Cylinder(2.75, 40)
-    an = mast + zcyl(ax, 0, hz, 22, 40)
-    cr = p["cup_d"] / 2
-    for a in (30, 150, 270):
-        cx_, cy_ = ax + p["cup_arm"] * math.cos(math.radians(a)), p["cup_arm"] * math.sin(math.radians(a))
-        an = an + rod((ax, 0, hz + 10), (cx_, cy_, hz + 10), 2.5)
-        cup = b.Pos(cx_, cy_, hz + 10) * (b.Sphere(cr) - b.Sphere(cr - 2))
-        cut = b.Pos(cx_ + cr * math.cos(math.radians(a + 90)), cy_ + cr * math.sin(math.radians(a + 90)), hz + 10) * b.Box(2 * cr, 2 * cr, 2.5 * cr)
-        an = an + (cup - cut)
-    add("anemometer", "Cup anemometer", an, 6, "bought", 0)
-    xb = b.Pos(ax, 0, az) * b.Rot(90, 0, 0) * b.Cylinder(2.5, aw + 8)
-    xb = xb + hexnut(ax, aw / 2, az, 8, 3, 5, axis="y") + hexnut(ax, -aw / 2, az, 8, 4, 5, axis="-y")
-    add("mast_bolt", "Mast cross bolt", xb, 6, "fixing", 7900)
 
-    # ------------------------------------------------------------ 11 lanyards, looped round the arm
+def lanyard_parts(p, D, sx, gx):
+    """Line 11: two 2 mm stainless lanyards looped round the arm, to the shield top and the globe boss."""
+    az = p["arm_z"]
     ld = p["lanyard_d"] / 2
+    st = D["shield_top"]
+    gt = D["globe_top"]
 
     def loop(xl):
         return [(xl, 14, az - 14), (xl, 14, az + 14), (xl, -25, az + 14), (xl, -25, az - 14), (xl, 14, az - 14)]
-    lan = path([(sx - 30, 42, st), (sx - 30, 42, st + 30), (sx - 30, 14, az - 14)] + loop(sx - 30)[1:], ld)
-    lan = lan + path([(gx + 11, 0, gt + 6), (gx + 30, 14, D["arm_bot"] - 14), (gx + 30, 14, az - 14)] + loop(gx + 30)[1:], ld)
-    add("lanyard", "Retention lanyards (2)", lan, 11, "bought", 7900)
+    l1 = path([(sx - 30, 42, st), (sx - 30, 42, st + 30), (sx - 30, 14, az - 14)] + loop(sx - 30)[1:], ld)
+    l2 = path([(gx + 11, 0, gt + 6), (gx + 30, 14, D["arm_bot"] - 14), (gx + 30, 14, az - 14)] + loop(gx + 30)[1:], ld)
+    return [part("Retention lanyard, shield top to arm", l1, SS, "bought", 11, "lanyard"),
+            part("Retention lanyard, globe boss to arm", l2, SS, "bought", 11, "lanyard")]
 
-    # ------------------------------------------------------------ 1 FieldNode core envelope (FND-DWG-001 Rev P3)
+
+# ----------------------------------------------------------------------------------------------- shared: harness
+def harness_parts(p, D, sx, gx, h_top, tails_b):
+    """Line 9: two M12 leads from the FieldNode ports down the pole and along the arm, with M12 plugs.
+    Lead A feeds the T and RH sensor; lead B the globe probe and the extra sensors in `tails_b`
+    (list of point lists, each starting on the lead's end point (x, -19.5, arm_z + dz) is added here)."""
+    az = p["arm_z"]
+    z0 = p["fn_z0"]
+    yrow = D["enc_back"] - p["fn_front_row"]
+    st = D["shield_top"]
+    ld_, td = p["lead_d"] / 2, p["tail_d"] / 2
+    rr_, ang = p["pole_run"]
+    out = []
+    plug_h = 28.0
+    for k, (px, dzl, dang) in enumerate(((p["fn_ports_x"][0], 5.0, -6.0), (p["fn_ports_x"][1], -5.0, 6.0))):
+        wx, wy = -yrow, px          # port after the 90 deg turn: (x, y) -> (-y, x)
+        a = math.radians(ang + dang)
+        prx, pry = rr_ * math.cos(a), rr_ * math.sin(a)
+        zlow = z0 - 70 - 10 * k
+        zbk = az + 97 + 8 * k       # lead B runs above lead A where they leave the pole, so neither crosses the other
+        pts = [(wx, wy, z0 - 16 - plug_h), (wx, wy, zlow), (60, -80 - 8 * k, zlow), (prx, pry, zlow), (prx, pry, zbk),
+               (45, -82 - 8 * k, zbk), (90, -64 - 8 * k, zbk), (90, -64 - 8 * k, az + dzl), (125, -27, az + dzl), (140, -19.5, az + dzl)]
+        if k == 0:
+            pts += [(sx + 60, -19.5, az + dzl)]
+            lead = path(pts, ld_)
+            tail = [(sx + 60, -19.5, az + dzl), (sx + 44, -44, az - 25), (sx + 44, -44, st - 21), (sx, 0, st - 21),
+                    (sx, 0, D["sensor_zc"] + p["th_sensor"][1] / 2)]
+            lead = lead + path(tail, td)
+            nm = "Sensor lead A (T and RH sensor, fan), M12"
+        else:
+            end_x = max(t[0][0] for t in tails_b)
+            pts += [(end_x, -19.5, az + dzl)]
+            lead = path(pts, ld_)
+            for tl in tails_b:
+                lead = lead + path(tl, td)
+            nm = "Sensor lead B (globe probe, second sensor), M12"
+        HARNESS_RUN[k] = sum(math.dist(pts[i], pts[i + 1]) for i in range(len(pts) - 1))
+        out.append(part(nm, lead, "hdpe_black", "bought", 9, "harness"))
+        plug = brk(zcyl(wx, wy, z0 - 16 - plug_h / 2, 8.0, plug_h), 1.5)
+        out.append(part(f"M12 5-pin plug {k + 1}", plug, "zinc_plated", "bought", 9, "harness"))
+    return out
+
+
+# ----------------------------------------------------------------------------------------------- shared: FieldNode core and adapter
+def fieldnode_parts(p, D):
+    """Line 1: the FieldNode core as an envelope of its main parts (FND-DWG-001 Rev P3), turned onto the pole's +X face."""
+    out = []
+    turn = b.Rot(0, 0, p["fn_azimuth"])
     ew, ed, eh = p["fn_enc"]
     z0 = p["fn_z0"]
     pw, ph, ptk = p["fn_plate"]
     y0 = D["plate_y0"]
-    turn = b.Rot(0, 0, p["fn_azimuth"])
+    wall, lid_t = p["fn_wall"], p["fn_lid"]
+    add = lambda nm, sh, mat, grp="fieldnode", **kw: out.append(part(nm, turn * sh, mat, kw.pop("kind", "bought"), 1, grp, **kw))
+
+    # back plate with its band slots and countersunk V-block screw holes
     plate = box(0, y0 - ptk / 2, z0 - p["fn_plate_drop"] + ph / 2, pw, ptk, ph)
     for dz in p["adapter_dz"]:
         for s in (-1, 1):
             plate = plate - box(s * p["fn_band_slot_x"], y0 - ptk / 2, z0 + dz, 3.0, ptk + 2, 15.0)
             plate = plate - b.Pos(s * p["fn_vscrew_x"], y0 - ptk / 2, z0 + dz) * b.Rot(90, 0, 0) * b.Cylinder(2.25, ptk + 2)
-    enc = box(0, D["enc_yc"], z0 + eh / 2, ew, ed, eh)
-    tilt = p["fn_tilt"]
-    panel = b.Pos(0, D["panel_cy"], D["panel_cz"]) * b.Rot(tilt, 0, 0) * b.Box(*p["fn_panel"])
-    t = math.radians(tilt)
-    bars = fuse(path([(bx, y0 - ptk, z0 + 260), (bx, D["panel_cy"] + 80 * math.cos(t), D["panel_cz"] + 80 * math.sin(t) - 10)], 5)
-                + path([(bx, y0 - ptk, z0 + 210), (bx, D["panel_cy"] - 60 * math.cos(t), D["panel_cz"] - 60 * math.sin(t) - 10)], 5)
-                for bx in (-80, 80))
-    wd, wl = p["fn_whip"]
+            plate = plate - b.Pos(s * p["fn_vscrew_x"], y0 - ptk + 1.2, z0 + dz) * b.Rot(90, 0, 0) * b.Cone(2.2, 4.4, 2.4)
+    add("FieldNode back plate (3 mm, slotted)", plate, AL, "fieldnode", kind="made")
+
+    # enclosure body (open to the front), lid
+    body_d = ed - lid_t
+    body_c = D["enc_back"] - body_d / 2
+    body = box(0, body_c, z0 + eh / 2, ew, body_d, eh) - box(0, body_c - wall / 2 - 0.5, z0 + eh / 2, ew - 2 * wall, body_d - wall + 1.0, eh - 2 * wall)
+    add("FieldNode enclosure IP65 (150 x 90 x 200)", brk(body, 1.0), WH, "fieldnode", kind="made")
+    add("FieldNode enclosure lid", brk(box(0, D["enc_front"] + lid_t / 2, z0 + eh / 2, ew, lid_t, eh), 1.5), WH, "fieldnode", kind="made")
+
+    # board on four stand-offs, with four screws; cell
+    pw_, ph_, pt_ = p["fn_pcb"]
+    zc = z0 + eh / 2
+    y_in = D["enc_back"] - wall                    # inside face of the back wall
+    so = p["fn_standoff"]
+    y_pcb = y_in - so - pt_ / 2
+    holes = [(sx_ * (pw_ / 2 - 5), sz_ * (ph_ / 2 - 5)) for sx_ in (-1, 1) for sz_ in (-1, 1)]
+    pcb = box(0, y_pcb, zc, pw_, pt_, ph_)
+    for hx, hz in holes:
+        pcb = pcb - b.Pos(hx, y_pcb, zc + hz) * b.Rot(90, 0, 0) * b.Cylinder(1.7, pt_ + 2)
+    pcb = pcb + box(-20, y_pcb - pt_ / 2 - 1.5, zc + 35, 22, 3, 22) + box(24, y_pcb - pt_ / 2 - 3, zc - 25, 30, 6, 20) + box(0, y_pcb - pt_ / 2 - 1, zc - 55, 40, 2, 14)
+    add("FieldNode board (MPPT and LoRaWAN module, stand-in)", pcb, "polycarbonate", "fieldnode", kind="bought", color="#166534")
+    for hx, hz in holes:
+        so_ = b.Pos(hx, y_in - so / 2, zc + hz) * b.Rot(90, 0, 0) * (b.Cylinder(2.75, so) - b.Pos(0, 0, so / 2 - 3.5) * b.Cylinder(1.5, 7.2))
+        out.append(part("M3 brass stand-off 10 mm", turn * so_, BR, "fastener", None, "fieldnode"))
+        scr = b.Pos(hx, y_pcb - pt_ / 2, zc + hz) * b.Rot(90, 0, 0) * pan_screw(3, 7.6)
+        out.append(part("M3 x 8 pan-head board screw", turn * scr, SS, "fastener", None, "fieldnode"))
+    cd, cl = p["fn_cell"]
+    cell = b.Pos(0, y_pcb - 22, z0 + wall + cd / 2) * b.Rot(0, 90, 0) * b.Cylinder(cd / 2, cl)
+    add("LiFePO4 cell 3.2 V 6 Ah (stand-in)", brk(cell, 1.0), "glass", "fieldnode", kind="bought", color="#2F5F8A")
+
+    # ports, antenna
     yrow = D["enc_back"] - p["fn_front_row"]
-    whip = zcyl(p["fn_ant_x"], yrow, z0 - wl / 2, wd / 2, wl)
-    ports = fuse(zcyl(x, yrow, z0 - 8, 11, 16) for x in p["fn_ports_x"])
+    for k, x in enumerate(p["fn_ports_x"]):
+        sock = zcyl(x, yrow, z0 - 2, 11.0, 4.0) + zcyl(x, yrow, z0 - 10, 8.0, 12.0)
+        add(f"M12 5-pin socket {'AB'[k]}", brk(sock, 0.6), "zinc_plated", "fieldnode", kind="bought")
+    wd, wl = p["fn_whip"]
+    ax = p["fn_ant_x"]
+    add("Antenna base (SMA)", brk(zcyl(ax, yrow, z0 - 10, 7.0, 20.0), 1.0), "zinc_plated", "fieldnode", kind="bought")
+    add("Antenna whip (LoRa, 868 and 915 MHz)", brk(zcyl(ax, yrow, z0 - 20 - (wl - 20) / 2, wd / 2, wl - 20), 1.0), "hdpe_black", "fieldnode", kind="bought")
+
+    # solar panel on its bracket
+    tilt = p["fn_tilt"]
+    t = math.radians(tilt)
+    pcy, pcz = D["panel_cy"], D["panel_cz"]
+    pwid, plen, pth = p["fn_panel"]
+    ring = b.Box(pwid, plen, pth) - b.Box(pwid - 6, plen - 6, pth + 2)
+    frame = b.Pos(0, pcy, pcz) * b.Rot(tilt, 0, 0) * ring
+    lam = b.Pos(0, pcy, pcz) * b.Rot(tilt, 0, 0) * b.Pos(0, 0, pth / 2 - 2.5) * b.Box(pwid - 6.2, plen - 6.2, 5.0)
+    back = b.Pos(0, pcy, pcz) * b.Rot(tilt, 0, 0) * b.Pos(0, 0, -pth / 2 + 1.0) * b.Box(pwid - 6.2, plen - 6.2, 2.0)
+    add("Solar panel frame (6 W, 290 x 200 x 17)", brk(frame, 0.8), AL, "fieldnode", kind="bought")
+    add("Solar panel laminate", lam, "glass", "fieldnode", kind="bought", color="#1B2A44")
+    add("Solar panel back sheet", back, "hdpe_black", "fieldnode", kind="bought")
+    panel_solid = b.Pos(0, pcy, pcz) * b.Rot(tilt, 0, 0) * b.Box(pwid, plen, pth)
+    plate_solid = box(0, y0 - ptk / 2, z0 - p["fn_plate_drop"] + ph / 2, pw, ptk, ph)
+    for bi, (zs, off) in enumerate(((260, 80), (210, -60))):
+        for bx in (-80, 80):
+            a_ = (bx, y0 - ptk + 6, z0 + zs)
+            c_ = (bx, pcy + off * math.cos(t), pcz + off * math.sin(t) - 10)
+            dv = (c_[0] - a_[0], c_[1] - a_[1], c_[2] - a_[2])
+            dl = math.sqrt(sum(v * v for v in dv))
+            c_ = tuple(c_[i] + dv[i] / dl * 8.0 for i in range(3))     # run into the panel; the panel is then cut away
+            bar = rod(a_, c_, 5.0) - panel_solid - plate_solid
+            add(f"Panel bracket arm {bi * 2 + (1 if bx > 0 else 0) + 1} (10 mm bar)", bar, AL, "fieldnode", kind="made")
+
+    # hot-climate sun shield (FND BOM line 14)
     fst, sg = p["fns_t"], p["fns_gap"]
     yb_s = y0 - ptk
     yf_s = D["enc_front"] - sg
@@ -484,13 +550,23 @@ def build_components(p=PARAMS):
     for sxn in (-1, 1):
         fshield = fshield + box(sxn * (xo + fst / 2), (yb_s + yf_s - fst) / 2, zlo + hs / 2, fst, yb_s - (yf_s - fst), hs)
     fshield = fshield + box(0, (yf_s - fst + yb_s - p["fns_slot"]) / 2, zhi + fst / 2, 2 * (xo + fst), yb_s - p["fns_slot"] - (yf_s - fst), fst)
-    add("fieldnode", "FieldNode core (built to FND-BLD-001)", turn * (plate + enc + panel + bars + whip + ports + fshield), 1, "fieldnode", 0)
+    add("FieldNode sun shield (1 mm sheet)", fshield, AL, "fieldnode", kind="made", color="#F2F2EE")
+    return out
 
-    # ------------------------------------------------------------ 12 pole adapter: printed V-blocks, screws, bands
+
+def adapter_parts(p, D):
+    """Line 12: two printed 120 degree V-blocks, four countersunk M4 screws, two strap bands with buckles."""
+    out = []
+    r = D["r"]
+    half = math.radians(p["v_angle"] / 2)
+    z0 = p["fn_z0"]
+    y0 = D["plate_y0"]
+    ptk = p["fn_plate"][2]
+    bt = p["band_t"]
     vw, vh, vd = p["adapter_vblock"]
-    blocks, ascrews, abands = None, None, None
+    turn = b.Rot(0, 0, p["fn_azimuth"])
     va_d = D["a_vdepth"]
-    for dz in p["adapter_dz"]:
+    for k, dz in enumerate(p["adapter_dz"]):
         z = z0 + dz
         blk = box(0, y0 + vd / 2, z, vw, vd, vh)
         mouth = y0 + vd
@@ -500,47 +576,159 @@ def build_components(p=PARAMS):
         sxa, sza = p["adapter_slot"]
         for s in (-1, 1):
             blk = blk - box(s * p["fn_band_slot_x"], y0 + vd / 2, z, sxa, vd + 2, sza)
-            blk = blk - b.Pos(s * p["fn_vscrew_x"], y0 + 6, z) * b.Rot(90, 0, 0) * b.Cylinder(2.0, 12)
-            sc = b.Pos(s * p["fn_vscrew_x"], y0 + (10 - ptk) / 2, z) * b.Rot(90, 0, 0) * b.Cylinder(2.0, 10 + ptk)
-            ascrews = sc if ascrews is None else ascrews + sc
-        blocks = blk if blocks is None else blocks + blk
-        # band: round the back of the pole (local +Y), through block and plate slots, across the plate front
+            blk = blk - b.Pos(s * p["fn_vscrew_x"], y0 + 6, z) * b.Rot(90, 0, 0) * b.Cylinder(2.1, 12)
+        out.append(part(f"Adapter V-block {k + 1} (120 deg, ASA)", turn * blk, WH, "made", 12, "vblocks", color="#3A3F45"))
+        for s in (-1, 1):
+            scr = b.Pos(s * p["fn_vscrew_x"], y0 - ptk, z) * b.Rot(90, 0, 0) * _csk_screw(4, 13)
+            out.append(part("M4 x 13 countersunk screw (ISO 10642)", turn * scr, SS, "fastener", None, "ascrews"))
         pts = band_path(r + bt / 2 + 0.1, p["fn_band_slot_x"], -(mouth + 4), -(y0 - ptk - bt / 2), -(y0 - ptk - bt / 2))
         bd = b.Rot(0, 0, -90) * ring_band(pts, p["band_w"], bt, z)
-        abands = bd if abands is None else abands + bd
-    add("vblocks", "Adapter V-blocks (2)", turn * blocks, 12, "made", 1070)
-    add("ascrews", "Adapter screws (4)", turn * ascrews, 12, "fixing", 7900)
-    add("abands", "Adapter strap bands (2)", turn * abands, 12, "bought", 7900)
-
-    # ------------------------------------------------------------ 9 harness: two leads from the FieldNode ports
-    ld_, td = p["lead_d"] / 2, p["tail_d"] / 2
-    rr_, ang = p["pole_run"]
-    leads = None
-    for k, (px, dzl, dang) in enumerate(((p["fn_ports_x"][0], 5.0, -6.0), (p["fn_ports_x"][1], -5.0, 6.0))):
-        wx, wy = -yrow, px          # port after the 90 deg turn: (x, y) -> (-y, x)
-        a = math.radians(ang + dang)
-        prx, pry = rr_ * math.cos(a), rr_ * math.sin(a)
-        zlow = z0 - 70 - 10 * k          # the leads leave the core ports downward and run down the pole
-        pts = [(wx, wy, z0 - 16), (wx, wy, zlow), (60, -80 - 8 * k, zlow), (prx, pry, zlow), (prx, pry, az + 105 - 8 * k),
-               (45, -82 - 8 * k, az + 105 - 8 * k), (90, -64 - 8 * k, az + 105 - 8 * k), (90, -64 - 8 * k, az + dzl), (125, -27, az + dzl), (140, -19.5, az + dzl)]
-        if k == 0:      # lead A: temperature and humidity sensor and fan
-            pts += [(sx + 60, -19.5, az + dzl)]
-            lead = path(pts, ld_)
-            tail = [(sx + 60, -19.5, az + dzl), (sx + 44, -44, az - 25), (sx + 44, -44, st - 21), (sx, 0, st - 21),
-                    (sx, 0, D["shield_zc"] + cln / 2)]
-            lead = lead + path(tail, td)
-        else:           # lead B: globe probe and anemometer
-            pts += [(ax - 14, -19.5, az + dzl)]
-            lead = path(pts, ld_)
-            lead = lead + path([(gx - 25, -19.5, az + dzl), (gx - 25, -19.5, h_top + 6), (gx, 0, h_top + 6)], td)
-            lead = lead + path([(ax - 14, -19.5, az + dzl), (ax - 14, -10, mb - 4), (ax, 0, mb - 4)], td)
-        HARNESS_RUN[k] = sum(math.dist(pts[i], pts[i + 1]) for i in range(len(pts) - 1))
-        leads = lead if leads is None else leads + lead
-    add("harness", "Sensor harness (2 leads)", leads, 9, "bought", 0)
-    return C
+        out.append(part(f"Adapter strap band {k + 1} (13 mm)", turn * bd, SS, "bought", 12, "abands"))
+        bk = box(0, y0 - ptk - bt - 3.0, z, 30.0, 6.0, 16.0)
+        out.append(part(f"Adapter band buckle {k + 1}", turn * brk(bk, 1.2), SS, "bought", 12, "abands"))
+    return out
 
 
-# BOM groups for the concept media and the exports: model key -> (BOM line, name, component keys)
+def _csk_screw(d, length):
+    """Countersunk screw: flat head top at z = 0 (cone down to the shank), shank to -length."""
+    head = b.Pos(0, 0, -1.2) * b.Cone(d / 2, 2.1 * d / 2, 2.4)
+    shank = b.Pos(0, 0, -length / 2) * b.Cylinder(d / 2, length)
+    return head + shank
+
+
+# ----------------------------------------------------------------------------------------------- option A
+def option_a(p=PARAMS):
+    D = derived(p)
+    sx, gx, ax = p["shield_x"], p["globe_x"], D["anemo_x"]
+    az, aw = p["arm_z"], p["arm_w"]
+    x0 = D["arm_x0"]
+    rr = p["rod_pcd"] / 2
+    parts = clamp_parts(p, D)
+    vh = [(sx - rr, 5.5), (sx + rr, 5.5), (gx, p["hanger"][0] + 0.5), (ax, p["mast_d"] + 0.5)]
+    parts += arm_parts(p, D, vh, cross_holes=[(ax, 5.5)])
+    parts += shield_parts(p, D, p["n_plates"], sx, fan=True)
+    parts += fan_parts(p, D, sx)
+    parts += sensor_parts(p, D, sx)
+    gp, h_top = globe_parts(p, D, gx)
+    parts += gp
+    # 6 cup anemometer on its mast through the arm
+    hz = D["hub_z"]
+    mb = D["arm_bot"] - p["mast_below"]
+    md = p["mast_d"]
+    mast = zcyl(ax, 0, (mb + hz - 20) / 2, md / 2, hz - 20 - mb) - zcyl(ax, 0, (mb + hz - 20) / 2, md / 2 - 1.5, hz - mb)
+    mast = mast - b.Pos(ax, 0, az) * b.Rot(90, 0, 0) * b.Cylinder(2.75, 40)
+    parts.append(part("Anemometer mast (16 mm tube)", brk(mast, 0.4), AL, "bought", 6, "anemometer"))
+    parts.append(part("Anemometer rotor hub", brk(zcyl(ax, 0, hz, 22, 40), 3.0), "hdpe_recycled", "bought", 6, "anemometer"))
+    cr = p["cup_d"] / 2
+    for a in (30, 150, 270):
+        ca, sa = math.cos(math.radians(a)), math.sin(math.radians(a))
+        cx_, cy_ = ax + p["cup_arm"] * ca, p["cup_arm"] * sa
+        end = p["cup_arm"] - cr
+        parts.append(part(f"Anemometer cup arm {a} deg", brk(rod((ax + 22 * ca, sa * 22, hz + 10), (ax + end * ca, end * sa, hz + 10), 2.5), 0.4), AL, "bought", 6, "anemometer"))
+        cup = b.Pos(cx_, cy_, hz + 10) * (b.Sphere(cr) - b.Sphere(cr - 2))
+        cut = b.Pos(cx_ + cr * math.cos(math.radians(a + 90)), cy_ + cr * math.sin(math.radians(a + 90)), hz + 10) * b.Box(2 * cr, 2 * cr, 2.5 * cr)
+        parts.append(part(f"Anemometer cup {a} deg", cup - cut, "hdpe_recycled", "bought", 6, "anemometer"))
+    parts += _fs(cp.hex_bolt_set(5, aw), (ax, aw / 2, az), (-90, 0, 0), "mast_bolt", "Mast cross bolt: ")
+    parts += lanyard_parts(p, D, sx, gx)
+    # lead B runs to x = ax - 14; the globe tail starts at gx - 25 on the same lead
+    parts += harness_parts(p, D, sx, gx, h_top, [[(ax - 14, -19.5, az - 5.0), (ax - 14, -10, mb - 8), (ax, 0, mb - 8), (ax, 0, mb + 10)],
+                                                [(gx - 25, -19.5, az - 5.0), (gx - 25, -19.5, h_top + 6), (gx, 0, h_top + 6)]])
+    parts += fieldnode_parts(p, D)
+    parts += adapter_parts(p, D)
+    return parts
+
+
+# ----------------------------------------------------------------------------------------------- option B
+def option_b(p=PARAMS):
+    D = derived(p)
+    sx, gx = p["b_shield_x"], p["globe_x"]
+    wx = p["b_wick_x"]
+    az, aw = p["arm_z"], p["arm_w"]
+    rr = p["rod_pcd"] / 2
+    parts = clamp_parts(p, D)
+    wr = p["b_wick_rods"] / 2
+    vh = [(sx - rr, 5.5), (sx + rr, 5.5), (gx, p["hanger"][0] + 0.5), (wx - wr, 5.5), (wx + wr, 5.5)]
+    parts += arm_parts(p, D, vh)
+    parts += shield_parts(p, D, p["b_n_plates"], sx, fan=False)
+    parts += sensor_parts(p, D, sx)
+    gp, h_top = globe_parts(p, D, gx)
+    parts += gp
+    # wick reservoir: plate hung from the arm on two M5 rods and spacers, bottle through the plate, cap, wick sensor
+    zp = D["b_wick_zp"]
+    pl_l, pl_w, pl_t = p["b_wick_plate"]
+    plate = b.Pos(wx, 0, zp - pl_t / 2) * b.Box(pl_l, pl_w, pl_t)
+    plate = plate - zcyl(wx, 0, zp - pl_t / 2, p["b_neck"][0] / 2 + 0.3, pl_t + 2)
+    for s in (-1, 1):
+        plate = plate - zcyl(wx + s * wr, 0, zp - pl_t / 2, 2.75, pl_t + 2)
+    parts.append(part("Reservoir plate (3 mm aluminium)", brk(plate, 0.6), AL, "made", None, "wick"))
+    for k, s in enumerate((-1, 1)):
+        x_ = wx + s * wr
+        top = D["arm_top"] + 8
+        bot = zp - pl_t - 6
+        parts.append(part(f"M5 threaded rod {k + 1} (316), reservoir", brk(zcyl(x_, 0, (bot + top) / 2, 2.5, top - bot), 0.4), SS, "fastener", None, "wick"))
+        sp = zcyl(x_, 0, (zp + 4.0 + D["arm_bot"]) / 2, 4.0, D["arm_bot"] - zp - 4.0) - zcyl(x_, 0, 0, 2.65, 1e5)
+        parts.append(part("Reservoir spacer 8 x 0.8 mm tube", sp, AL, "made", None, "wick"))
+        parts.append(part("M5 hex nut above the arm (ISO 4032)", at(nut_local(8, 4.0, 5.0), (x_, 0, D["arm_top"]), (0, 0, 0)), SS, "fastener", None, "wick"))
+        parts.append(part("M5 acorn nut under the plate", at(nut_local(8, 8.0, 5.0, "acorn"), (x_, 0, zp - pl_t), (180, 0, 0)), SS, "fastener", None, "wick"))
+        parts.append(part("M5 hex nut on the plate (ISO 4032)", at(nut_local(8, 4.0, 5.0), (x_, 0, zp), (0, 0, 0)), SS, "fastener", None, "wick"))
+    bd, bh = p["b_bottle"]
+    nd, nb = p["b_neck"]
+    zb = zp - pl_t                                   # shoulder bears on the plate underside
+    shoulder = 12.0
+    neck_len = pl_t + 4.0 + 9.9
+    outer = (b.Pos(wx, 0, zb - shoulder - bh / 2) * b.Cylinder(bd / 2, bh)
+             + b.Pos(wx, 0, zb - shoulder / 2) * b.Cone(bd / 2, nd / 2, shoulder)
+             + zcyl(wx, 0, zb + neck_len / 2, nd / 2, neck_len))
+    inner = (b.Pos(wx, 0, zb - shoulder - bh / 2 + 1.5) * b.Cylinder(bd / 2 - 2, bh - 3)
+             + b.Pos(wx, 0, zb - shoulder / 2) * b.Cone(bd / 2 - 2, nb / 2, shoulder)
+             + zcyl(wx, 0, zb + neck_len / 2, nb / 2, neck_len + 2))
+    parts.append(part("Water reservoir bottle (HDPE, 56 mm)", outer - inner, "hdpe_natural", "bought", None, "wick"))
+    parts.append(part("Bottle lock ring", zcyl(wx, 0, zp + 2, 17.0, 4.0) - zcyl(wx, 0, zp + 2, nd / 2 + 0.05, 5), "hdpe_black", "bought", None, "wick"))
+    cap_z0, cap_h = zp + 4.0, 14.0
+    cap = zcyl(wx, 0, cap_z0 + cap_h / 2, 15.0, cap_h) - zcyl(wx, 0, cap_z0 + 5.0 - 0.01, nd / 2 + 0.1, 10.02) - zcyl(wx, 0, cap_z0 + cap_h / 2, p["b_sensor_d"] / 2 + 0.1, cap_h + 2)
+    parts.append(part("Reservoir cap with sensor gland", brk(cap, 0.8), "hdpe_black", "bought", None, "wick"))
+    sd = p["b_sensor_d"]
+    t_bot = cap_z0 + 7.0
+    t_top = cap_z0 + cap_h + p["b_wick_len"] + 2.0
+    parts.append(part("Wick sensor tube (6 mm, NTC inside)", brk(zcyl(wx, 0, (t_bot + t_top) / 2, sd / 2, t_top - t_bot), 0.4), SS, "bought", None, "wick"))
+    s_bot, s_top = cap_z0 + cap_h, cap_z0 + cap_h + p["b_wick_len"]
+    sleeve = zcyl(wx, 0, (s_bot + s_top) / 2, p["b_sleeve_d"] / 2, s_top - s_bot) - zcyl(wx, 0, (s_bot + s_top) / 2, sd / 2 + 0.1, s_top - s_bot + 2)
+    parts.append(part("Cotton wick sleeve", brk(sleeve, 0.4), "label", "bought", None, "wick"))
+    tail_top, tail_bot = t_bot, zb - shoulder - bh + 8
+    parts.append(part("Cotton wick tail (3 mm cord)", brk(zcyl(wx, 0, (tail_top + tail_bot) / 2, 1.5, tail_top - tail_bot), 0.3), "rope", "bought", None, "wick"))
+    parts += lanyard_parts(p, D, sx, gx)
+    tail_w = [(wx - 45, -19.5, az - 5.0), (wx - 45, -27, az - 30), (wx - 45, -27, t_top + 7), (wx, 0, t_top + 7), (wx, 0, t_top)]
+    parts += harness_parts(p, D, sx, gx, h_top, [tail_w, [(gx - 25, -19.5, az - 5.0), (gx - 25, -19.5, h_top + 6), (gx, 0, h_top + 6)]])
+    parts += fieldnode_parts(p, D)
+    parts += adapter_parts(p, D)
+    return parts
+
+
+_CACHE = {}
+
+
+def components(option=CHOSEN):
+    """Parts of one option as cad_parts.part() dicts, with the existing pole as context."""
+    if option not in _CACHE:
+        parts = {"A": option_a, "B": option_b}[option]()
+        pole = part("Existing street pole (not supplied)", pole_context(PARAMS, 0.0, 3750.0), "galvanised", "context", None, "context")
+        _CACHE[option] = parts + [pole]
+    return list(_CACHE[option])
+
+
+# ----------------------------------------------------------------------------------------------- views for the older scripts
+@dataclass
+class Component:
+    """A group of parts under the key the drawing, concept and build-plan scripts use."""
+    key: str
+    name: str
+    shape: object
+    line: int
+    kind: str
+    density: float
+
+
+# model key -> (BOM line, name, component keys); the keys are the `group` of the parts in option A
 BOM_GROUPS = {
     "fieldnode": (1, "FieldNode core with sun shield (FND-DWG-001 envelope)", ["fieldnode"]),
     "shield": (2, "Multi-plate radiation shield", ["plates", "rods", "spacers"]),
@@ -559,53 +747,52 @@ BOM = {k: (v[0], v[1]) for k, v in BOM_GROUPS.items()}
 HEAD = ["shield", "fan", "th_sensor", "globe", "probe", "anemometer", "arm", "clamp", "harness", "lanyard"]
 
 
+def build_components(p=PARAMS):
+    """{group key: Component} for option A, each the fusion of its parts (the key names of the earlier model)."""
+    groups = {}
+    for pt in components("A"):
+        if pt["kind"] == "context":
+            continue
+        groups.setdefault(pt["group"], []).append(pt)
+    out = {}
+    for g, items in groups.items():
+        line = next((i["bom"] for i in items if i["bom"]), 0)
+        shape = fuse(i["shape"] for i in items)
+        mass = sum(cp.mass_kg(i) for i in items)            # kg, from the materials of the parts
+        dens = mass / (shape.volume / 1e9) if shape.volume else 0.0   # effective kg/m3, so sizing.py's volume x density gives the mass
+        out[g] = Component(g, items[0]["name"], shape, line or 0, items[0]["kind"], dens)
+    return out
+
+
 def build_parts(p=PARAMS, C=None):
-    """Return {key: solid} for the BOM items (key names in BOM above)."""
+    """{BOM key: solid} for the BOM items of option A (the drawing, the concept media and the exports)."""
     C = C or build_components(p)
     return {k: fuse(C[c].shape for c in v[2]) for k, v in BOM_GROUPS.items()}
 
 
-def pole_context(p=PARAMS, z_lo=0.0, z_hi=None):
-    """Existing street pole (not supplied, not in the BOM)."""
-    z_hi = p["pole_h"] if z_hi is None else z_hi
-    return zcyl(0, 0, (z_lo + z_hi) / 2, p["pole_od"] / 2, z_hi - z_lo)
-
-
 def assembly(p=PARAMS, with_pole=False):
-    b = _b3d()
     parts = build_parts(p)
     kids = list(parts.values()) + ([pole_context(p)] if with_pole else [])
     return b.Compound(children=kids)
 
 
-# ------------------------------------------------------------------ constructability checks
+# ------------------------------------------------------------------ constructability checks (option A)
 def check(p=PARAMS, verbose=True):
-    """Overlaps, contacts and clearances. Returns (passed, failed) lists of strings."""
-    import itertools
+    """Touches and clearances between groups of option A. Returns (passed, failed) lists of strings.
+    Overlaps between individual parts are checked by .kit/cad_check.py."""
     C = build_components(p)
     D = derived(p)
     pole = pole_context(p, p["arm_z"] - 300, p["fn_z0"] + 700)
     shapes = {k: c.shape for k, c in C.items()}
     shapes["pole"] = pole
-    # pairs that are meant to share material: a threaded or pressed joint modelled as one volume
-    allowed = {("globe", "hanger")}
     ok, bad = [], []
 
     def dist(a, c):
         return shapes[a].distance_to(shapes[c])
-    for a, c in itertools.combinations(shapes, 2):
-        if (a, c) in allowed or (c, a) in allowed:
-            continue
-        try:
-            v = (shapes[a] & shapes[c]).volume
-        except Exception:
-            v = 0.0
-        (bad if v > 0.5 else ok).append(f"no overlap {a} / {c}" + (f": {v:.1f} mm3" if v > 0.5 else ""))
     touch = [("trim", "pole"), ("trim", "saddle"), ("saddle", "cheeks"), ("arm", "saddle"), ("arm", "cheeks"),
-             ("bands", "pole"), ("clamp_bolts", "cheeks"), ("clamp_bolts", "saddle"), ("sleeves", "arm"),
-             ("rods", "plates"), ("rods", "arm"), ("spacers", "arm"), ("spacers", "rods"), ("fan", "plates"),
-             ("cowl", "fan"), ("fan_screws", "cowl"), ("fan_screws", "plates"), ("hanger", "arm"),
-             ("anemometer", "mast_bolt"), ("mast_bolt", "arm"), ("plug", "arm"),
+             ("bands", "pole"), ("clamp_bolts", "cheeks"), ("clamp_bolts", "saddle"), ("rods", "plates"), ("rods", "arm"),
+             ("spacers", "arm"), ("spacers", "rods"), ("fan", "plates"), ("cowl", "fan"), ("fan_screws", "cowl"),
+             ("fan_screws", "plates"), ("hanger", "arm"), ("anemometer", "mast_bolt"), ("mast_bolt", "arm"), ("plug", "arm"),
              ("vblocks", "pole"), ("vblocks", "fieldnode"), ("ascrews", "fieldnode"), ("abands", "pole"),
              ("harness", "fieldnode"), ("lanyard", "arm"), ("lanyard", "plates"), ("lanyard", "globe")]
     for a, c in touch:
@@ -620,7 +807,6 @@ def check(p=PARAMS, verbose=True):
     for a, c, m in clear:
         d = dist(a, c)
         (ok if d >= m else bad).append(f"clearance {a} / {c} >= {m} mm: {d:.1f} mm")
-    # the pole range: contact on the V for the smallest and largest poles, inside the notch and the block
     for dd in p["pole_range"]:
         R = dd / 2
         lat = R * math.cos(math.radians(p["v_angle"] / 2))
@@ -638,22 +824,21 @@ if __name__ == "__main__":
     if "--check" in sys.argv:
         _, bad = check()
         sys.exit(1 if bad else 0)
-    from build123d import Compound, export_step, export_stl
-    out = Path(__file__).resolve().parents[1]
-    (out / "step").mkdir(exist_ok=True)
+    out = HERE.parent
     (out / "stl").mkdir(exist_ok=True)
-    P = build_parts()
-    groups = {
-        "heatmap-node-assembly": list(P.values()),
-        "sensor-head": [P[k] for k in HEAD],
-        "fieldnode-core-envelope": [P["fieldnode"], P["adapter"]],
-    }
-    for name, shapes in groups.items():
-        c = Compound(children=shapes)
-        export_step(c, str(out / "step" / f"{name}.step"))
-        export_stl(c, str(out / "stl" / f"{name}.stl"), tolerance=0.2, angular_tolerance=0.3)
-        bb = c.bounding_box()
-        print(f"{name}: {bb.size.X:.0f} x {bb.size.Y:.0f} x {bb.size.Z:.0f} mm")
+    for opt in OPTIONS:
+        ps = [q for q in components(opt) if q["kind"] != "context"]
+        mass = sum(cp.mass_kg(q) for q in ps)
+        print(f"option {opt} {OPTIONS[opt]}: {len(ps)} parts, mass {mass:.2f} kg")
+    if "--no-stl" not in sys.argv:
+        P_ = build_parts()
+        groups = {"heatmap-node-assembly": list(P_.values()), "sensor-head": [P_[k] for k in HEAD],
+                  "fieldnode-core-envelope": [P_["fieldnode"], P_["adapter"]]}
+        for name, shapes in groups.items():
+            c = b.Compound(children=shapes)
+            b.export_stl(c, str(out / "stl" / f"{name}.stl"), tolerance=0.2, angular_tolerance=0.3)
+            bb = c.bounding_box()
+            print(f"{name}: {bb.size.X:.0f} x {bb.size.Y:.0f} x {bb.size.Z:.0f} mm")
     D = derived()
     print(f"arm axis {PARAMS['arm_z']:.0f} mm; shield center {D['shield_zc']:.0f} mm; globe center {D['globe_zc']:.0f} mm; "
           f"cups {D['cup_z']:.0f} mm; reach {D['reach']:.0f} mm from the pole axis; top {D['overall_top']:.0f} mm")

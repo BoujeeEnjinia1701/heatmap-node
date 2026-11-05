@@ -3,9 +3,9 @@ doc_id: HMN-CAL-001
 title: HeatMap Node sizing calculations
 project: HeatMap Node
 doc_type: Calculation
-version: "0.6"
+version: "0.7"
 status: Draft
-date: '2026-10-02'
+date: 2026-11-01
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -33,6 +33,10 @@ revisions:
   date: '2026-10-02'
   author: Amish Chadha
   change: "Core moved above the arm in the model (2026-10-02): panel shading rerun (E3, new E3b), added pole moment 423 N m, shorter harness, head 2.08 kg; no requirement status changes"
+- version: "0.7"
+  date: 2026-11-01
+  author: Amish Chadha
+  change: "Kit 1.9.1 upgrade: R1 restated as at risk after the independent review (HMN-STM-001 S6); masses now come from the D3 model of option A (arm 252 g, clamp 509 g, shield 302 g, fan and cowl 75 g, anemometer 309 g): head 2.11 kg (was 2.08), complete node 4.98 kg (was 4.92), clamp check 1.34 kg at 428 mm; arm check restated on the 110 MPa minimum yield with gravity added (H2b: factor 7.5, was 13.0 on a typical 145 MPa), after the independent review; no requirement status changed"
 ---
 
 # HeatMap Node sizing calculations
@@ -61,7 +65,7 @@ The design case is a node on a 114.3 mm (4.5 in) street pole with the arm axis 2
 | Height | Surface-layer similarity (Businger-Dyer functions) with a 250 W/m² sensible heat flux from sunlit pavement and a 0.1 m roughness length | Assumed; similarity theory is only approximate inside a street canyon |
 | Wind | 35 m/s gust (750 Pa); drag coefficients 0.5 on the globe, 1.2 on the shield, mast and hub, 1.4 on open cups, 2.0 on the square arm | Screening values, not a code check |
 | Clamp | 1,000 N preload per strap band, friction coefficient 0.4 | As FND-CAL-001, to keep the two notes consistent |
-| Materials | Aluminium 6063, E 69 GPa, yield 145 MPa; aluminium 2.7, ASA 1.07, stainless 7.9, copper 8.96 g/cm³ | Handbook values |
+| Materials | Aluminium 6063, E 69 GPa, yield 110 MPa (6063-T5 minimum, from the independent review; the typical value is 145 MPa); aluminium 2.7, ASA 1.07, stainless 7.9, copper 8.96 g/cm³ | Handbook values |
 | FieldNode | Hot-climate node with the sun shield, Rev P3: 2.61 kg, $148.00 ($139.00 base plus the $9.00 shield), 88 N at 35 m/s (panel 52.2 N, shielded enclosure 36.3 N), interior 7.2 K above ambient when dusty with the sun in its worst position (28.3 K without the shield); 100 mW design sensor allowance, 32 B per stored reading, 23.7 s/day airtime at SF9 | FND-CAL-001 v0.4 and v0.2 |
 
 ## A. Mean radiant temperature from the globe (R3, R4, R5)
@@ -85,7 +89,7 @@ The design case is a node on a 114.3 mm (4.5 in) street pole with the arm axis 2
 - **Passive error (fan off).** The air at the sensor would read 2.09 °C high at 0.5 m/s, 1.04 °C at 1 m/s, 0.52 °C at 2 m/s and 0.35 °C at 3 m/s [C2]; with half the assumed ventilation, 2.09 °C at 1 m/s [C3]. This was the v0.1 design and is why R1 was not met.
 - **Fan (HMN-DDR-002).** A 60 mm, 0.90 W fan in a cowl on the top plate draws about 4.0 L/s up the 56 mm center column of the stack, about 1.6 m/s. The steady error is 0.40 °C whatever the wind; after 6 s of running from the passive 1 m/s state the sensor reads 0.43 °C high [C4]. The fan needs at least 3.4 L/s through the stack, about half its assumed free-air flow, to hold ±0.5 °C [C6], so the margin rests on the chosen fan and on how much flow the plate stack lets through.
 - **Firmware rule.** The FieldNode switches the 5 V port on for 6 s every 3 min and reads the temperature and humidity sensor at the end of the run: 480 aspirated readings a day, 5 per 15 min mean. That costs 35.3 mW on average from the cell [C5].
-- **R1 is met on paper** (±0.5 °C at any wind speed), subject to the assumed fan flow and heat-transfer factors, which only a side-by-side test against an aspirated reference can confirm.
+- **R1 is met on paper** (±0.5 °C at 1 m/s and more) on the assumed fan flow and heat-transfer factors, but the independent review (HMN-STM-001 S6, 2026-11-01) found that the energy-balance bound is 0.79 °C, above the target, and that a slower sensor lag (5 to 10 s) gives 0.6 to 0.75 °C; **PR-001 is therefore at risk** until a side-by-side test against an aspirated reference confirms it.
 
 ## D. Globe response and probe accuracy (R3)
 
@@ -115,8 +119,8 @@ The temperature and humidity sensor takes about 11 µJ per reading, now 480 time
 ## H. Wind load, arm and clamp (R11)
 
 - **Loads.** A 35 m/s gust across the arm puts 6.6 N on the globe, 10.7 N on the shield, 2.1 N on the fan cowl, 7.2 N on the anemometer and 19.9 N on the 530 mm arm: 46.5 N on the sensor head [H1]. The TRL 2 estimate of 110 N included the FieldNode panel and enclosure (88 N with the sun shield in FND-CAL-001 v0.2).
-- **Arm.** The 25 x 25 x 2 mm tube (second moment of area 16,345 mm⁴) sees 14.6 N·m at its root and 11.1 MPa, a factor of 13.0 on yield [H2]. Its tip deflects 0.31 mm at 20 m/s and 0.95 mm at 35 m/s [H3], far inside the 10 mm of R11. Torsion from the offset loads is 0.84 N·m [H4].
-- **Clamp.** Wind twists the arm about the pole with 18.1 N·m against 45.7 N·m of band friction, a factor of 2.5. The 1.37 kg on the arm, with its center of mass 425 mm out, pulls the upper band with 41 N against 2,000 N, and pushes down with 13 N against 800 N of friction [H5]. The formed 3 mm sheet saddle (now a channel whose V-notched flanges bear on the pole, HMN-DDR-003) carries these loads through the band preload; its bending stiffness has not been checked and should be at detail design. **R11 is met on paper**, subject to the preload, which a torque figure at installation must secure; the twist factor of 2.5 is the smallest margin in this section.
+- **Arm.** The 25 x 25 x 2 mm tube (second moment of area 16,345 mm⁴) sees 14.6 N·m at its root and 11.1 MPa from wind, a factor of 9.9 on the 110 MPa minimum yield [H2]; adding the 4.6 N·m of the head's weight at the same section corner gives 14.7 MPa, a factor of 7.5 [H2b]. Its tip deflects 0.31 mm at 20 m/s and 0.95 mm at 35 m/s [H3], far inside the 10 mm of R11. Torsion from the offset loads is 0.84 N·m [H4].
+- **Clamp.** Wind twists the arm about the pole with 18.1 N·m against 45.7 N·m of band friction, a factor of 2.5. The 1.34 kg on the arm, with its center of mass 428 mm out, pulls the upper band with 40 N against 2,000 N, and pushes down with 13 N against 800 N of friction [H5]. The formed 3 mm sheet saddle (now a channel whose V-notched flanges bear on the pole, HMN-DDR-003) carries these loads through the band preload; its bending stiffness has not been checked and should be at detail design. **R11 is met on paper**, subject to the preload, which a torque figure at installation must secure; the twist factor of 2.5 is the smallest margin in this section.
 - **Pole.** The node adds 46 N (head) plus 88 N (FieldNode with its shield) and about 423 N·m at the pole base [H6] (338 N·m before the core moved above the arm, 2.15 m to 3.11 m up). The pole owner should check this against the pole's rating.
 
 ## I. Outdoor temperatures (R8)
@@ -131,8 +135,8 @@ The temperature and humidity sensor takes about 11 µJ per reading, now 480 time
 
 ## K. Mass (R15)
 
-- **Sensor head.** From the component volumes of the constructable model: arm with plug and sleeves 268 g, clamp (saddle, trim, cheeks, bands and bolts) 442 g, shield with rods and spacers 324 g, fan and cowl 78 g, sensor 20 g, globe with its brass hanger tube 348 g, probe 10 g, anemometer 307 g, harness 238 g (two leads cut for the core above the arm, 1.2 m and 1.4 m), lanyards 20 g and consumables 30 g: 2.08 kg [K1]. The design for construction added 0.21 kg (HMN-DDR-003).
-- **Against R15.** R15 now covers the sensor head only (HMN-DDR-002), so 2.08 kg against 4.0 kg: **R15 is met on paper**. For information, with the FieldNode core and its sun shield (2.61 kg) and the pole adapter (0.22 kg) the complete node weighs 4.92 kg [K2]. The largest part other than the arm is the 290 mm FieldNode panel, within the 300 mm limit [K3].
+- **Sensor head.** From the component volumes of the constructable model: arm with plug and sleeves 252 g, clamp (saddle, trim, cheeks, bands and bolts) 509 g, shield with rods and spacers 302 g, fan and cowl 75 g, sensor 20 g, globe with its brass hanger tube 348 g, probe 10 g, anemometer 309 g, harness 238 g (two leads cut for the core above the arm, 1.2 m and 1.4 m), lanyards 20 g and consumables 30 g: 2.11 kg [K1] (the volumes are those of the D3 model of the kit 1.9 upgrade, with each part's own material density). The design for construction added 0.21 kg (HMN-DDR-003).
+- **Against R15.** R15 now covers the sensor head only (HMN-DDR-002), so 2.11 kg against 4.0 kg: **R15 is met on paper**. For information, with the FieldNode core and its sun shield (2.61 kg) and the pole adapter (0.25 kg) the complete node weighs 4.98 kg [K2]. The largest part other than the arm is the 290 mm FieldNode panel, within the 300 mm limit [K3].
 
 ## L. Cost (R13)
 
@@ -148,7 +152,7 @@ The BOM has 13 lines. Under HMN-DDR-002 the pole adapter (line 12) counts agains
 | R5 | Derived heat stress | Input budget ±0.30 °C RSS, ±0.55 °C worst [B4]; calm intervals flagged [G4]; model error unknown | WBGT within ±1.0 °C of a reference meter | **At risk** |
 | R10 | Fit to existing poles | Fits 60 to 200 mm [J1]; 37 min [J2] | Band clamps, no drilling, 30 min | **At risk** |
 | R14 | Traceable data | Probe calibrated before fitting fits a CalRig bay; the assembled globe does not (150 mm against a 90 x 70 x 50 mm bay); payload format defined [G1] | CalRig record per node; open documented format | **At risk** |
-| R1 | Air temperature accuracy | 0.43 °C with the fan at any wind speed [C4]; 1.04 °C at 1 m/s with the fan off [C2] | ±0.5 °C | Met on paper (fan flow assumed) |
+| R1 | Air temperature accuracy | 0.43 °C with the fan at any wind speed [C4]; 1.04 °C at 1 m/s with the fan off [C2] | ±0.5 °C | At risk (fan flow assumed; bound 0.79 °C, HMN-STM-001 S6) |
 | R3 | Globe temperature | ±0.18 °C (±0.26 °C) [D4]; 90 % response about 12 min [D5] | ±0.3 °C; 30 min | Met on paper |
 | R4 | Wind speed | Start-up about 0.8 m/s (typical, unverified); calm share sent and flagged [G1], [G4] | 0.8 to 20 m/s; calm intervals flagged | Met on paper (start-up unverified) |
 | R6 | Reporting | 20 B, 23.7 s/day at SF9, 21.5 kB for 7 days, 16 min latency for 99 % [G1] to [G3] | 15 min means; 30 min; 7 days | Met on paper |
@@ -156,7 +160,7 @@ The BOM has 13 lines. Under HMN-DDR-002 the pole adapter (line 12) counts agains
 | R8 | Outdoor survival | FieldNode interior 57.2 °C at 50 °C air with its sun shield [I2]; sensor head parts within ratings | Operate at -20 to +50 °C at the node | Met on paper (shield factor assumed) |
 | R11 | Wind survival | Factor 13.0 on the arm; clamp twist factor 2.5; 0.31 mm at 20 m/s [H2] to [H5] | No failure at 35 m/s; under 10 mm at 20 m/s | Met on paper (preload assumed) |
 | R13 | Cost | Sensor head $136.00 estimated [L1], [L2] | Value-engineering target $130 (sensor head, excluding the FieldNode core and its pole adapter) | Over the target by $6.00 |
-| R15 | Mass and loading | Sensor head 2.08 kg [K2]; largest part 290 mm [K3] | 4 kg or less (sensor head); 300 mm | Met on paper |
+| R15 | Mass and loading | Sensor head 2.11 kg [K2]; largest part 290 mm [K3] | 4 kg or less (sensor head); 300 mm | Met on paper |
 | R2 | Relative humidity | SHT45 ±1.0 %RH typical | ±3 %RH | Met by design |
 | R12 | Privacy | No camera, microphone or radio scanning parts; payload has environmental fields only [G1] | Environmental data only | Met by design |
 

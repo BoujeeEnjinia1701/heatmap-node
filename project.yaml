@@ -5,23 +5,54 @@ repo: BoujeeEnjinia1701/heatmap-node         # GitHub repository, shown on every
 area: Smart Cities
 trl: 3                   # Technology Readiness Level, see .kit/STANDARDS.md section 9
 trl_target: 3
+stage: P3                # pipeline stage, see .kit/STANDARDS.md section 19
+stem_check: open         # HMN-STM-001 v0.1: 21 within, 15 plausible, 3 fixed under the standing instruction (K1, K1b, K2), 1 proposed to Amish (S25); plausible rows need measurement (TRL 4)
+concept_options: [A, B]  # HMN-OPT-001: A fan-aspirated shield (140), B direct natural wet-bulb head (129); within 10 %
+concept_chosen: A (proposed)   # Proposed, awaiting Amish (HMN-DDR-004); A is the current design
 design_state: constructable   # concept or constructable, see .kit/STANDARDS.md section 18
 trl_evidence:
   - docs/01-problem.md
+  - docs/01b-stem-check.md
   - docs/02-concept.md
+  - docs/02a-concept-options.md
   - docs/03-requirements.md
+  - docs/03a-user-requirements.md
+  - docs/03b-traceability.md
   - docs/decisions/0001-trl2-review-decisions.md
   - docs/decisions/0002-recommendations-accepted.md
   - docs/decisions/0003-design-for-construction.md
+  - docs/decisions/0004-concept-selection.md
   - docs/04-calcs/01-sizing.md
   - docs/04-calcs/sizing.py
+  - docs/04-calcs/stem_check.py
+  - docs/04-calcs/stem_results.csv
   - cad/src/model.py
-  - cad/step/heatmap-node-assembly.step
+  - cad/src/hmn_geom.py
+  - cad/src/product_model.py
+  - cad/src/sheets.py
+  - cad/src/concept_media.py
+  - cad/src/build_plan_media.py
+  - cad/fidelity.json
+  - cad/step/A-assembly.step
+  - cad/step/B-assembly.step
+  - cad/step/A
   - cad/drawings/HMN-DWG-001.svg
   - cad/drawings/HMN-DWG-001.pdf
   - bom/bom.csv
   - docs/05-build-plan.md
   - docs/06-design-decisions.md
+  - docs/07-regulatory.md
+  - docs/08-feasibility.md
+  - docs/09-risk.md
+  - docs/10-market.md
+  - docs/11-plan.md
+  - docs/REVIEW.md
+  - media/hero.png
+  - media/concept-blueprint.png
+  - media/cutaway.png
+  - media/exploded.png
+  - media/flow.png
+  - media/model.glb
 shortlisted: false
 pitch: >-
   A street-level heat and humidity node that measures heat stress (including a globe temperature) to map urban heat islands block by block.

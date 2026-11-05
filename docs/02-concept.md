@@ -3,9 +3,9 @@ doc_id: HMN-PRC-001
 title: HeatMap Node design precis
 project: HeatMap Node
 doc_type: Design precis
-version: "0.8"
+version: "0.9"
 status: Draft
-date: '2026-10-02'
+date: 2026-11-01
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -41,6 +41,10 @@ revisions:
   date: '2026-10-02'
   author: Amish Chadha
   change: "FieldNode core above the arm in the model and pictures (HMN-DEC-001, item 3); mass 2.08 kg"
+- version: "0.9"
+  date: 2026-11-01
+  author: Amish Chadha
+  change: "Kit 1.9.1 upgrade: masses from HMN-CAL-001 v0.7 (head 2.11 kg, node 4.98 kg); pole base moment corrected from 338 to 423 N m, the figure in HMN-CAL-001 H6 after the core moved above the arm (a stale figure, no design change); shield error restated as an estimate after the independent review of HMN-STM-001 (S6); arm factor 9.9 on minimum yield, 7.5 with the head's weight"
 ---
 
 # HeatMap Node design precis
@@ -49,7 +53,7 @@ revisions:
 
 HeatMap Node is a sensor head that clamps to an existing street pole and plugs into the lab's FieldNode core. A horizontal arm, pointing toward the equator, holds a fan-aspirated radiation shield with an air temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. From these four readings a server computes mean radiant temperature and an estimated wet bulb globe temperature (WBGT), the heat stress index defined in [ISO 7243:2017](https://www.iso.org/standard/67188.html), using the method of [Liljegren et al. (2008)](https://doi.org/10.1080/15459620802310770). Tens of nodes across a neighborhood give block-by-block heat stress maps, day and night, all season.
 
-The TRL 3 calculations (HMN-CAL-001 v0.4) confirm the heat stress method and the power, data and wind cases. With the decisions Amish accepted on 2026-09-25 (HMN-DDR-001 and HMN-DDR-002) applied, one requirement is not met on paper: the sensors sit at about 2.7 m rather than pedestrian height (R9). The design for construction (HMN-DDR-003) made every part buildable; with the fan and the added fixings the sensor head is estimated at $136, $6 over its $130 value-engineering target (R13). The fan cuts the shield's radiation error from about 1.0 °C at 1 m/s to 0.43 °C at any wind speed, and the sensors and fan draw 35 mW. All design choices below are decided by Amish. The parametric model is `cad/src/model.py`, the general arrangement is drawing HMN-DWG-001 Rev P4, and the prototype build plan is [HMN-BLD-001](05-build-plan.md).
+The TRL 3 calculations (HMN-CAL-001 v0.4) confirm the heat stress method and the power, data and wind cases. With the decisions Amish accepted on 2026-09-25 (HMN-DDR-001 and HMN-DDR-002) applied, one requirement is not met on paper: the sensors sit at about 2.7 m rather than pedestrian height (R9). The design for construction (HMN-DDR-003) made every part buildable; with the fan and the added fixings the sensor head is estimated at $136, $6 over its $130 value-engineering target (R13). The fan cuts the shield's radiation error from about 1.0 °C at 1 m/s to an estimated 0.43 °C at 1 m/s and more (on assumed fan coupling; the upper bound is 0.79 °C, HMN-STM-001 S6), and the sensors and fan draw 35 mW. All design choices below are decided by Amish. The parametric model is `cad/src/model.py`, the general arrangement is drawing HMN-DWG-001 Rev P4, and the prototype build plan is [HMN-BLD-001](05-build-plan.md).
 
 ![Hero render](../media/hero.png)
 
@@ -122,9 +126,9 @@ At the 15 min default, each node sends 96 uplinks of 20 bytes a day (eleven fiel
 
 ### Wind load and mass
 
-At a 35 m/s gust (750 Pa) the sensor head carries 46.5 N (globe 6.6 N, shield 10.7 N, fan cowl 2.1 N, anemometer 7.2 N, arm 19.9 N) and the FieldNode core with its sun shield 88 N (FND-CAL-001 v0.2). The arm root sees 14.6 N·m and 11.1 MPa, a factor of 13.0 on yield; the tip deflects 0.31 mm at 20 m/s. The clamp's band friction resists the twist with a factor of 2.5 at the assumed 1,000 N preload. The node adds about 338 N·m at the pole base, which the pole owner should check.
+At a 35 m/s gust (750 Pa) the sensor head carries 46.5 N (globe 6.6 N, shield 10.7 N, fan cowl 2.1 N, anemometer 7.2 N, arm 19.9 N) and the FieldNode core with its sun shield 88 N (FND-CAL-001 v0.2). The arm root sees 14.6 N·m and 11.1 MPa from wind, a factor of 9.9 on the 110 MPa minimum yield (7.5 with the weight of the head added, HMN-CAL-001 v0.7); the tip deflects 0.31 mm at 20 m/s. The clamp's band friction resists the twist with a factor of 2.5 at the assumed 1,000 N preload. The node adds about 423 N·m at the pole base, which the pole owner should check.
 
-The sensor head weighs 2.08 kg (clamp 0.44 kg, globe with its hanger 0.35 kg, shield 0.32 kg, anemometer 0.31 kg, harness 0.24 kg, arm 0.27 kg, fan and cowl 0.08 kg and small parts), within the 4 kg of R15, which now applies to the sensor head. With the FieldNode core and shield (2.61 kg) and the pole adapter (0.22 kg) the complete node weighs 4.92 kg.
+The sensor head weighs 2.11 kg (clamp 0.51 kg, globe with its hanger 0.35 kg, shield 0.30 kg, anemometer 0.31 kg, harness 0.24 kg, arm 0.25 kg, fan and cowl 0.08 kg and small parts), within the 4 kg of R15, which now applies to the sensor head. With the FieldNode core and shield (2.61 kg) and the pole adapter (0.25 kg) the complete node weighs 4.98 kg.
 
 ### Cost
 

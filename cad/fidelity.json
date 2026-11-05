@@ -1,0 +1,46 @@
+{
+ "level": "D3",
+ "stage": "P3",
+ "hash": "ac02bfade7b682ef",
+ "options": {
+  "A": {
+   "title": "Fan-aspirated shield, globe and anemometer",
+   "parts": 130,
+   "made_or_bought": 67,
+   "fasteners": 63,
+   "welds": 0,
+   "bare": [
+    "SHT45 board",
+    "PTFE membrane cap",
+    "Anemometer cup 270 deg",
+    "Solar panel laminate",
+    "Solar panel back sheet"
+   ],
+   "bare_share": 0.075,
+   "interference": [],
+   "mass_kg": 4.3,
+   "step_files": 67
+  },
+  "B": {
+   "title": "Direct natural wet-bulb head",
+   "parts": 123,
+   "made_or_bought": 64,
+   "fasteners": 59,
+   "welds": 0,
+   "bare": [
+    "SHT45 board",
+    "PTFE membrane cap",
+    "Solar panel laminate",
+    "Solar panel back sheet"
+   ],
+   "bare_share": 0.062,
+   "interference": [],
+   "mass_kg": 4.2,
+   "step_files": 0
+  }
+ },
+ "failures": [],
+ "warnings": [],
+ "passed": true,
+ "seconds": 16.2
+}

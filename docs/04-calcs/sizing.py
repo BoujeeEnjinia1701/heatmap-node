@@ -432,7 +432,7 @@ tag("H1", f"35 m/s gust ({q35:.0f} Pa), wind across the arm: " + ", ".join(f"{n}
 aw, at = P["arm_w"], P["arm_t"]
 I = (aw ** 4 - (aw - 2 * at) ** 4) / 12 * 1e-12
 Zs = I / (aw / 2000)
-E_AL, FY = 69e9, 145e6
+E_AL, FY = 69e9, 110e6      # 6063-T5 minimum yield about 110 MPa (independent review, HMN-STM-001; typical 145 MPa; stockist certificate to confirm)
 L_arm = P["arm_len"] / 1000
 
 
@@ -486,6 +486,9 @@ pull = m_g / (2 * P["band_dz"] / 1000)
 tag("H5", f"clamp: wind twists the arm about the pole with {t_wind:.1f} N m against {t_cap:.1f} N m of friction (factor {t_cap / t_wind:.1f}); "
           f"weight {arm_side:.2f} kg at {x_cg * 1000:.0f} mm pulls the upper band with {pull:.0f} N against {2 * PRELOAD:.0f} N; "
           f"slip down {arm_side * 9.81:.0f} N against {fric:.0f} N")
+m_g_root = arm_side * 9.81 * (x_cg - x0 / 1000)      # weight of the head about the arm root (vertical bending, added at the section corner)
+tag("H2b", f"arm root with the weight of the head added to the 35 m/s wind bending (conservative, corner sum): {m_g_root:.1f} N m gravity, "
+           f"stress {(M35 + m_g_root) / Zs / 1e6:.1f} MPa, factor {FY / ((M35 + m_g_root) / Zs):.1f} on {FY / 1e6:.0f} MPa (added in kit 1.9.1 after the independent review)")
 f_head = sum(F35.values())
 m_pole = f_head * P["arm_z"] / 1000 + FN_WIND_N * (P["fn_z0"] + 200) / 1000
 tag("H6", f"added load on the pole at 35 m/s: head {f_head:.0f} N plus FieldNode with its shield {FN_WIND_N:.0f} N; about {m_pole:.0f} N m at the pole base (for the pole owner)")

@@ -3,9 +3,9 @@ doc_id: HMN-BLD-001
 title: HeatMap Node prototype build plan
 project: HeatMap Node
 doc_type: Build plan
-version: "0.3"
+version: "0.4"
 status: Draft
-date: '2026-10-02'
+date: 2026-11-01
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -21,6 +21,10 @@ revisions:
     date: '2026-10-02'
     author: Amish Chadha
     change: "FieldNode core moved above the arm (HMN-DEC-001, item 3): steps 14 to 16 reordered and redrawn, harness leads re-specified, pictures redrawn"
+  - version: "0.4"
+    date: 2026-11-01
+    author: Amish Chadha
+    change: "Kit 1.9.1 upgrade: estimated head mass 2.11 kg from HMN-CAL-001 v0.7; no step changed"
 ---
 
 # HeatMap Node prototype build plan
@@ -358,7 +362,7 @@ These are the checks a TRL 4 test report would record; this plan only lists them
 | Sensor readings | R1, R2, R3 | With the core running, read air temperature, humidity and globe temperature indoors | All three read within 1 °C (or 5 %RH) of a reference thermometer and hygrometer in still air |
 | Wind pulse | R4 | Spin the cups by hand | Pulses counted; the calm share reads zero while spinning |
 | Arm deflection | R11 | Dial gauge at the tip; 10 N sideways at the anemometer | Under 1 mm (0.31 mm expected at a 20 m/s gust) |
-| Mass | R15 | Weigh the sensor head before it goes on the pole | 4 kg or less (2.08 kg estimated) |
+| Mass | R15 | Weigh the sensor head before it goes on the pole | 4 kg or less (2.11 kg estimated) |
 | Fitting time | R10 | Time steps 14 to 16 with two people from one lift | 30 minutes or less (37 minutes estimated) |
 | Privacy | R12 | Look over the parts list and the board | No camera, microphone or radio scanning part |
 

@@ -57,9 +57,19 @@ Heat waves kill more people than most other weather hazards, and cities lack fin
 
 A sensor arm clamps to an existing street pole with its axis at 2.8 m, points toward the equator and plugs into a FieldNode core (solar panel, LiFePO4 cell, LoRaWAN radio, and a sun shield for hot sites) mounted above it. It carries a fan-aspirated radiation shield with a temperature and humidity sensor, a standard 150 mm black globe with a thermistor at its center, and a small cup anemometer. Every 3 min the fan runs for 6 s before the air is read. Nodes send 15 min means; a server computes mean radiant temperature and WBGT, flags calm intervals below the anemometer's start-up, and maps the results block by block. Only environmental values leave the node: no camera, microphone or personal data.
 
-TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C. With the fan the shield reads 0.43 °C high in full sun at any wind speed (1.04 °C at 1 m/s without it), and the sensor input errors add up to ±0.30 °C of WBGT. The sensors and fan draw 35 mW against FieldNode's 100 mW allowance, the sensor head weighs 2.12 kg, and the arm has a factor of 13.0 on yield in a 35 m/s gust. Not met on paper: pedestrian measurement height (sensors at about 2.7 m). Value-engineering target: USD 130. Estimated cost of the constructable sensor head: USD 136 (USD 6 over the target); the full node with the FieldNode core, sun shield and pole adapter is about USD 292. WBGT accuracy against a reference meter, installation time and calibration of the assembled globe are at risk. With the arm toward the equator, the sensor head shades part of the FieldNode panel near noon; a fix is awaiting review.
+TRL 3 calculations ([HMN-CAL-001](docs/04-calcs/01-sizing.md)): in a worked example, 35 °C air at 40 %RH with a 50 °C globe at 1 m/s gives a mean radiant temperature of 74.8 °C and WBGT of 31.7 °C. With the fan the shield is estimated to read 0.43 °C high in full sun at 1 m/s and more, on assumed fan coupling (an upper bound is 0.79 °C; 1.04 °C at 1 m/s without the fan), and the sensor input errors add up to ±0.30 °C of WBGT. The sensors and fan draw 35 mW against FieldNode's 100 mW allowance, the sensor head weighs 2.11 kg, and the arm has a factor of 7.5 on its minimum yield in a 35 m/s gust. Not met on paper: pedestrian measurement height (sensors at about 2.7 m). Value-engineering target: USD 130. Estimated cost of the constructable sensor head: USD 136 (USD 6 over the target); the full node with the FieldNode core, sun shield and pole adapter is about USD 292. Air temperature accuracy and WBGT accuracy against a reference meter, installation time and calibration of the assembled globe are at risk. With the arm toward the equator, the sensor head shades part of the FieldNode panel near noon; a fix is awaiting review.
 
-Full design precis: [docs/02-concept.md](docs/02-concept.md). Requirements: [docs/03-requirements.md](docs/03-requirements.md).
+Full design precis: [docs/02-concept.md](docs/02-concept.md). User requirements: [docs/03a-user-requirements.md](docs/03a-user-requirements.md). Product requirements: [docs/03-requirements.md](docs/03-requirements.md), traced in [docs/03b-traceability.md](docs/03b-traceability.md).
+
+## STEM check
+
+Forty rows are checked (HMN-STM-001): 21 are within known science and 15 are plausible, to confirm with measurement at TRL 4 (fan flow and the 0.43 °C shield error, strap band preload, corrosion, plastic heat deflection, fouling by insects, anemometer start-up and, for option B, wick delivery, freezing, water upkeep and the wick error), so the check stays open. Three failed as first written and were fixed under Amish's standing instruction: option B's water bottle would split at -20 °C if filled to the brim (85 % fill line and a loose gland), would run dry in 7 days in a hot dry spell (5 day refill, enclosed cord), and a 0.5 °C heat island difference cannot be resolved by two nodes (claim restated to 2 °C or more). A fourth, the FieldNode cell charging in a 57 °C interior, goes to Amish. An independent reviewer's findings are in the document; they also put the air temperature requirement PR-001 at risk.
+
+## Concept options
+
+![The two options side by side at one scale](media/options.png)
+
+Option A, the fan-aspirated shield with a black globe and a cup anemometer (the current design, score 140), and option B, a direct natural wet-bulb head with a wetted wick and no fan (129), are within 10 %, so both go to Amish: **proposed, awaiting Amish** (HMN-OPT-001, HMN-DDR-004). Both are modelled in `cad/src/model.py` at detail level D3. The picture is rendered by the coordinator and may be missing until then.
 
 ## Key components
 
@@ -97,9 +107,9 @@ The design is now constructable: every part can be cut, bent, drilled, printed o
 
 | Folder | Contents |
 | --- | --- |
-| `docs/` | Problem, concept, requirements, calculations and design decisions |
-| `cad/src/` | build123d Python source, the source of truth for all geometry |
-| `cad/step/`, `cad/stl/` | Exported models for FreeCAD, other CAD tools and printing |
+| `docs/` | Controlled documents (PRB, STM, OPT, PRC, URS, PRS, RTM, CAL, BLD, DEC, REG, FEA, RSK, MKT, PLN, DDR) and REVIEW.md; `docs/04-calcs/` holds `sizing.py` (HMN-CAL-001) and `stem_check.py` (HMN-STM-001) |
+| `cad/src/` | build123d Python source, the source of truth for all geometry: `model.py` (options A and B, kit 1.9, detail level D3), `hmn_geom.py`, `sheets.py`, `build_plan_media.py`, `concept_media.py`, `product_model.py` |
+| `cad/step/`, `cad/stl/` | STEP per part of option A and an assembly STEP per option; STL of the chosen design |
 | `cad/drawings/` | 2D sketches and dimensioned drawings |
 | `bom/` | Bill of materials |
 | `electronics/` | KiCad schematics and PCB layouts |
@@ -109,7 +119,7 @@ The design is now constructable: every part can be cut, bent, drilled, printed o
 
 ## Documentation
 
-Controlled documents follow the portfolio [documentation standard](.kit/STANDARDS.md). Each carries a document ID (HMN-PRC-001 for the precis), a version and a revision history. Branded PDFs are built with `python .kit/render.py` and attached to GitHub Releases when a document is tagged, for example `HMN-PRC-001/v1.0`.
+Controlled documents follow the portfolio [documentation standard](.kit/STANDARDS.md). Run `python .kit/render.py --check` to validate them, `python .kit/cad_check.py --export` for the CAD fidelity check, `python .kit/trace.py` for the traceability matrix and `python docs/04-calcs/sizing.py` for the calculations. Each carries a document ID (HMN-PRC-001 for the precis), a version and a revision history. Branded PDFs are built with `python .kit/render.py` and attached to GitHub Releases when a document is tagged, for example `HMN-PRC-001/v1.0`.
 
 ## Credits
 

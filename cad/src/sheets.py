@@ -1,4 +1,4 @@
-"""HeatMap Node general arrangement sheet HMN-DWG-001, Rev P4 (TRL 3, constructable design of HMN-DDR-003).
+"""HeatMap Node general arrangement sheet HMN-DWG-001, Rev P6 (TRL 3, constructable design of HMN-DDR-003).
 
 Run from the repo root:  python cad/src/sheets.py
 Writes cad/drawings/HMN-DWG-001.svg, .pdf and .png from the parametric model in
@@ -17,6 +17,7 @@ from model import PARAMS as P, build_parts, derived, zcyl  # noqa: E402
 DATE = "2026-09-25"
 DATE_P4 = "2026-10-01"
 DATE_P5 = "2026-10-02"
+DATE_P6 = "2026-11-01"
 POLE_BOT, POLE_TOP = 2300.0, 3600.0     # pole stub shown on the sheet
 
 
@@ -99,15 +100,16 @@ def main():
     work = ROOT / "cad" / "drawings" / "_views"
     views = safe_project_views(asm, work)
     bb = asm.bounding_box()
-    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P5",
-              author="Amish Chadha", date=DATE_P5, scale=0.08, theme="technical",
+    s = Sheet(project="HeatMap Node", title="General arrangement", dwg_no="HMN-DWG-001", rev="P6",
+              author="Amish Chadha", date=DATE_P6, scale=0.08, theme="technical",
               material="Al arm and formed sheet saddle; ASA shield and cowl; copper globe; bought-in parts per bom/bom.csv. "
                        "PRELIMINARY, NOT FOR FABRICATION",
               revisions=[("P1", "Preliminary GA for TRL 3 (from cad/src/model.py)", DATE, "AC"),
                          ("P2", "HMN-DDR-002: fan, formed saddle, arm to equator, FieldNode shield", DATE, "AC"),
                          ("P3", "Layout and labels tidied", DATE, "AC"),
                          ("P4", "HMN-DDR-003: design for construction (saddle, cheeks, rods, hanger)", DATE_P4, "AC"),
-                         ("P5", "FieldNode core above the arm, leads up the pole (HMN-DEC-001, item 3)", DATE_P5, "AC")])
+                         ("P5", "FieldNode core above the arm, leads up the pole (HMN-DEC-001, item 3)", DATE_P5, "AC"),
+                         ("P6", "Redrawn from the kit 1.9 D3 model: every bolt, nut, washer, stock section; no dimension changed", DATE_P6, "AC")])
     s.add_ortho(views)
     k = s.scale
     c = ortho_cells(s, views)

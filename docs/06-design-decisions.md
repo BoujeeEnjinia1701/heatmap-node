@@ -3,9 +3,9 @@ doc_id: HMN-DEC-001
 title: HeatMap Node design decisions register
 project: HeatMap Node
 doc_type: Design decisions register
-version: "0.2"
+version: "0.3"
 status: Draft
-date: '2026-10-02'
+date: 2026-11-01
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -17,6 +17,10 @@ revisions:
     date: '2026-10-02'
     author: Amish Chadha
     change: "Amish approved the recommendations for all nine open decisions (HMN-DDR-003 accepted); moved to decisions made"
+  - version: "0.3"
+    date: 2026-11-01
+    author: Amish Chadha
+    change: "Kit 1.9.1 upgrade: concept selection (HMN-DDR-004) and the pipeline items O1 to O4 opened as proposed, awaiting Amish; K1, K1b, K2, K3, K4 and K5 recorded as decided under the standing instruction of 2026-10-23; the model rebuilt to the kit 1.9 interface with no design dimension changed"
 ---
 
 # HeatMap Node design decisions register
@@ -25,7 +29,27 @@ Every design decision still to be made, and every decision made, in one place. E
 
 ## Open decisions
 
-None. All open decisions were decided on 2026-10-02.
+All proposed, awaiting Amish (none decided in the kit 1.9.1 session).
+
+| # | Decision | Options | Recommendation | Record |
+| --- | --- | --- | --- | --- |
+| O1 | Concept: A (fan-aspirated shield, globe, anemometer) or B (direct natural wet-bulb head); the scores are 140 and 129, within 10 % | A; B; A with a few B reference heads | A, with B heads as references (proposed) | HMN-DDR-004, HMN-OPT-001 |
+| O2 | Whether to move the sensors toward pedestrian height (PR-009 not met at 2.67 to 2.69 m) or keep 2.8 m for reach and vandal resistance (HMN-DDR-001 D2) | Keep 2.8 m with the correction; lower the arm | Keep, and test 2.0 m against 2.8 m at TRL 4 | HMN-PRS-001 PR-009 |
+| O3 | Raise the budget target or cut cost: the head is USD 6 over the USD 130 target | Raise to USD 136; take the savings listed under Value engineering; leave | Take the savings first; never raise `budget_usd` without Amish | HMN-PRS-001 PR-013 |
+| O4 | Cross-repo item for FieldNode (STEM S25 fails, fix proposed): stop cell charging above its rated charge temperature (interior 57.2 °C at 50 °C air) | Ask FieldNode to add a cut-off; derate the node | Ask FieldNode | STEM S25, PR-016 |
+
+## Decided under the standing instruction (2026-10-23)
+
+Fixes for failed STEM check rows, made in the kit 1.9.1 session and open to reversal by Amish.
+
+| # | Fix | Why | Record |
+| --- | --- | --- | --- |
+| K1 | Option B reservoir: fill line at 85 % (15 % headspace), a thin HDPE wall, a gland that is a loose push fit so ice pushes it out, and an invalid-below-5 °C flag on the wet-bulb channel | Water expands 9.07 % on freezing; a brim-full bottle has 3 % headspace and splits at -20 °C | HMN-STM-001 S34, S34b |
+| K1b | Option B reservoir: refill interval of 5 days in hot dry spells, 7 days otherwise, and the wick cord enclosed in a sealed sleeve so only the sensor sleeve evaporates | 31.5 g a day evaporates in the worst case; 186 mL usable lasts 5.9 days; an open cord would add about 11 cm2 | HMN-STM-001 S31, S31b |
+| K2 | The claim about heat island differences restated to 2 °C or more between single readings | Two 0.43 °C random shield errors differ by 0.61 °C in quadrature (1.2 °C at 95 %), and a sunny site reads up to 0.43 °C warm | HMN-STM-001 S20, S20b |
+| K5 | Arm check in HMN-CAL-001 restated: minimum yield 110 MPa in place of the typical 145 MPa, and the head's weight added (factor 7.5, was 13.0) | Independent review of HMN-STM-001 (S9); the requirement is still met | HMN-CAL-001 v0.7 H2, H2b |
+| K4 | Stale pole base moment of 338 N m in the precis (HMN-PRC-001) corrected to 423 N m, the figure of HMN-CAL-001 H6 after the core moved above the arm | The two documents disagreed; the calculation note governs | HMN-PRC-001 v0.9 |
+| K3 | Model rebuilt to the kit 1.9 interface at detail level D3 for options A and B; no design dimension changed. New repo-only items: a `zbk` level change for lead B so the two M12 leads do not overlap, and drawn fastener sizes (M3 and M4, nyloc and acorn nuts) that the kit library lacks | The model must be physically constructable | cad/fidelity.json, REVIEW.md |
 
 ## To confirm when parts are bought
 

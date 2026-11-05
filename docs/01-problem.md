@@ -3,9 +3,9 @@ doc_id: HMN-PRB-001
 title: HeatMap Node problem statement
 project: HeatMap Node
 doc_type: Problem statement
-version: "0.6"
+version: "0.7"
 status: Draft
-date: '2026-10-02'
+date: 2026-11-01
 author: Amish Chadha
 license: CERN-OHL-S-2.0
 revisions:
@@ -33,6 +33,10 @@ revisions:
   date: '2026-10-02'
   author: Amish Chadha
   change: "First partner city and data publisher decided by Amish on 2026-10-02; City of Phoenix Office of Heat Response and Mitigation named as the first candidate to approach"
+- version: "0.7"
+  date: 2026-11-01
+  author: Amish Chadha
+  change: "Kit 1.9.1 upgrade: users-and-needs table and stakeholder table added for the user requirements (HMN-URS-001); no change to the problem or its scope"
 ---
 
 # HeatMap Node problem statement
@@ -60,6 +64,32 @@ Three gaps keep cities from acting on this at block scale:
 | Community groups and schools | A node they can build, host and read, and open data they can take to city hall |
 | Outdoor employers (construction, delivery, markets) | Local WBGT estimates to set work and rest cycles |
 | Researchers | A documented, calibrated, repeatable street-level method that others can replicate |
+
+
+Table 1. Users and needs.
+
+| User type | Goals and needs | Typical use scenario | Pain points and challenges |
+| --- | --- | --- | --- |
+| City heat, climate or resilience officer | Block-level heat stress maps over a season to site trees, shade and cooling centers, and to check they worked | Reads a season map each spring and a live view on heat-wave days | Stations are sparse and sited away from streets; satellites see surfaces; budgets allow few instruments |
+| Public health department | Near-real-time heat stress by neighborhood in a heat wave, to direct outreach | Watches a dashboard through a heat alert; calls community groups | Air temperature alone understates risk in the sun; data arrive too late or too coarse |
+| Community group or school | A node they can host and read, and open data to take to city hall | Hosts a node on a nearby pole, checks its page weekly | Little money and little technical help; do not trust closed data |
+| Outdoor employer | Local WBGT to set work and rest cycles | Looks at the nearest node before a shift | Has no street-level index; hand instruments are costly and sporadic |
+| Researcher | A documented, calibrated, repeatable street-level method | Collocates a node with a reference station, then compares blocks | Error of low-cost sensors is rarely stated; no record of calibration |
+| Pole owner or utility | Little added load, no drilling, clear liability | Reviews a request to attach, then inspects after wind | Fear of falling parts, corrosion and unauthorised work on the pole |
+
+## Stakeholders
+
+Table 2. Stakeholders.
+
+| Stakeholder group | Role or interest | Engagement needed |
+| --- | --- | --- |
+| Amish Chadha (Design Molecule Labs) | Owner and decision maker; publishes the data until a city takes it over | Decisions in HMN-DEC-001 |
+| First partner city (candidate: City of Phoenix Office of Heat Response and Mitigation) | Hosts the network; owns or gets permission for poles; uses the maps | Approach after Amish agrees; nothing is agreed |
+| Pole owners (city street lighting, utilities) | Allow clamped attachments at the height proposed | Ask for an attachment standard and a trial pole |
+| Residents and passers-by | Live and walk beneath the nodes; privacy | Explain what is measured; no personal data (PR-012) |
+| FieldNode, CalRig, TwinKit and CityTwin repos of this lab | Shared core, calibration, gateway and open data export | Cross-repo items in docs/REVIEW.md |
+| Standards and regulators (FCC, ISO/WMO guidance) | Radio, product and measurement practice | Register in HMN-REG-001 |
+| Funders and NGOs | Pay for networks in low-income districts | Cost per node in HMN-MKT-001 |
 
 ### Operating environment
 
